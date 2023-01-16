@@ -1,6 +1,7 @@
 import React, { useState } from "react"
-import Playground from "./Playground";
 import Background from './Background'
+import Baseline from "./Baseline";
+import Playground from "./Playground";
 import styled from "styled-components";
 
 const GamePage: React.FC = () => {
@@ -8,7 +9,7 @@ const GamePage: React.FC = () => {
 	return (
 		<React.Fragment>
 			<Background />
-			{/* { getTitle() } */}
+			<Baseline />
 			<Playground />
 		</React.Fragment>
 	)

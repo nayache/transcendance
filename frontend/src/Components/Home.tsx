@@ -1,38 +1,19 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import Background from './Background'
-import styled from "styled-components";
-
-const TitleDiv = styled.div`
-	position: relative;
-	width: fit-content;
-	margin: auto;
-`
-
-const Title = styled.p`
-	position: relative;
-	width: fit-content;
-	margin: auto;
-	font-size: 3rem;
-`
+import Baseline from "./Baseline";
+import { getPrivateDOMElements } from '../Functions/Token_utils'
 
 const Home = () => {
 
-	const [title, setTitle] = useState('Pong')
-
+	useEffect(() => {
+		console.log("home dans didMount")
+	}, [])
 	console.log('localStorage = ', localStorage);
 
-	const getTitle = () => {
-		return (
-			<TitleDiv>
-				<Title>{title}</Title>
-			</TitleDiv>
-		)
-	}
-
-	return (
+	return getPrivateDOMElements (
 		<React.Fragment>
 			<Background />
-			{ getTitle() }
+			<Baseline />
 		</React.Fragment>
 	)
 }
@@ -41,7 +22,7 @@ export default Home;
 /*
 si local storage n'a pas de token
 	rediriger vers ma page /register (=> bouton qui sign in sur 42 : myUrl)
-		Prendre le code pour envoyer au back (en parametre /auth de notre api)
+		Prendre la variable code pour l'envoyer au back (en parametre de la route /auth de notre api)
 			Storer le token renvoyé du back
 				Le sauvegarder dans le local storage
 	
