@@ -6,3 +6,5 @@ open terminal in backend directory and run this command : npm run start:dev
 && open terminal in frontend directory and run this command : npm run start
 
 go to localhost:3000
+
+//test pour github (a enlever apres)

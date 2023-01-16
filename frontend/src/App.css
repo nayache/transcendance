@@ -1,0 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Neucha&display=swap');
+
+body * {
+	font-family: "Neucha", cursive;
+	color: black;
+}
+
+.bgnd {
+	width: 100vw;
+	height: 100vh;
+	background-color: #2f74c0;
+}

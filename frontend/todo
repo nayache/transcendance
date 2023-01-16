@@ -1,0 +1,6 @@
+_resize le canvas en fonction de la fenetre :
+	Ajouter un eventListener
+_Tous les fils d'un composant doivent suivre le composant pere en termes de dimensions sur le DOM
+_faire une classe Object :
+	Object sera une genre d'interface (genre une classe non instanciable)
+	Object sera parent a Paddle, Ball
