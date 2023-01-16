@@ -7,12 +7,14 @@ export class AppService {
     return 'Hello World!';
   }
 
+  sleep() {
+    return new Promise(resolve => setTimeout(resolve, 4000))
+  }
+
   async sayHello(token: string) {
-    //const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-    //await sleep(3000);
     try {
       const res = await fetch('https://api.intra.42.fr/v2/me', { headers: { 'Authorization': `Bearer ${token}` } });
-      console.log(res.status);
+      console.log('->', res.status);
       const data = await res.json();
       this.printHello(data.login)
     } catch (err) {
