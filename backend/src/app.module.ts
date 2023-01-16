@@ -5,9 +5,10 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { LoggerMiddleware } from './logger/logger.middleware';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserModule } from './user/user.module';
 
 @Module({
-  imports: [AuthModule, ConfigModule.forRoot(),
+  imports: [AuthModule, ConfigModule.forRoot(), AuthModule, UserModule,
  /* TypeOrmModule.forRoot({
     type: 'mysql',
     host: process.env.DB_HOST,

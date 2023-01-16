@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { AppService } from 'src/app.service';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly appService: AppService) {}
+    constructor(private readonly userService: UserService) {}
 
     async authentification(code: string) {
        if (!code) {
@@ -19,11 +19,12 @@ export class AuthService {
             client_id: process.env.CLIENT_ID, 
             client_secret: process.env.CLIENT_SECRET,
             code: code, redirect_uri: "http://localhost:3000/register"})})
+            
         const data = await response.json()
-        if (!data.error) {
-            const token: string = data.access_token;
-            this.appService.sayHello(token)
-        }       
-        return (data); 
-    }
+        console.log(data)
+        if (!data.error)
+            this.userService.saveUser(data);
+
+        return (data);
+    }       
 }
