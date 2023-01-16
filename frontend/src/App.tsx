@@ -3,8 +3,8 @@ import './App.css';
 import Home from './Components/Home'
 import Register from './Components/Register'
 import GamePage from './Components/GamePage'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import ErrorPage from './Components/ErrorPage';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 const router = createBrowserRouter([
 	{

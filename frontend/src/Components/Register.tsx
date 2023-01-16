@@ -8,15 +8,16 @@ const Register: React.FC = () => {
 	const cleanUrlParameters: URLSearchParams = new URLSearchParams(rawUrlParameters);
 
 	console.log("window.location.search = ", window.location.search);
-	const onClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+	const onClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
 		event.preventDefault();
 
 		try {
-			const res: Promise<Response> = fetch(url);
+			const res: Response = await fetch(url);
+			console.log("res = ", res)
 			const code: string | null = cleanUrlParameters.get('code');
 			console.log("code = ", code)
 		} catch(e) {
-
+			console.log('e = ', e);
 		}
 
 	}
