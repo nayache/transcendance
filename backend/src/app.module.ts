@@ -8,7 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 
 @Module({
-  imports: [AuthModule, ConfigModule.forRoot(), AuthModule, UserModule,
+  imports: [AuthModule, ConfigModule.forRoot(), UserModule,
  /* TypeOrmModule.forRoot({
     type: 'mysql',
     host: process.env.DB_HOST,
