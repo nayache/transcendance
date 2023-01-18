@@ -7,7 +7,8 @@ import styled from "styled-components";
 
 const GamePage: React.FC = () => {
 
-	return getPrivateDOMElements (
+	// return getPrivateDOMElements (
+	return (
 		<React.Fragment>
 			<Background />
 			<Baseline />

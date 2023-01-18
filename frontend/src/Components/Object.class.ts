@@ -6,22 +6,24 @@ export type Point = {
 export type Dimensions = {
 	width: number,
 	height: number
-}
-
+} 
 
 abstract class CanvasObject {
 
 	private _isCollisionActive: boolean;
+	private _speed: number | undefined;
 
 	constructor(
-		private _pos?: Point,
-		private _dimensions?: Dimensions,
-		private _color?: string,
+		private _pos: Point = {x: 0, y: 0},
+		private _dimensions: Dimensions = {width: 10, height: 10},
+		private _color: string = 'black',
 		private _context?: CanvasRenderingContext2D,
 		private _canvasWidth?: number,
 		private _canvasHeight?: number,
+		private _canvasPosY: number = 0,
 	) {
 		console.log("CanvasObject creation")
+		this._speed = undefined;
 		this._isCollisionActive = true;
 	}
 
@@ -49,12 +51,20 @@ abstract class CanvasObject {
 	protected set canvasHeight(canvasHeight: number | undefined) {
 		this._canvasHeight = canvasHeight;
 	}
+
+	protected get canvasPosY() {
+		return this._canvasPosY;
+	}
+
+	protected set canvasPosY(canvasPosY: number) {
+		this._canvasPosY = canvasPosY;
+	}
 	
 	public get pos() {
 		return this._pos;
 	}
 
-	public set pos(pos: Point | undefined) {
+	protected set pos(pos: Point) {
 		this._pos = pos;
 	}
 	
@@ -62,7 +72,7 @@ abstract class CanvasObject {
 		return this._dimensions;
 	}
 
-	public set dimensions(dimensions: Dimensions | undefined) {
+	protected set dimensions(dimensions: Dimensions) {
 		this._dimensions = dimensions;
 	}
 	
@@ -70,26 +80,16 @@ abstract class CanvasObject {
 		return this._color;
 	}
 
-	protected set color(color: string | undefined) {
+	protected set color(color: string) {
 		this._color = color;
 	}
-
-	setUp(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number) {
-		this.context = ctx;
-		this.canvasWidth = canvasWidth;
-		this.canvasHeight = canvasHeight;
-		console.log('test setUp')
+	
+	protected get speed() {
+		return this._speed;
 	}
 
-	draw(): void {
-		if (!this.context || !this.pos || !this.dimensions)
-		{
-			console.log("draw() dans 1er if")
-			return ;
-		}
-		console.log("draw() apres 1er if")
-		this.context.beginPath();
-		this.context.fillStyle = <string>this.color;
+	protected set speed(speed: number | undefined) {
+		this._speed = speed;
 	}
 
 	protected set isCollisionActive(isActive: boolean) {
@@ -102,6 +102,20 @@ abstract class CanvasObject {
 
 	protected get isCollisionActive(): boolean {
 		return (this._isCollisionActive);
+	}
+
+	setUp(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, canvasPosY: number) {
+		this.context = ctx;
+		this.canvasWidth = canvasWidth;
+		this.canvasHeight = canvasHeight;
+		this.canvasPosY = canvasPosY;
+	}
+
+	draw(): void {
+		if (!this.context || !this.pos || !this.dimensions)
+			return ;
+		this.context.beginPath();
+		this.context.fillStyle = <string>this.color;
 	}
 
 	//collision, etc..

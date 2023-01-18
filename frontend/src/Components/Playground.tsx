@@ -14,13 +14,15 @@ const Playground = () => {
 	const [playgroundHeight, setPlaygroundHeight] = useState<number>(0);
 	// const player: Player;
 	const paddle: Paddle = new Paddle(
+		1,
+		10,
 		110,
-		{ x: 10, y: 10 },
 		'blue'
 	);
 	const paddle2: Paddle = new Paddle(
+		2,
+		100,
 		110,
-		{ x: 100, y: 100 },
 		'red'
 	);
 	let reqAnim: number;
@@ -47,21 +49,20 @@ const Playground = () => {
 		drawBgnd(context, canvasWidth, canvasHeight);
 	}
 
-	const gameLoop = (context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number) => {
+	const gameLoop = (context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, canvasPosY: number) => {
 		clearBgnd(context, canvasWidth, canvasHeight);
 		drawBgnd(context, canvasWidth, canvasHeight);
 		if (paddle) {
-			paddle.setUp(context, canvasWidth, canvasHeight);
+			paddle.setUp(context, canvasWidth, canvasHeight, canvasPosY);
 			paddle.draw();
 		}
 		if (paddle2 && paddle2.dimensions) {
 			const width: number = paddle2.dimensions.width
 
-			paddle2.setUp(context, canvasWidth, canvasHeight);
-			paddle2.pos = { x: canvasWidth - width - 10, y: 10 };
+			paddle2.setUp(context, canvasWidth, canvasHeight, canvasPosY);
 			paddle2.draw();
 		}
-		// reqAnim = requestAnimationFrame(() => gameLoop(context, canvasWidth, canvasHeight))
+		reqAnim = requestAnimationFrame(() => gameLoop(context, canvasWidth, canvasHeight, canvasPosY))
 		// console.log('reqAnim = ', reqAnim);
 	}
 
