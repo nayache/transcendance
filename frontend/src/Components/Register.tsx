@@ -3,8 +3,8 @@ import { useParams } from 'react-router-dom';
 
 const Register: React.FC = () => {
 	
-	const domain: string = 'localhost:3000'
-	const api42Url: string = 'https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-e4321f4102944a4d6a845589617dc4dbb76d41480231e1640aa6a19b02a8a5a3&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fregister&response_type=code'
+	const domain: string = 'localhost:3042'
+	const api42Url: string = 'https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-21591b92686c701d5d9baf9f9d3e877072ef6d82b19483499cf3b942ed6cd5d8&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fregister&response_type=code'
 	const rawUrlParameters: string = window.location.search;
 	const cleanUrlParameters: URLSearchParams = new URLSearchParams(rawUrlParameters);
 
@@ -19,7 +19,8 @@ const Register: React.FC = () => {
 		if (code)
 		{
 			try {
-				const res: Response = await fetch(domain + '/api/auth?code=' + code);
+				//const res: Response = await fetch(domain + '/auth?code=' + code);
+				const res: Response = await fetch('http://localhost:3042/auth?code=' + code);
 				const data = await res.json();
 				localStorage.setItem('token', JSON.stringify(data));
 				window.location.href = '/'
