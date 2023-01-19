@@ -49,20 +49,20 @@ const Playground = () => {
 		drawBgnd(context, canvasWidth, canvasHeight);
 	}
 
-	const gameLoop = (context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, canvasPosY: number) => {
+	const gameLoop = (context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, canvas: HTMLCanvasElement) => {
 		clearBgnd(context, canvasWidth, canvasHeight);
 		drawBgnd(context, canvasWidth, canvasHeight);
 		if (paddle) {
-			paddle.setUp(context, canvasWidth, canvasHeight, canvasPosY);
+			paddle.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
 			paddle.draw();
 		}
 		if (paddle2 && paddle2.dimensions) {
 			const width: number = paddle2.dimensions.width
 
-			paddle2.setUp(context, canvasWidth, canvasHeight, canvasPosY);
+			paddle2.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
 			paddle2.draw();
 		}
-		reqAnim = requestAnimationFrame(() => gameLoop(context, canvasWidth, canvasHeight, canvasPosY))
+		reqAnim = requestAnimationFrame(() => gameLoop(context, canvasWidth, canvasHeight, canvas))
 		// console.log('reqAnim = ', reqAnim);
 	}
 
