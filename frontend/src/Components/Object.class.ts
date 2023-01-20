@@ -3,6 +3,11 @@ export type Point = {
 	y: number
 }
 
+export type Vector2D = {
+	x: number,
+	y: number
+}
+
 export type Dimensions = {
 	width: number,
 	height: number
@@ -10,8 +15,7 @@ export type Dimensions = {
 
 abstract class CanvasObject {
 
-	private _isCollisionActive: boolean;
-	private _speed: number | undefined;
+	private _speed: Vector2D | undefined;
 
 	constructor(
 		private _pos: Point = {x: 0, y: 0},
@@ -20,11 +24,10 @@ abstract class CanvasObject {
 		private _context?: CanvasRenderingContext2D,
 		private _canvasWidth?: number,
 		private _canvasHeight?: number,
-		private _canvasPosY: number = 0,
+		private _canvasPosY?: number,
 	) {
 		console.log("CanvasObject creation")
 		this._speed = undefined;
-		this._isCollisionActive = true;
 	}
 
 
@@ -56,7 +59,7 @@ abstract class CanvasObject {
 		return this._canvasPosY;
 	}
 
-	protected set canvasPosY(canvasPosY: number) {
+	protected set canvasPosY(canvasPosY: number | undefined) {
 		this._canvasPosY = canvasPosY;
 	}
 	
@@ -88,23 +91,11 @@ abstract class CanvasObject {
 		return this._speed;
 	}
 
-	protected set speed(speed: number | undefined) {
+	protected set speed(speed: Vector2D | undefined) {
 		this._speed = speed;
 	}
 
-	protected set isCollisionActive(isActive: boolean) {
-		if (isActive)
-		{
-
-		}
-		this._isCollisionActive = isActive;
-	}
-
-	protected get isCollisionActive(): boolean {
-		return (this._isCollisionActive);
-	}
-
-	setUp(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, canvasPosY: number) {
+	setUp(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, canvasPosY?: number): void {
 		this.context = ctx;
 		this.canvasWidth = canvasWidth;
 		this.canvasHeight = canvasHeight;
@@ -115,7 +106,7 @@ abstract class CanvasObject {
 		if (!this.context || !this.pos || !this.dimensions)
 			return ;
 		this.context.beginPath();
-		this.context.fillStyle = <string>this.color;
+		this.context.fillStyle = this.color;
 	}
 
 	//collision, etc..

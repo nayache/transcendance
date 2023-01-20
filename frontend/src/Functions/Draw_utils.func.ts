@@ -1,3 +1,22 @@
+import { GameState } from "../Components/Playground";
+import { Player } from "../Components/Playground";
+import Paddle from "../Components/Paddle.class"
+import Ball from "../Components/Ball.class"
+
+interface GameVariables {
+	player1: Player,
+	player2: Player,
+	paddle: Paddle,
+	paddle2: Paddle,
+	ball: Ball,
+	context: CanvasRenderingContext2D,
+	canvas: HTMLCanvasElement,
+	canvasWidth: number,
+	canvasHeight: number,
+	gamestate: GameState,
+
+}
+
 const drawMiddleLine = (context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number) => {
 	const middleWidth = canvasWidth / 2;
 	const lineWidth = canvasWidth / 100;
@@ -18,4 +37,16 @@ export const drawBgnd = (context: CanvasRenderingContext2D, canvasWidth: number,
 
 export const clearBgnd = (context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number) => {
 	context.clearRect(0, 0, canvasWidth, canvasHeight);
+}
+
+export const setUpGame = ({ player1, player2, paddle, paddle2, ball, context, canvas, canvasWidth, canvasHeight, gamestate }: GameVariables) => {
+	paddle.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
+	paddle2.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
+	ball.setUp(context, canvasWidth, canvasHeight);
+	//on va set 2 boutons qui vont permettre de mettre respectivement les 2 joueurs prets a jouer,
+	// quand les 2 joueurs sont prets, ca demarre
+	// player1.isReadyToPlay = true;
+	// player2.isReadyToPlay = true;
+	// if (player1.isReadyToPlay && player2.isReadyToPlay || true)
+		gamestate = GameState.Start;
 }

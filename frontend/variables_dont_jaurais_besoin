@@ -1,0 +1,5 @@
+Player  ou  User {
+
+	boolean isReadyToPlay = false;            // jte conseille, fais un public getter et public setter
+	
+}
