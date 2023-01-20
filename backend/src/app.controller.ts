@@ -1,4 +1,4 @@
-import { Controller, Get, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { User } from './decorators/user.decorator';
 import { UserEntity } from './entity/user.entity';
@@ -10,6 +10,10 @@ export class AppController {
   @Get()
   fn(@User() user: UserEntity) {
     console.log('Welcome ' + user.login);
+  }
+
+  vv() {
+
   }
 
 }

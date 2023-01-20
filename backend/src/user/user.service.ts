@@ -1,55 +1,50 @@
 import { Injectable } from '@nestjs/common';
-import e from 'express';
+import { InjectRepository } from '@nestjs/typeorm';
 import { TokenFtEntity } from 'src/entity/tokenFt.entitiy';
 import { UserEntity } from 'src/entity/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserService {
+    constructor(@InjectRepository(UserEntity) private userRepository: Repository<UserEntity>) {}
     
-    private readonly users: UserEntity[] = [];
-    
-    saveUser(login: string, tokenft: TokenFtEntity): UserEntity {
-        // si login existe je modifie le token par le nouveau
-        // sinon jadd user
-        const user = this.users.find(elem => elem.login == login)
-        if (!user) {
-            this.users.push(new UserEntity(login, tokenft, tokenft.expires_in));
-            return this.users.find(elem => elem.login == login);
-        }
-        else {
-            user.tokenft = tokenft;
-            user.setExpire(tokenft.expires_in);
-            return user;
-        }
-        ///LE CAS OU USER EXIST DEJA A VOIR SI FRONT  DESACTIVE BOUTTON
+    async saveUser(login: string) {
+        return await this.userRepository.save(new UserEntity(login))
     }
     
-    findByLogin(login: string) {
-        return this.users.find(elem => elem.login == login);
+    async findById(id: string) {
+        return await this.userRepository.findOneBy({id: id});
+    }
+
+    async findByLogin(login: string) {
+        return await this.userRepository.findOneBy({login: login});
     }
 
     isValidPseudo(pseudo: string) : boolean {
         return (pseudo.length > 3 && pseudo.length < 25);
     }
 
-    checkAuthenticityPseudo(pseudo: string): boolean {
-        return (this.users.find(elem => elem.pseudo == pseudo)) === undefined ? true : false;
+    async pseudoExist(pseudo: string): Promise<boolean> {
+        return await this.userRepository.exist({ where: {pseudo: pseudo}});
     }
 
-    addPseudo(login: string, pseudo: string) {
-        const user = this.findByLogin(login)
-        if (user.pseudo && !this.checkAuthenticityPseudo(pseudo))
+    async addPseudo(id: string, pseudo: string) {
+        const user = await this.findById(id);
+        if (user.pseudo && await this.pseudoExist(pseudo))
             return null;
-        
-        user.pseudo = pseudo;
-        return user;
+       
+        return await this.userRepository.update(id ,{pseudo: pseudo})
     }
 
-    getPseudoByLogin(login: string) : string {
-        return this.users.find(elem => elem.login === login).pseudo;
+    async getPseudoById(id: string) : Promise<string> {
+        const user = await this.findById(id);
+        if (user && user.pseudo) {
+            return user.pseudo;
+        }
+        return null;
     }
 
-    getUsers() : UserEntity[] {
-        return this.users;
+    async getUsers() : Promise<UserEntity[]> {
+        return await this.userRepository.find();
     }
 }

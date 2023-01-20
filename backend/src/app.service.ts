@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { setMaxIdleHTTPParsers } from 'http';
 
 @Injectable()
 export class AppService {

@@ -19,26 +19,26 @@ export class AuthMiddleware implements NestMiddleware {
       if (!decoded) {
         throw new InvalidTokenException(null);
       }
-      const user = this.userService.findByLogin(decoded.user.login);
+      const user = await this.userService.findById(decoded.id);
       if (!user) {
         throw new HttpException({ message: 'User not found', token: null }, HttpStatus.UNAUTHORIZED)
       }
       ////=============== 42 oauth check ===========================
-      if (this.authService.tokenIsExpire(user.expire)) {
-        const newToken = await this.authService.updateToken(user.tokenft.refresh_token)
+      if (this.authService.tokenIsExpire(decoded.expire)) {
+        const newToken = await this.authService.updateToken(decoded.refresh_token)
         if (!newToken) {
             // front doit delete token du local storage et inviter luser a se re signin
             throw new InvalidTokenException(null);
         }
-        this.userService.saveUser(user.login, newToken);
         //retourne 401 avec nouveau jwt token
-        throw new InvalidTokenException(this.authService.generateJwt(user));
+        throw new InvalidTokenException(this.authService.generateJwt(user.id, newToken));
       }
       else if (this.authService.tokenIsExpiring(decoded.exp)) {
-        throw new InvalidTokenException(this.authService.generateJwt(user));
+        console.log('decoded:', decoded)
+        throw new InvalidTokenException(this.authService.generateJwt(user.id, decoded.token));
       }
       //=============================================================
-      req.user = user;
+      req.user = user.id;
       next();
       console.log('==========O U T Middleware=======')
     } else {

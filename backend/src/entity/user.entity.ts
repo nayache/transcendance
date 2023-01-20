@@ -1,20 +1,19 @@
-import { ExistingProvider } from "@nestjs/common";
-import { TokenFtEntity } from "./tokenFt.entitiy"
+//import { ExistingProvider } from "@nestjs/common";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
+@Entity()
 export class UserEntity {
 
-    constructor(login: string, tokenft: TokenFtEntity, expire: number) {
+    constructor(login: string) {
         this.login = login;
-        this.tokenft = tokenft;
-        this.setExpire(expire);
     }
 
+    @PrimaryGeneratedColumn("uuid")
+    id: string
+    
+    @Column()
     login: string
+    
+    @Column({ default: null })
     pseudo: string
-    tokenft: TokenFtEntity
-    expire: number
-
-    setExpire(expire: number) {
-        this.expire = (Date.now() / 1000) + expire
-    }
 }
