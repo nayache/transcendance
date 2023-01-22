@@ -1,8 +1,7 @@
-import { Controller, Get, HttpException, HttpStatus, Query, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Query, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/decorators/user.decorator';
-import { UserEntity } from 'src/entity/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -27,5 +26,14 @@ constructor(private readonly authService: AuthService,
         console.log('jwt generate ----> [', jwt, ']')
 
         return { "token" : jwt }
+    }
+
+    @Post('/2fa')
+    async setTwoFa(@User() userId: string, @Query('twofa') value: boolean): Promise<any> {
+        try {
+            await this.userService.updateTwoFa(userId, value);
+        } catch (err) {
+            throw new HttpException('updating user in database failed', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

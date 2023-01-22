@@ -1,5 +1,6 @@
 import { Controller, Get, HttpException, HttpStatus, Post, Query } from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
+import { UserEntity } from 'src/entity/user.entity';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -26,5 +27,10 @@ export class UserController {
             throw new HttpException('pseudo already used by other user', HttpStatus.CONFLICT)
 
         return { statuscode: "201", pseudo: pseudo }
+    }
+
+    @Get()
+    async getAll(@User() user: UserEntity) {
+        return await this.userService.getUsers();
     }
 }

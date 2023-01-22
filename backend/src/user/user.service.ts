@@ -36,6 +36,10 @@ export class UserService {
         return await this.userRepository.update(id ,{pseudo: pseudo})
     }
 
+    async updateTwoFa(id: string, value: boolean) {
+        return await this.userRepository.update(id, {twoFa: value});
+    }
+
     async getPseudoById(id: string) : Promise<string> {
         const user = await this.findById(id);
         if (user && user.pseudo) {
