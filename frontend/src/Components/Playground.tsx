@@ -4,6 +4,7 @@ import Canvas from './Canvas'
 import { drawBgnd, clearBgnd, setUpGame } from "../Functions/Draw_utils.func"
 import Paddle from "./Paddle.class"
 import Ball from "./Ball.class"
+import Referee from "./Referee.class"
 
 interface Props {
 }
@@ -51,6 +52,7 @@ const Playground = () => {
 		10,
 		'grey'
 	)
+	const ref: Referee = new Referee();
 	let gamestate = GameState.Reset;
 	let reqAnim: number;
 
@@ -72,8 +74,6 @@ const Playground = () => {
 	}
 
 	const gameLoop = (context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, canvas: HTMLCanvasElement) => {
-		clearBgnd(context, canvasWidth, canvasHeight);
-		drawBgnd(context, canvasWidth, canvasHeight);
 		if (gamestate == GameState.Reset)
 		// setUpGame({ player1, player2, paddle, paddle2, ball, context, canvas, canvasWidth, canvasHeight, gamestate })
 		{
@@ -84,10 +84,17 @@ const Playground = () => {
 		}
 		if (gamestate == GameState.Start)
 		{
+			clearBgnd(context, canvasWidth, canvasHeight);
+			drawBgnd(context, canvasWidth, canvasHeight);
 			paddle.draw(canvas.getBoundingClientRect().top);
 			paddle2.draw(canvas.getBoundingClientRect().top);
 			ball.draw();
 			ball.updatePos([paddle, paddle2]);
+		}
+		if (ref.isFinished([paddle, paddle2], ball))
+		{
+			console.log("it's finished")
+			gamestate = GameState.Stop;
 		}
 		reqAnim = requestAnimationFrame(() => gameLoop(context, canvasWidth, canvasHeight, canvas))
 		// console.log('reqAnim = ', reqAnim);

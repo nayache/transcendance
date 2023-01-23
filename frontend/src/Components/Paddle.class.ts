@@ -18,8 +18,8 @@ class Paddle extends CanvasObject {
 		canvasPosY: number = 0,
 	) {
 		super(
-			{ x: _nbPlayer == 1 ? 0 + PADDLE_XSPACE : 0  ,  y: 0},
 			{ width: PADDLE_WIDTH, height },
+			undefined,
 			color,
 			context,
 			canvasWidth,
@@ -29,12 +29,16 @@ class Paddle extends CanvasObject {
 		document.addEventListener('mousemove', this.onMouseMove.bind(this));
 	}
 
-	private set y(y: number) {
+	public get nbPlayer() {
+		return (this._nbPlayer);
+	}
+
+	private set y(y: number | undefined) {
 		this.pos = { ...this.pos, y }
 	}
 
 	private get y() {
-		return this.pos.y;
+		return this.pos?.y;
 	}
 
 	onMouseMove(e: MouseEvent): void {
@@ -47,11 +51,14 @@ class Paddle extends CanvasObject {
 		super.setUp(ctx, canvasWidth, canvasHeight, canvasPosY);
 		this.y = canvasHeight / 2 - this.dimensions.height / 2;
 		if (this._nbPlayer == 2 && this.canvasWidth)
-			this.pos = {...this.pos, x: this.canvasWidth - this.dimensions.width - PADDLE_XSPACE}
+			this.pos = { ...this.pos, x: this.canvasWidth - this.dimensions.width - PADDLE_XSPACE }
+		else
+			this.pos = { ...this.pos, x: PADDLE_XSPACE }
 	}
 
 	draw(canvasPosY?: number): void {
-		if (!this.context || !this.pos || !this.dimensions)
+		console.log("this.pos dans draw paddle = ", this.pos)
+		if (!this.context || !this.pos?.x || !this.pos?.y || !this.dimensions)
 			return ;
 		this.canvasPosY = canvasPosY;
 		super.draw()

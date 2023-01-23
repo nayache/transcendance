@@ -1,6 +1,6 @@
 export type Point = {
-	x: number,
-	y: number
+	x?: number,
+	y?: number
 }
 
 export type Vector2D = {
@@ -11,15 +11,24 @@ export type Vector2D = {
 export type Dimensions = {
 	width: number,
 	height: number
-} 
+}
+
+export enum Side {
+	NoSide = -1,
+	Top,
+	Right,
+	Bottom,
+	Left
+}
 
 abstract class CanvasObject {
 
 	private _speed: Vector2D | undefined;
+	private _oldPos?: Point;
 
 	constructor(
-		private _pos: Point = {x: 0, y: 0},
 		private _dimensions: Dimensions = {width: 10, height: 10},
+		private _pos?: Point,
 		private _color: string = 'black',
 		private _context?: CanvasRenderingContext2D,
 		private _canvasWidth?: number,
@@ -28,6 +37,7 @@ abstract class CanvasObject {
 	) {
 		console.log("CanvasObject creation")
 		this._speed = undefined;
+		this._oldPos = _pos;
 	}
 
 
@@ -67,8 +77,17 @@ abstract class CanvasObject {
 		return this._pos;
 	}
 
-	protected set pos(pos: Point) {
+	protected set pos(pos: Point | undefined) {
+		this._oldPos = this._pos
 		this._pos = pos;
+	}
+
+	protected get oldPos() {
+		return this._oldPos;
+	}
+
+	private set oldPos(oldPos: Point | undefined) {
+		this._oldPos = oldPos;
 	}
 	
 	public get dimensions() {
@@ -87,7 +106,7 @@ abstract class CanvasObject {
 		this._color = color;
 	}
 	
-	protected get speed() {
+	public get speed() {
 		return this._speed;
 	}
 
@@ -95,12 +114,62 @@ abstract class CanvasObject {
 		this._speed = speed;
 	}
 
-	setUp(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, canvasPosY?: number): void {
+	protected setUp(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, canvasPosY?: number): void {
 		this.context = ctx;
 		this.canvasWidth = canvasWidth;
 		this.canvasHeight = canvasHeight;
 		this.canvasPosY = canvasPosY;
 	}
+
+	public isPosSetUp(): boolean {
+		if (this._pos && this._pos.x && this._pos.y)
+			return (true);
+		return (false)
+	}
+
+	private static isBetween<T>(myItem: T, limitInf: T, limitSup: T, inclusive: boolean = true): boolean {
+		if (!inclusive)
+			return (myItem > limitInf && myItem < limitSup)
+		return (myItem >= limitInf && myItem <= limitSup)
+	}
+
+	protected isInsideX(solidObject: CanvasObject): boolean {
+		if (this.pos?.x && this.pos?.y && solidObject.pos?.x && solidObject.pos?.y)
+			if (
+				(this.pos.x - this.dimensions.width <= solidObject.pos.x + solidObject.dimensions.width &&
+				this.pos.x + this.dimensions.width >= solidObject.pos.x) &&
+				(this.pos.y - this.dimensions.height <= solidObject.pos.y + solidObject.dimensions.height &&
+				this.pos.y + this.dimensions.height >= solidObject.pos.y)// &&
+				// (this.oldPos.y - this.dimensions.height <= solidObject.pos.y + solidObject.dimensions.height &&
+				// this.oldPos.y + this.dimensions.height >= solidObject.pos.y)
+			)
+				return (true);
+		return (false);
+	}
+	
+	// !!! DEPRECATED !!! //
+	/*
+	protected isInsideY(solidObject: CanvasObject): Side {
+		const absDistanceUp: number = Math.abs(this.pos.y - solidObject.pos.y);
+		const absDistanceDown: number = Math.abs(this.pos.y - (solidObject.pos.y + solidObject.dimensions.height));
+		
+		if (
+			(this.pos.y - this.dimensions.height <= solidObject.pos.y + solidObject.dimensions.height &&
+			this.pos.y + this.dimensions.height >= solidObject.pos.y) &&
+			(this.pos.x - this.dimensions.width <= solidObject.pos.x + solidObject.dimensions.width &&
+			this.pos.x + this.dimensions.width >= solidObject.pos.x) &&
+			(this.oldPos.x - this.dimensions.width <= solidObject.pos.x + solidObject.dimensions.width &&
+			this.oldPos.x + this.dimensions.width >= solidObject.pos.x)
+		)
+		{
+			if (absDistanceUp < absDistanceDown)
+				return (Side.Top);
+			else
+				return (Side.Bottom);
+		}
+		return (Side.NoSide);
+	}
+	*/
 
 	draw(): void {
 		if (!this.context || !this.pos || !this.dimensions)

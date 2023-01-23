@@ -1,5 +1,5 @@
 import React from 'react'
-import CanvasObject, { Point, Dimensions, Vector2D } from './Object.class';
+import CanvasObject, { Point, Dimensions, Vector2D, Side } from './Object.class';
 
 class Ball extends CanvasObject {
 
@@ -12,8 +12,8 @@ class Ball extends CanvasObject {
 		canvasPosY?: number,
 	) {
 		super(
-			{ x: 0, y: 0 },
 			{ width: radius, height: radius },
+			undefined,
 			color,
 			context,
 			canvasWidth,
@@ -23,7 +23,7 @@ class Ball extends CanvasObject {
 
 	}
 
-	private get radius(): number {
+	public get radius(): number {
 		return (this.dimensions.width);
 	}
 
@@ -32,7 +32,7 @@ class Ball extends CanvasObject {
 		this.dimensions.height = radius;
 	}
 
-	setUp(
+	public setUp(
 		ctx: CanvasRenderingContext2D,
 		canvasWidth: number,
 		canvasHeight: number,
@@ -48,10 +48,11 @@ class Ball extends CanvasObject {
 		//set une vitesse ou un bail comme ca
 	}
 
-	updatePos(solidObjects?: CanvasObject[]): void {
-		const x: number = this.pos.x;
-		const y: number = this.pos.y;
+	public updatePos(solidObjects?: CanvasObject[]): void {
+		const x: number | undefined = this.pos?.x;
+		const y: number | undefined = this.pos?.y;
 		let speed: Vector2D;
+		let sideTouched: Side;
 
 		if (!this.speed)
 			this.speed = { x: 2, y: -4 }
@@ -63,36 +64,63 @@ class Ball extends CanvasObject {
 				for (let i = 0; i < solidObjects.length; i++) {
 					const solidObject = solidObjects[i];
 					console.log("this.speed.x dans if = ", this.speed.x);
-					console.log("this.pos.x - this.radius = ", this.pos.x - this.radius)
-					console.log("solidObject.pos.x = ", solidObject.pos.x);
-					if ((this.pos.x < solidObject.pos.x + solidObject.dimensions.width &&
-						this.pos.x > solidObject.pos.x) &&
-						(this.pos.y < solidObject.pos.y + solidObject.dimensions.height &&
-						this.pos.y > solidObject.pos.y))
+					// console.log("this.pos.x - this.radius = ", this.pos?.x - this.radius)
+					console.log("solidObject.pos.x = ", solidObject.pos?.x);
+					if (this.isInsideX(solidObject))
 					{
 						speed = { ...this.speed, x: -this.speed.x }
-						if (this.speed.x < 0)
+						if (this.pos?.x && solidObject.pos?.x && this.speed.x < 0)
 							this.pos.x = solidObject.pos.x + solidObject.dimensions.width + this.radius;
-						else if (this.speed.x > 0)
+						else if (this.pos?.x && solidObject.pos?.x && this.speed.x > 0)
 							this.pos.x = solidObject.pos.x - this.radius;
 					}
+					/*
+					sideTouched = this.isInsideY(solidObject);
+					if (sideTouched != Side.NoSide)
+					{
+						const a = new Map<Side, string>([
+							[Side.Top, "top"],
+							[Side.Right, "right"],
+							[Side.Bottom, "bottom"],
+							[Side.Left, "left"],
+						]);
+						console.log("sideTouched = ", a.get(sideTouched))
+						if (sideTouched == Side.Top)
+						{
+							if (this.speed.y > 0)
+								speed = { ...this.speed, y: -Math.abs(this.speed.y) }
+							else
+								speed =  { ...this.speed, y: Math.abs(this.speed.y * 1.3) }
+							this.pos.y = solidObject.pos.y - this.radius;
+						}
+						else if (sideTouched == Side.Bottom)
+						{
+							if (this.speed.y < 0)
+								speed = { ...this.speed, y: -Math.abs(this.speed.y) }
+							else
+								speed =  { ...this.speed, y: Math.abs(this.speed.y * 1.3) }
+							this.pos.y = solidObject.pos.y + solidObject.dimensions.width + this.radius;
+						}
+					}
+					*/
 				}
 				this.speed = speed;
 			}
 			console.log("this.speed.x a l'exterieur du if = ", this.speed.x);
-			if (this.pos.y < 0 || this.pos.y > this.canvasHeight)
+			if (this.pos?.x && this.pos?.y &&
+				(this.pos.y - this.radius < 0 || this.pos.y + this.radius > this.canvasHeight))
 				this.speed.y = -this.speed.y;
 			else
 				console.log("nope y, this.pos = ", this.pos, " et this.canvasHeight = ", this.canvasHeight);
 		}
 		this.pos = {
-			x: x + this.speed.x,
-			y: y + this.speed.y
+			x: x ? x + this.speed.x : undefined,
+			y: y ? y + this.speed.y : undefined
 		}
 	}
 
 	draw(): void {
-		if (!this.context || !this.pos || !this.dimensions)
+		if (!this.context || !this.pos?.x || !this.pos?.y || !this.dimensions)
 			return ;
 		super.draw();
 		this.context.arc(
