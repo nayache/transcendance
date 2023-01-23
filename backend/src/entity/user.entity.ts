@@ -1,14 +1,22 @@
-import { LoggerOptions } from "typeorm"
-import { TokenFtEntity } from "./tokenFt.entitiy"
+//import { ExistingProvider } from "@nestjs/common";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
+@Entity()
 export class UserEntity {
 
-    constructor(login: string, tokenft: TokenFtEntity) {
+    constructor(login: string) {
         this.login = login;
-        this.tokenft = tokenft;
     }
 
+    @PrimaryGeneratedColumn("uuid")
+    id: string
+    
+    @Column()
     login: string
+    
+    @Column({ default: null })
     pseudo: string
-    tokenft: TokenFtEntity
+
+    @Column({type: "bool", default: false})
+    twoFa: boolean;
 }
