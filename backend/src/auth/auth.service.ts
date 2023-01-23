@@ -58,6 +58,10 @@ export class AuthService {
         return ((Date.now() / 1000) + +process.env.DELAI >= expire);
     }
 
+    getExpire(expire: number): number {
+       return ((Date.now() / 1000) + expire);
+    }
+    
     async checkToken(access_token: string) : Promise<boolean> {
         const res = await fetch('https://api.intra.42.fr/v2/me', { headers: { 'Authorization': `Bearer ${access_token}` } });
         return (res.status == 200)
@@ -70,9 +74,10 @@ export class AuthService {
         const data = await res.json();
         return data.login;
     }
-    
-    generateJwt(user: UserEntity) : string {
-        const payload = { user };
+
+    generateJwt(id: string, token: TokenFtEntity) : string {
+        const expire = this.getExpire(token.expires_in);
+        const payload = { id, token, expire };
         return this.jwtService.sign(payload);
     }
 
