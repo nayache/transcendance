@@ -14,28 +14,27 @@ const Register: React.FC = () => {
 	 * avec "code" en parametre de l'url ("/register?code=ssfejjg") (cf window.location.href),
 	 * "code" va valoir la valeur en parametre (en l'occurence 'ssfejjg')
 	 */
-	const getToken = async () => {
+	const redirectDependingOnToken = async (location: string = '/') => {
 		console.log('code = ', code)
 		if (code)
 		{
 			try {
-				//const res: Response = await fetch(domain + '/auth?code=' + code);
-				const res: Response = await fetch('http://localhost:3042/auth?code=' + code);
+				const res: Response = await fetch(domain + '/auth?code=' + code);
 				const data = await res.json();
 				localStorage.setItem('token', JSON.stringify(data));
-				window.location.href = '/'
+				window.location.href = location;
 			} catch (e) {
 				console.log("e = ", e); // dire de reessayer car probleme dans le fetch 
 			}
 		}
 	}
 
-	getToken();
-
 	const onClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
 		event.preventDefault();
 		window.location.href = api42Url;
 	}
+
+	redirectDependingOnToken('/');
 
 	return (
 		<React.Fragment>

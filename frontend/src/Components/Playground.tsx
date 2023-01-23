@@ -1,10 +1,29 @@
 import React, { useState, useRef, useEffect } from "react"
 import { Container } from '../Styles/Playground.style'
 import Canvas from './Canvas'
-import { drawBgnd, clearBgnd } from "../Functions/Draw_utils.func"
+import { drawBgnd, clearBgnd, setUpGame } from "../Functions/Draw_utils.func"
 import Paddle from "./Paddle.class"
+import Ball from "./Ball.class"
+import Referee from "./Referee.class"
 
 interface Props {
+}
+
+
+export class Player { // temporary
+
+	constructor (
+		public isReadyToPlay: boolean = false
+	) {
+
+	}
+}
+
+export enum GameState {
+	Stop,
+	Start,
+	Pause,
+	Reset,
 }
 
 const Playground = () => {
@@ -14,17 +33,29 @@ const Playground = () => {
 	const [playgroundHeight, setPlaygroundHeight] = useState<number>(0);
 	// const player: Player;
 	const paddle: Paddle = new Paddle(
+		1,
 		110,
-		{ x: 10, y: 10 },
 		'blue'
 	);
 	const paddle2: Paddle = new Paddle(
+		2,
 		110,
-		{ x: 100, y: 100 },
 		'red'
 	);
+	const player1: Player = new Player(
+		false
+	);
+	const player2: Player = new Player(
+		false
+	);
+	const ball: Ball = new Ball(
+		10,
+		'grey'
+	)
+	const ref: Referee = new Referee();
+	let gamestate = GameState.Reset;
 	let reqAnim: number;
-	
+
 	useEffect(() => {
 		const playground = playgroundRef.current;
 		if (!playground)
@@ -42,31 +73,31 @@ const Playground = () => {
 		return (false);
 	}
 
-	const pauseDraw = (context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number) => {
-		clearBgnd(context, canvasWidth, canvasHeight);
-		drawBgnd(context, canvasWidth, canvasHeight);
-	}
-
-	const gameLoop = (context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number) => {
-		clearBgnd(context, canvasWidth, canvasHeight);
-		drawBgnd(context, canvasWidth, canvasHeight);
-		if (paddle) {
-			paddle.setUp(context, canvasWidth, canvasHeight);
-			paddle.draw();
+	const gameLoop = (context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, canvas: HTMLCanvasElement) => {
+		if (gamestate == GameState.Reset)
+		// setUpGame({ player1, player2, paddle, paddle2, ball, context, canvas, canvasWidth, canvasHeight, gamestate })
+		{
+			paddle.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
+			paddle2.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
+			ball.setUp(context, canvasWidth, canvasHeight, undefined, { x: -2, y: 2 });
+			gamestate = GameState.Start;
 		}
-		if (paddle2 && paddle2.dimensions) {
-			const width: number = paddle2.dimensions.width
-
-			paddle2.setUp(context, canvasWidth, canvasHeight);
-			paddle2.pos = { x: canvasWidth - width - 10, y: 10 };
-			paddle2.draw();
+		if (gamestate == GameState.Start)
+		{
+			clearBgnd(context, canvasWidth, canvasHeight);
+			drawBgnd(context, canvasWidth, canvasHeight);
+			paddle.draw(canvas.getBoundingClientRect().top);
+			paddle2.draw(canvas.getBoundingClientRect().top);
+			ball.draw();
+			ball.updatePos([paddle, paddle2]);
 		}
-		// reqAnim = requestAnimationFrame(() => gameLoop(context, canvasWidth, canvasHeight))
+		if (ref.isFinished([paddle, paddle2], ball))
+		{
+			console.log("it's finished")
+			gamestate = GameState.Stop;
+		}
+		reqAnim = requestAnimationFrame(() => gameLoop(context, canvasWidth, canvasHeight, canvas))
 		// console.log('reqAnim = ', reqAnim);
-	}
-
-	const stopGame = (reqAnim: number) => {
-		cancelAnimationFrame(reqAnim);
 	}
 
 	// console.log('isCanvasReady ? ', isCanvasReady([playgroundWidth, playgroundHeight]))
