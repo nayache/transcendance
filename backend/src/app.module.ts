@@ -9,7 +9,9 @@ import { UserEntity } from './entity/user.entity';
 import { GoogleStrategy } from './auth/google.strategy';
 import { TokenFtVerify } from './middlewares/token42.middleware';
 import { JwtDecoding } from './middlewares/jwt.middleware';
-import { GoogleAuth } from './middlewares/googleAuth.middleware';
+import { TwoFaAuth } from './middlewares/twofaAuth.middleware';
+import { TwoFactorAuthController } from './two-factor-auth/two-factor-auth.controller';
+import { TwoFactorAuthService } from './two-factor-auth/two-factor-auth.service';
 
 @Module({
   imports: [AuthModule, UserModule, ConfigModule.forRoot(),
@@ -23,14 +25,14 @@ import { GoogleAuth } from './middlewares/googleAuth.middleware';
     entities: [UserEntity],
     synchronize: true,
   })],
-  controllers: [AppController],
-  providers: [AppService, GoogleStrategy],
+  controllers: [AppController, TwoFactorAuthController, TwoFactorAuthController],
+  providers: [AppService, GoogleStrategy, TwoFactorAuthService],
 })
 //export class AppModule {}
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(JwtDecoding).exclude('/auth').forRoutes('/')
     consumer.apply(TokenFtVerify).exclude('/auth').forRoutes('/')
-    consumer.apply(GoogleAuth).exclude('/auth').forRoutes('/')
+    consumer.apply(TwoFaAuth).exclude('/auth').forRoutes('/')
   }  
 }
