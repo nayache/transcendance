@@ -85,10 +85,6 @@ abstract class CanvasObject {
 	protected get oldPos() {
 		return this._oldPos;
 	}
-
-	private set oldPos(oldPos: Point | undefined) {
-		this._oldPos = oldPos;
-	}
 	
 	public get dimensions() {
 		return this._dimensions;

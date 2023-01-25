@@ -18,14 +18,18 @@ const Title = styled.p`
 	font-size: 3rem;
 `
 
-const Baseline: React.FC = () => {
+interface Props {
+	title: string
+}
 
-	const [title, setTitle] = useState('Pong')
+const Baseline: React.FC<Props> = (props: Props) => {
+
+	// const [title, setTitle] = useState('Pong')
 
 	const getTitle = () => {
 		return (
 			<TitleDiv>
-				<Title>{title}</Title>
+				<Title>{props.title}</Title>
 			</TitleDiv>
 		)
 	}

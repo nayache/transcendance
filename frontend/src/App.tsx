@@ -5,6 +5,9 @@ import Register from './Components/Register'
 import GamePage from './Components/GamePage'
 import ErrorPage from './Components/ErrorPage';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import User from './Components/User';
+import { Provider } from 'react-redux';
+import store from './Redux/store';
 
 const router = createBrowserRouter([
 	{
@@ -29,7 +32,9 @@ const App: React.FC = () => {
 
 	return (
 		<React.Fragment>
-			<RouterProvider router={router} />
+			<Provider store={store}>
+				<RouterProvider router={router} />
+			</Provider>
 		</React.Fragment>
 	)
 }

@@ -1,6 +1,6 @@
 import React from "react";
 
-type FunctionDOMElement = (element: JSX.Element) => JSX.Element;
+type FunctionDOMElement = (element: JSX.Element) => Promise<JSX.Element>;
 
 const redirect_to = (location: string) => {
 	window.location.href = location
@@ -9,20 +9,19 @@ const redirect_to = (location: string) => {
 	)
 }
 
-const verify_token = (token: string) => { // on pourrait en faire une promesse en vrai mais bon...
-	// appels dans le back...
+const verify_token = async (token: string) => { // on pourrait en faire une promesse en vrai mais bon...
+	// await fetch()
 	return true;
 }
 
-export const getPrivateDOMElements: FunctionDOMElement = () => {
-	const token: string | null = localStorage.getItem('token');
-	if (!token)
-		return redirect_to('/register');
-	else {
-		if (verify_token(token))
-			return (
-				<div></div>
-			)
-		}
-	return redirect_to('/register')
-}
+// peut etre utilisé redux pour faire un genre de middleware
+// export const getPrivateDOMElements: FunctionDOMElement = (element: JSX.Element) => {
+// 	const token: string | null = localStorage.getItem('token');
+// 	if (!token)
+// 		return redirect_to('/register');
+// 	else {
+// 		if (verify_token(token))
+// 			return element;
+// 		}
+// 	return redirect_to('/register')
+// }

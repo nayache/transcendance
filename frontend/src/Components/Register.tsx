@@ -19,10 +19,12 @@ const Register: React.FC = () => {
 		if (code)
 		{
 			try {
-				const res: Response = await fetch(domain + '/auth?code=' + code);
+				const res: Response = await fetch(domain + '/auth?code=' + code + '1');
+				console.log("code = ", code);
+				console.log("res = ", res);
 				const data = await res.json();
-				localStorage.setItem('token', JSON.stringify(data));
-				window.location.href = location;
+				localStorage.setItem('token', data.token);
+				// window.location.href = location;
 			} catch (e) {
 				console.log("e = ", e); // dire de reessayer car probleme dans le fetch 
 			}

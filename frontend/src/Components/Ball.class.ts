@@ -27,7 +27,7 @@ class Ball extends CanvasObject {
 		return (this.dimensions.width);
 	}
 
-	private set radius(radius: number) {
+	/* private */ public set radius(radius: number) {
 		this.dimensions.width = radius;
 		this.dimensions.height = radius;
 	}
