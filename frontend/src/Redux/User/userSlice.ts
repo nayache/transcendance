@@ -1,29 +1,63 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { IUser } from "../../Interface/User";
+import { RootState } from "../store";
 
-interface UserProps {
+interface Props {
 	loading: boolean,
-	data?: any,
+	user?: IUser,
 	error?: string,
 }
 
 interface ThunkProps {
-	url: string,
 	token?: string,
-	method?: string,
-	body?: any
+	body?: BodyInit | null
 }
 
-const initialState: UserProps = {
+const initialState: Props = {
 	loading: false
 }
 
-export const fetchApi = createAsyncThunk('user/fetchApi',
-async ({url, token, method, body}: ThunkProps) => {
+
+const baseOfUrl = 'http://localhost:3042/user'
+
+
+export const getUserPseudo = createAsyncThunk('user/getPseudo',
+async ({token, body}: ThunkProps, { getState }) => {
+	const url: string = baseOfUrl + '/pseudo';
 	let headers: HeadersInit | undefined;
+	
 	if (token)
 		headers = {
-			Authorization: `Bearer ${token}`
+			Authorization: `Bearer ${token}`,
+			'Content-type': 'application/json; charset=UTF-8'
+		}
+	else
+		headers = undefined;
+	let init: RequestInit | undefined = {
+		headers
+	};
+	const res = await fetch(url, init)
+	console.log("res = ", res);
+	if (!res.ok)
+		throw new Error(res.status.toString())
+	const { pseudo } = await res.json()
+	return {
+		...(<RootState>getState()).user,
+		pseudo
+	}
+})
+
+export const patchUserPseudo = createAsyncThunk('user/patchPseudo',
+async ({token, body}: ThunkProps, { getState }) => {
+	const urlq = baseOfUrl + '/pseudo'
+	const url = 'https://jsonplaceholder.typicode.com/posts/1'
+	const method: string = 'PUT'
+	let headers: HeadersInit | undefined;
+
+	if (token)
+		headers = {
+			Authorization: `Bearer ${token}`,
+			'Content-type': 'application/json; charset=UTF-8'
 		}
 	else
 		headers = undefined;
@@ -34,7 +68,11 @@ async ({url, token, method, body}: ThunkProps) => {
 	console.log("res = ", res);
 	if (!res.ok)
 		throw new Error(res.status.toString())
-	return await res.json()
+	const { pseudo } = await res.json()
+	return {
+		...(<RootState>getState()).user,
+		pseudo
+	}
 })
 
 const userSlice = createSlice({
@@ -42,17 +80,29 @@ const userSlice = createSlice({
 	initialState,
 	reducers: {},
 	extraReducers(builder) {
-		builder.addCase(fetchApi.pending, (state, action) => {
+		builder.addCase(getUserPseudo.pending, (state, action) => {
 			state.loading = true;
 		})
-		builder.addCase(fetchApi.fulfilled, (state, action) => {
+		builder.addCase(getUserPseudo.fulfilled, (state, action) => {
 			state.loading = false;
-			state.data = action.payload
+			state.user = action.payload
 		})
-		builder.addCase(fetchApi.rejected, (state, action) => {
+		builder.addCase(getUserPseudo.rejected, (state, action) => {
 			state.loading = false;
 			state.error = action.error.message
 		})
+		builder.addCase(patchUserPseudo.pending, (state, action) => {
+			state.loading = true;
+		})
+		builder.addCase(patchUserPseudo.fulfilled, (state, action) => {
+			state.loading = false;
+			state.user = action.payload
+		})
+		builder.addCase(patchUserPseudo.rejected, (state, action) => {
+			state.loading = false;
+			state.error = action.error.message
+		})
+		
 	},
 })
 const userReducer = userSlice.reducer;

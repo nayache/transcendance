@@ -1,3 +1,3 @@
 export interface IUser {
-	name: string
+	pseudo: string
 }

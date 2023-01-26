@@ -4,26 +4,33 @@ import Baseline from "./Baseline";
 import Ball from "./Ball.class";
 import { useDispatch, useSelector } from "react-redux";
 import { cakeActions } from "../Redux/Cake/CakeSlice";
-import { fetchApi } from "../Redux/User/userSlice";
+import { getUserPseudo, patchUserPseudo } from "../Redux/User/userSlice";
 import { AppDispatch, RootState } from "../Redux/store";
 
 const Home = () => {
 
 	// const urlGetPseudo = "./friends.json"
-	const urlGetUsers = "https://jsonplaceholader.typicode.com/users"
 	const dispatch = useDispatch<AppDispatch>()
 	const numOfCakes = useSelector((state: RootState) => state.cake.numOfCakes)
 	const user = useSelector((state: RootState) => state.user);
 
 	useEffect(() => {
-		console.log("home dans didMount")
 		const token = localStorage.token;
-		dispatch(fetchApi({ url: urlGetUsers }));
+		const body = JSON.stringify({
+			title: 'foo',
+			body: 'bar',
+			userId: 1,
+		})
+
+		console.log("home dans didMount")
+		dispatch(patchUserPseudo({token}));
 	}, [])
 
 	useEffect(() => {
 		console.log("user = ", user);
 	}, [user])
+
+
 
 	return (
 		<React.Fragment>
