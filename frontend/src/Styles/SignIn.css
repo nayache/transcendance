@@ -1,0 +1,25 @@
+.signIn {
+    width: 1200px;
+    margin: 0 auto;
+}
+
+.signIn h2 {
+    text-align: center;
+}
+
+.signIn form {
+    text-align: center;
+}
+
+.signIn img {
+    width:120px;
+    text-align: center
+}
+
+.signIn p {
+    text-align: center
+}
+
+.signIn input {
+    text-align: center
+} 

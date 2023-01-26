@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import Background from './Background'
 import Baseline from "./Baseline";
-import Ball from "./Ball.class";
+import SignIn from "./SignIn";
 import { useDispatch, useSelector } from "react-redux";
 import { cakeActions } from "../Redux/Cake/CakeSlice";
 import { getUserPseudo, patchUserPseudo } from "../Redux/User/userSlice";
@@ -13,6 +13,7 @@ const Home = () => {
 	const dispatch = useDispatch<AppDispatch>()
 	const numOfCakes = useSelector((state: RootState) => state.cake.numOfCakes)
 	const user = useSelector((state: RootState) => state.user);
+
 
 	useEffect(() => {
 		const token = localStorage.token;
@@ -29,7 +30,6 @@ const Home = () => {
 	useEffect(() => {
 		console.log("user = ", user);
 	}, [user])
-
 
 
 	return (
