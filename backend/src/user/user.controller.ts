@@ -1,4 +1,4 @@
-import { Controller, Get, HttpException, HttpStatus, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Patch, Post, Query } from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
 import { UserEntity } from 'src/entity/user.entity';
 import { UserService } from './user.service';
@@ -16,8 +16,8 @@ export class UserController {
         return { pseudo: pseudo }
     }
 
-    @Post('pseudo')
-    async savePseudo(@User() userId: string, @Query('pseudo') pseudo: string) {
+    @Patch('pseudo')
+    async savePseudo(@User() userId: string, @Body('pseudo') pseudo: string) {
         console.log('userId received: ', userId, 'pseudo in param: ', pseudo) 
         
         if (!this.userService.isValidPseudo(pseudo))
@@ -26,11 +26,11 @@ export class UserController {
         if (!await this.userService.addPseudo(userId, pseudo))
             throw new HttpException('pseudo already used by other user', HttpStatus.CONFLICT)
 
-        return { statuscode: "201", pseudo: pseudo }
+        return { statuscode: "200", pseudo: pseudo }
     }
 
     @Get()
-    async getAll(@User() user: UserEntity) {
+    async getAll() : Promise<UserEntity[]> {
         return await this.userService.getUsers();
     }
 }

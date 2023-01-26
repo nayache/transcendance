@@ -2,14 +2,14 @@ import { Injectable, NestMiddleware } from "@nestjs/common";
 import { Request, Response } from "express";
 
 @Injectable()
-export class GoogleAuth implements NestMiddleware {
+export class TwoFaAuth implements NestMiddleware {
     async use(req: Request, res: Response, next: () => void) {
-        console.log('=======in google auth MIDDLEWARE========')
-        const info = req.body;
+        const info = res.locals.info;
         if (info.twoFa == true) {
-           // IMPLEMENTS GOOGLE AUTH 
+            console.log('TWOFA IS ENABLED')
         }
         req.user = info.id;
+        console.log('====Out 2fa MIDDLEWARE====')
         next();
     }
 }
