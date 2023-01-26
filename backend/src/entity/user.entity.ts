@@ -17,6 +17,9 @@ export class UserEntity {
     @Column({ default: null })
     pseudo: string
 
-    @Column({type: "bool", default: false})
-    twoFa: boolean;
+    @Column({ default: null })
+    TwoFaSecret: string
+
+    @Column({ type: "bool", default: false })
+    twoFaEnabled: boolean;
 }

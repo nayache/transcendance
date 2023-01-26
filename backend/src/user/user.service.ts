@@ -21,6 +21,7 @@ export class UserService {
     }
 
     isValidPseudo(pseudo: string) : boolean {
+        console.log('in validpseudo()',pseudo)
         return (pseudo.length > 3 && pseudo.length < 25);
     }
 
@@ -37,7 +38,16 @@ export class UserService {
     }
 
     async updateTwoFa(id: string, value: boolean) {
-        return await this.userRepository.update(id, {twoFa: value});
+        return await this.userRepository.update(id, {twoFaEnabled: value});
+    }
+
+    async updateTwoFaSecret(id: string, value: string) {
+        return await this.userRepository.update(id, { TwoFaSecret: value });
+    }
+
+    async getTwoFaSecret(id: string) {
+        const user = await this.findById(id);
+        return user.TwoFaSecret;
     }
 
     async getPseudoById(id: string) : Promise<string> {
