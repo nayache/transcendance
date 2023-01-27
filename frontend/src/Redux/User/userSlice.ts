@@ -2,9 +2,10 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { IUser } from "../../Interface/User";
 import { RootState } from "../store";
 
-interface Props {
+export interface UserProps {
 	loading: boolean,
 	user?: IUser,
+	redirectTo?: string,
 	error?: string,
 }
 
@@ -13,16 +14,19 @@ interface ThunkProps {
 	body?: BodyInit | null
 }
 
-const initialState: Props = {
+const initialState: UserProps = {
 	loading: false
 }
 
 
-const baseOfUrl = 'http://localhost:3042/user'
+const baseOfUrl: string = 'http://localhost:3042/user'
+const redirectToRegister: string = '/register';
+
+
 
 
 export const getUserPseudo = createAsyncThunk('user/getPseudo',
-async ({token, body}: ThunkProps, { getState }) => {
+async ({token, body}: ThunkProps, { dispatch, getState }) => {
 	const url: string = baseOfUrl + '/pseudo';
 	let headers: HeadersInit | undefined;
 	
@@ -38,9 +42,11 @@ async ({token, body}: ThunkProps, { getState }) => {
 	};
 	const res = await fetch(url, init)
 	console.log("res = ", res);
+	//token update
 	if (!res.ok)
 		throw new Error(res.status.toString())
-	const { pseudo } = await res.json()
+	const data = await res.json();
+	const { pseudo } = data;
 	return {
 		...(<RootState>getState()).user,
 		pseudo
@@ -48,10 +54,9 @@ async ({token, body}: ThunkProps, { getState }) => {
 })
 
 export const patchUserPseudo = createAsyncThunk('user/patchPseudo',
-async ({token, body}: ThunkProps, { getState }) => {
-	const urlq = baseOfUrl + '/pseudo'
-	const url = 'https://jsonplaceholder.typicode.com/posts/1'
-	const method: string = 'PUT'
+async ({token, body}: ThunkProps, { dispatch, getState }) => {
+	const url = baseOfUrl + '/pseudo'
+	const method: string = 'PATCH'
 	let headers: HeadersInit | undefined;
 
 	if (token)
@@ -65,10 +70,12 @@ async ({token, body}: ThunkProps, { getState }) => {
 		method, headers, body
 	};
 	const res = await fetch(url, init)
-	console.log("res = ", res);
+	const data = await res.json()
+	if ("token" in data && data.token)
+		dispatch(userSlice.actions.enableRedirectToRegister())
 	if (!res.ok)
 		throw new Error(res.status.toString())
-	const { pseudo } = await res.json()
+	const { pseudo } = data;
 	return {
 		...(<RootState>getState()).user,
 		pseudo
@@ -78,7 +85,14 @@ async ({token, body}: ThunkProps, { getState }) => {
 const userSlice = createSlice({
 	name: 'user',
 	initialState,
-	reducers: {},
+	reducers: {
+		enableRedirectToRegister: (state) => {
+			state.redirectTo = redirectToRegister
+		},
+		disableRedirectToRegister: (state) => {
+			state.redirectTo = undefined;
+		}
+	},
 	extraReducers(builder) {
 		builder.addCase(getUserPseudo.pending, (state, action) => {
 			state.loading = true;
@@ -107,5 +121,5 @@ const userSlice = createSlice({
 })
 const userReducer = userSlice.reducer;
 
-export const userActions = userSlice.actions;
+export const { disableRedirectToRegister } = userSlice.actions;
 export default userReducer;

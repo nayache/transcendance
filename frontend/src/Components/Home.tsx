@@ -4,12 +4,11 @@ import Baseline from "./Baseline";
 import SignIn from "./SignIn";
 import { useDispatch, useSelector } from "react-redux";
 import { cakeActions } from "../Redux/Cake/CakeSlice";
-import { getUserPseudo, patchUserPseudo } from "../Redux/User/userSlice";
+import userReducer, { getUserPseudo, patchUserPseudo } from "../Redux/User/userSlice";
 import { AppDispatch, RootState } from "../Redux/store";
 
 const Home = () => {
 
-	// const urlGetPseudo = "./friends.json"
 	const dispatch = useDispatch<AppDispatch>()
 	const numOfCakes = useSelector((state: RootState) => state.cake.numOfCakes)
 	const user = useSelector((state: RootState) => state.user);
@@ -18,17 +17,15 @@ const Home = () => {
 	useEffect(() => {
 		const token = localStorage.token;
 		const body = JSON.stringify({
-			title: 'foo',
-			body: 'bar',
-			userId: 1,
+			pseudo: 'alalongue170'
 		})
-
 		console.log("home dans didMount")
-		dispatch(patchUserPseudo({token}));
+		dispatch(patchUserPseudo({token, body}));
 	}, [])
 
 	useEffect(() => {
-		console.log("user = ", user);
+		if (user.redirectTo)
+			window.location.href = user.redirectTo
 	}, [user])
 
 
