@@ -1,16 +1,16 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import ClientApi from "../../Components/ClientApi.class";
 import { IUser } from "../../Interface/User";
-import { RootState } from "../store";
+import { AppDispatch, RootState } from "../store";
 
 export interface UserProps {
 	loading: boolean,
 	user?: IUser,
-	redirectTo?: string,
+	redirectToRegister?: boolean,
 	error?: string,
 }
 
 interface ThunkProps {
-	token?: string,
 	body?: BodyInit | null
 }
 
@@ -26,26 +26,10 @@ const redirectToRegister: string = '/register';
 
 
 export const getUserPseudo = createAsyncThunk('user/getPseudo',
-async ({token, body}: ThunkProps, { dispatch, getState }) => {
+async (undefined, { getState }) => {
 	const url: string = baseOfUrl + '/pseudo';
-	let headers: HeadersInit | undefined;
-	
-	if (token)
-		headers = {
-			Authorization: `Bearer ${token}`,
-			'Content-type': 'application/json; charset=UTF-8'
-		}
-	else
-		headers = undefined;
-	let init: RequestInit | undefined = {
-		headers
-	};
-	const res = await fetch(url, init)
-	console.log("res = ", res);
-	//token update
-	if (!res.ok)
-		throw new Error(res.status.toString())
-	const data = await res.json();
+
+	const data = await ClientApi.get(url);
 	const { pseudo } = data;
 	return {
 		...(<RootState>getState()).user,
@@ -54,28 +38,10 @@ async ({token, body}: ThunkProps, { dispatch, getState }) => {
 })
 
 export const patchUserPseudo = createAsyncThunk('user/patchPseudo',
-async ({token, body}: ThunkProps, { dispatch, getState }) => {
+async ({body}: ThunkProps, { getState }) => {
 	const url = baseOfUrl + '/pseudo'
-	const method: string = 'PATCH'
-	let headers: HeadersInit | undefined;
-
-	if (token)
-		headers = {
-			Authorization: `Bearer ${token}`,
-			'Content-type': 'application/json; charset=UTF-8'
-		}
-	else
-		headers = undefined;
-	let init: RequestInit | undefined = {
-		method, headers, body
-	};
-	const res = await fetch(url, init)
-	const data = await res.json()
-	if ("token" in data && data.token)
-		dispatch(userSlice.actions.enableRedirectToRegister())
-	if (!res.ok)
-		throw new Error(res.status.toString())
-	const { pseudo } = data;
+	
+	const { pseudo } = await ClientApi.patch(url, body);
 	return {
 		...(<RootState>getState()).user,
 		pseudo
@@ -87,10 +53,10 @@ const userSlice = createSlice({
 	initialState,
 	reducers: {
 		enableRedirectToRegister: (state) => {
-			state.redirectTo = redirectToRegister
+			state.redirectToRegister = true;
 		},
 		disableRedirectToRegister: (state) => {
-			state.redirectTo = undefined;
+			state.redirectToRegister = false;
 		}
 	},
 	extraReducers(builder) {
@@ -121,5 +87,5 @@ const userSlice = createSlice({
 })
 const userReducer = userSlice.reducer;
 
-export const { disableRedirectToRegister } = userSlice.actions;
+export const { enableRedirectToRegister, disableRedirectToRegister } = userSlice.actions;
 export default userReducer;

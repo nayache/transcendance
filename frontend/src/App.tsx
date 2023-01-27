@@ -7,7 +7,9 @@ import ErrorPage from './Components/ErrorPage';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import User from './Components/User';
 import { Provider } from 'react-redux';
-import store from './Redux/store';
+import store, { AppDispatch, RootState } from './Redux/store';
+import ClientApi from './Components/ClientApi.class';
+import { useDispatch, useSelector } from 'react-redux';
 
 const router = createBrowserRouter([
 	{
@@ -31,10 +33,20 @@ const router = createBrowserRouter([
 const App: React.FC = () => {
 
 	return (
+		<Provider store={store}>
+			<AppChild/>
+		</Provider>
+	)
+}
+
+const AppChild: React.FC = () => {
+
+	ClientApi.dispatch = useDispatch<AppDispatch>();
+	ClientApi.reduxUser = useSelector((state: RootState) => state.user);
+
+	return (
 		<React.Fragment>
-			<Provider store={store}>
-				<RouterProvider router={router} />
-			</Provider>
+			<RouterProvider router={router} />
 		</React.Fragment>
 	)
 }

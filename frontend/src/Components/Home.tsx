@@ -6,13 +6,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { cakeActions } from "../Redux/Cake/CakeSlice";
 import userReducer, { getUserPseudo, patchUserPseudo } from "../Redux/User/userSlice";
 import { AppDispatch, RootState } from "../Redux/store";
+import ClientApi from "./ClientApi.class";
 
 const Home = () => {
 
-	const dispatch = useDispatch<AppDispatch>()
 	const numOfCakes = useSelector((state: RootState) => state.cake.numOfCakes)
-	const user = useSelector((state: RootState) => state.user);
-
 
 	useEffect(() => {
 		const token = localStorage.token;
@@ -20,13 +18,13 @@ const Home = () => {
 			pseudo: 'alalongue170'
 		})
 		console.log("home dans didMount")
-		dispatch(patchUserPseudo({token, body}));
+		ClientApi.dispatch(patchUserPseudo({body}));
 	}, [])
 
 	useEffect(() => {
-		if (user.redirectTo)
-			window.location.href = user.redirectTo
-	}, [user])
+		if (ClientApi.reduxUser.redirectToRegister)
+			ClientApi.redirect = '/register'
+	}, [ClientApi.reduxUser])
 
 
 	return (
@@ -34,10 +32,10 @@ const Home = () => {
 			<Background />
 			<Baseline title={"Ping pong"}/>
 			<p>Ceci est un test : { numOfCakes }</p>
-			<button onClick={() => dispatch(cakeActions.ordered(2))}></button>
-			{user.loading && <p>Loading...</p>}
-			{!user.loading && user.error && <h2>{user.error}</h2>}
-			{/* {!user.loading && user.data && <h2>{user.data}</h2>} */}
+			<button onClick={() => ClientApi.dispatch(cakeActions.ordered(2))}></button>
+			{/* {ClientApi.reduxUser.loading && <p>Loading...</p>}
+			{!ClientApi.reduxUser.loading && ClientApi.reduxUser.error && <h2>{ClientApi.reduxUser.error}</h2>} */}
+			{/* {!ClientApi.reduxUser.loading && ClientApi.reduxUser.data && <h2>{ClientApi.reduxUser.data}</h2>} */}
 		</React.Fragment>
 	)
 }
