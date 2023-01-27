@@ -8,9 +8,6 @@ export class TokenFtVerify implements NestMiddleware {
   constructor(private readonly authService: AuthService) {}
     
     async use(req: Request, res: Response, next: NextFunction) {
-        console.log("ICI")
-        console.log("===== = = = = = = >",res.locals.info)
-        console.log("ICI")
         const info = res.locals.info;
        // console.log('decoded: ', decoded);
         if (this.authService.tokenIsExpire(info.decoded.expire)) {

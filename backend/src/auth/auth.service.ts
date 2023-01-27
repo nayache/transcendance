@@ -51,10 +51,6 @@ export class AuthService {
     }
 
     tokenIsExpiring(expire: number) : boolean {
-       /* console.log('date now    : ', Date.now() / 1000)
-        console.log('delai       : ', +process.env.DELAI)
-        console.log('date + delai: ', Date.now() / 1000 + +process.env.DELAI)
-        console.log('expire      : ', expire)*/
         return ((Date.now() / 1000) + +process.env.DELAI >= expire);
     }
 
