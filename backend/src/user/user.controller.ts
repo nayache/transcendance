@@ -16,7 +16,7 @@ export class UserController {
 		console.log('userId:',userId)
         const pseudo = await this.userService.getPseudoById(userId)
         if (!pseudo)
-            throw new HttpException('pseudo not found', HttpStatus.BAD_REQUEST)
+            throw new HttpException('pseudo not found', HttpStatus.NOT_FOUND)
         
         return { pseudo: pseudo }
     }
