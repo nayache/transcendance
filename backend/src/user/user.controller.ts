@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
 import { UserEntity } from 'src/entity/user.entity';
 import { UserService } from './user.service';
@@ -29,8 +29,21 @@ export class UserController {
         return { statuscode: "200", pseudo: pseudo }
     }
 
-    @Get()
+    //for test
+    @Get('all')
     async getAll() : Promise<UserEntity[]> {
-        return await this.userService.getUsers();
+        return this.userService.getUsers();
+    }
+
+    //for test
+    @Post('add')
+    async addUser(@Query('login') login: string) {
+        return this.userService.saveUser(login)
+    }
+
+    //for test
+    @Delete('rm')
+    async removeUser(@Query('login') login: string) {
+        return this.userService.removeUser(login);
     }
 }

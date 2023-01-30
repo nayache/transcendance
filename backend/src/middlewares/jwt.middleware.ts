@@ -20,12 +20,12 @@ export class JwtDecoding implements NestMiddleware {
       }
       const user = await this.userService.findById(decoded.id);
       if (!user) {
-        throw new HttpException({ message: 'User not found', token: null }, HttpStatus.UNAUTHORIZED)
+        throw new HttpException({ message: 'User not found', token: null }, HttpStatus.FORBIDDEN)
       }
       res.locals.info = { decoded: decoded, twoFa: user.twoFaEnabled };
       next();
     } else {
-        throw new HttpException('Error header authorization', HttpStatus.BAD_REQUEST)
+        throw new HttpException('Error header authorization', HttpStatus.UNAUTHORIZED)
     }
   }
 }

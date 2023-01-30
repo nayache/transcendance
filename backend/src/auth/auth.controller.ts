@@ -28,6 +28,9 @@ constructor(private readonly authService: AuthService,
         return { "token" : jwt }
     }
 
+    @Get('/verify')
+    verify() {}
+
     @Post('/2fa')
     async setTwoFa(@User() userId: string, @Query('twofa') value: boolean): Promise<any> {
         try {
