@@ -6,6 +6,7 @@ import userReducer, { getUserPseudo, patchUserPseudo, UserProps, verifyToken } f
 import ClientApi from "./ClientApi.class";
 import { useSelector } from "react-redux";
 import { RootState } from '../redux/store';
+import Register from "./Register";
 
 const Home = () => {
 
@@ -28,13 +29,19 @@ const Home = () => {
 	}, [ reduxUser.user?.pseudo ])
 
 
+	const getPage = () => {
+		return (
+			<React.Fragment>
+				<Background />
+				<Baseline title={"Ping pong"}/>
+			</React.Fragment>
+		)
+	}
+
 	return (
 		<React.Fragment>
-			<Background />
-			<Baseline title={"Ping pong"}/>
-			{/* {ClientApi.reduxUser.loading && <p>Loading...</p>}
-			{!ClientApi.reduxUser.loading && ClientApi.reduxUser.error && <h2>{ClientApi.reduxUser.error}</h2>} */}
-			{/* {!ClientApi.reduxUser.loading && ClientApi.reduxUser.data && <h2>{ClientApi.reduxUser.data}</h2>} */}
+			{ reduxUser.redirectToRegister && <p>Redirect to intra 42 login...</p> }
+			{ !reduxUser.redirectToRegister && getPage() }
 		</React.Fragment>
 	)
 }

@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import ClientApi from './ClientApi.class';
 import { AppDispatch, RootState } from '../redux/store';
 import { useDispatch, useSelector } from "react-redux";
+import "../styles/Register.css"
+import logo42 from "../img/42.jpg"
 
 const Register: React.FC = () => {
 	
@@ -32,11 +34,20 @@ const Register: React.FC = () => {
 		event.preventDefault();
 		window.location.href = api42Url;
 	}
-
+	
 	return (
-		<React.Fragment>
-			<button onClick={onClick}>Clique ici pour se log mgl</button>
-		</React.Fragment>
+		<div className='Register'>
+			<button onClick={onClick}> 
+				<img src={logo42} alt="42"/>
+			</button>
+			<div className ="field">
+			<div className ="net"></div>
+			<div className="ping"></div>
+			<div className="pong"></div>
+			<div className="ball"></div>
+			</div>
+		</div>
 	)
 }
+
 export default Register;

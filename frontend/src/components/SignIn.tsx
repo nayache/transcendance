@@ -6,6 +6,7 @@ import ClientApi from './ClientApi.class'
 import { getUserPseudo, UserProps, verifyToken } from '../redux/user/userSlice'
 import { useSelector } from "react-redux";
 import { RootState } from '../redux/store'
+import Home from './Home'
 
 const SignIn = () => {
 
@@ -43,28 +44,37 @@ const SignIn = () => {
             setAvatar(URL.createObjectURL(event.target.files[0]));
     }
     
+    const getPage = () => {
+        return (
+            <div className="signIn">
+                <form onSubmit={handleSubmit}> 
+                    <h3>Choose your name</h3>
+                    <input value={userName} type="text" 
+                    id="input1"
+                    placeholder="Enter your name..."
+                    onChange={handleChangeName}/>
+                    <h3>Choose your avatar</h3>
+                    <label htmlFor="fileChange">
+                        <img src={avatar} alt="Avatar"/>
+                        <input type="file" id="fileChange" hidden 
+                        onChange={handleChangeAvatar}/>
+                    </label>
+                    <br></br>
+                    <input type="checkbox" id="input2" />Activate two-factor authentication
+                    <br></br>
+                    <button type="submit">
+                        LOGIN
+                    </button>
+                </form>
+            </div>
+        )
+    }
+    
     return (
-        <div className="signIn">
-            <form onSubmit={handleSubmit}> 
-                <h3>Choose your name</h3>
-                <input value={userName} type="text" 
-                id="input1"
-                placeholder="Enter your name..."
-                onChange={handleChangeName}/>
-                <h3>Choose your avatar</h3>
-                <label htmlFor="fileChange">
-                    <img src={avatar} alt="Avatar"/>
-                    <input type="file" id="fileChange" hidden 
-                    onChange={handleChangeAvatar}/>
-                </label>
-                <br></br>
-                <input type="checkbox" id="input2" />Activate two-factor authentication
-                <br></br>
-                <button type="submit">
-                    LOGIN
-                </button>
-            </form>
-        </div>
+        <React.Fragment>
+            {reduxUser.user && reduxUser.user.pseudo && <Home />}
+            {reduxUser.user && !reduxUser.user.pseudo && getPage()}
+        </React.Fragment>
     )
 }
 
