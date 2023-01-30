@@ -13,10 +13,12 @@ import { TwoFactorAuthController } from './two-factor-auth/two-factor-auth.contr
 import { TwoFactorAuthService } from './two-factor-auth/two-factor-auth.service';
 import { FriendEntity } from './entity/friend.entity';
 import { FriendController } from './friend/friend.controller';
+import { Avatar } from './entity/avatar.entity';
+import { UserController } from './user/user.controller';
 import { DataUserEntity } from './entity/data-user.entity';
 
 @Module({
-  imports: [AuthModule, UserModule, ConfigModule.forRoot(),
+  imports: [AuthModule, UserModule, ConfigModule, ConfigModule.forRoot(),
   TypeOrmModule.forRoot({
     type: 'postgres',
     host: process.env.DB_HOST,
@@ -24,7 +26,7 @@ import { DataUserEntity } from './entity/data-user.entity';
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    entities: [UserEntity, FriendEntity, DataUserEntity],
+    entities: [UserEntity, FriendEntity, DataUserEntity, Avatar],
     synchronize: true,
   })],
   controllers: [AppController, TwoFactorAuthController, TwoFactorAuthController, FriendController],

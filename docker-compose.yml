@@ -1,0 +1,15 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:latest
+    env_file:
+      - ./docker/postgres.env
+    environment:
+      TZ: "Europe/Paris"
+    restart: unless-stopped
+    volumes:
+      - data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+volumes:
+  data:
