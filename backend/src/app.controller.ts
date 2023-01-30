@@ -24,8 +24,4 @@ export class AppController {
     console.log('Welcome ' + user.login);
   }
 
-  vv() {
-
-  }
-
 }
