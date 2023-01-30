@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { disableRedirectToRegister, enableRedirectToRegister, UserProps } from '../redux/user/userSlice';
+import { UserProps, enableRedirectToRegister } from '../redux/user/userSlice';
 import { AppDispatch, RootState } from '../redux/store';
 
 export const REGISTERAPIROUTE: string = 'http://localhost:3042/auth'
@@ -35,8 +35,6 @@ class ClientApi {
 	}
 
 	public static set redirect(redirect: string) {
-		if (redirect == ClientApi.registerRoute || redirect == `http://localhost:3000${ClientApi.registerRoute}`)
-			ClientApi.dispatch(disableRedirectToRegister());
 		window.location.href = redirect;
 	}
 
@@ -51,14 +49,17 @@ class ClientApi {
 		console.log("data = ", data);
 		if (!res.ok)
 		{
-			if ("token" in data && !data.token)
+			if (data.statusCode == 401 || "token" in data && !data.token)
 			{
 				console.log("dans le 2nd if")
 				ClientApi.dispatch(enableRedirectToRegister())
 			}
 			else if ("token" in data && data.token)
 				ClientApi.token = data.token;
-			throw new Error(res.status.toString())
+			console.log("avant de throw")
+			const error = new Error(data.message);
+			error.name = data.statusCode;
+			throw error;
 		}
 		return data;
 	}

@@ -13,6 +13,9 @@ const store = configureStore({
 	middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(thunk)
 })
 
+console.log("store.getState().user (initial state) = ", store.getState().user)
+store.subscribe(() => console.log("store.getState().user = ", store.getState().user))
+
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
 

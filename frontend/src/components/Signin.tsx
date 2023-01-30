@@ -1,38 +1,28 @@
-import '../styles/SignIn.css'
+import '../styles/Signin.css'
 import AvatarDefault from '../img/avatar2.jpeg'
 import { useEffect, useState } from "react"
 import React from "react"
 import ClientApi from './ClientApi.class'
-import { getUserPseudo, UserProps, verifyToken } from '../redux/user/userSlice'
+import { disableRedirectToSignin, getUserPseudo, UserProps, verifyToken } from '../redux/user/userSlice'
 import { useSelector } from "react-redux";
 import { RootState } from '../redux/store'
 import Home from './Home'
+import MiddlewareRedirectionPage from './MiddlewareRedirectionPage'
 
-const SignIn = () => {
+const Signin = () => {
 
 	const reduxUser: UserProps = useSelector((state: RootState) => state.user);
-
-    useEffect(() => {
-        ClientApi.dispatch(verifyToken());
-    }, [])
-    
-	useEffect(() => {
-		if (reduxUser.redirectToRegister)
-			ClientApi.redirect = ClientApi.registerRoute;
-	}, [ reduxUser.redirectToRegister ])
-
-	useEffect(() => {
-		ClientApi.dispatch(getUserPseudo());
-        console.log("reduxUser.user?.pseudo = ", reduxUser.user?.pseudo);
-		if (reduxUser.user && reduxUser.user?.pseudo)
-			ClientApi.redirect = '/';
-	}, [ reduxUser.user?.pseudo ])
-
     const [userName, setUserName] = useState<string>("");
     const [avatar, setAvatar] = useState<string>(AvatarDefault);
 
+
+    useEffect(() => {
+		ClientApi.dispatch(disableRedirectToSignin());
+    }, [])
+
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
     }
 
     const handleChangeName = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,10 +62,9 @@ const SignIn = () => {
     
     return (
         <React.Fragment>
-            {reduxUser.user && reduxUser.user.pseudo && <Home />}
-            {reduxUser.user && !reduxUser.user.pseudo && getPage()}
+            <MiddlewareRedirectionPage toReturn={getPage()}/>
         </React.Fragment>
     )
 }
 
-export default SignIn;
+export default Signin;

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useParams } from 'react-router-dom';
 import ClientApi from './ClientApi.class';
+import { disableRedirectToRegister } from '../redux/user/userSlice';
 import { AppDispatch, RootState } from '../redux/store';
 import { useDispatch, useSelector } from "react-redux";
 import "../styles/Register.css"
@@ -22,6 +23,7 @@ const Register: React.FC = () => {
 	useEffect(() => {
 		const code: string | null = cleanUrlParameters.get('code');
 		
+		ClientApi.dispatch(disableRedirectToRegister());
 		try {
 			if (code)
 				ClientApi.register(code, '/');

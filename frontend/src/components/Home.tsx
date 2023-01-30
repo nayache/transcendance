@@ -1,33 +1,19 @@
 import React, { useEffect, useState } from "react"
 import Background from './Background'
 import Baseline from "./Baseline";
-import SignIn from "./SignIn";
-import userReducer, { getUserPseudo, patchUserPseudo, UserProps, verifyToken } from '../redux/user/userSlice';
+import { getUserPseudo, UserProps } from '../redux/user/userSlice';
 import ClientApi from "./ClientApi.class";
 import { useSelector } from "react-redux";
 import { RootState } from '../redux/store';
-import Register from "./Register";
+import MiddlewareRedirectionPage from "./MiddlewareRedirectionPage";
 
 const Home = () => {
 
 	const reduxUser: UserProps = useSelector((state: RootState) => state.user);
 
     useEffect(() => {
-        ClientApi.dispatch(verifyToken());
+        ClientApi.dispatch(getUserPseudo()); // pas besoin de verify token car getUserPseudo verifie 
     }, [])
-
-	useEffect(() => {
-		if (reduxUser.redirectToRegister)
-			ClientApi.redirect = ClientApi.registerRoute;
-	}, [ reduxUser.redirectToRegister ])
-
-	useEffect(() => {
-		ClientApi.dispatch(getUserPseudo());
-		console.log("reduxUser.user?.pseudo = ", reduxUser.user?.pseudo);
-		if (reduxUser.user && !reduxUser.user?.pseudo)
-			ClientApi.redirect = ClientApi.signinRoute;
-	}, [ reduxUser.user?.pseudo ])
-
 
 	const getPage = () => {
 		return (
@@ -40,8 +26,7 @@ const Home = () => {
 
 	return (
 		<React.Fragment>
-			{ reduxUser.redirectToRegister && <p>Redirect to intra 42 login...</p> }
-			{ !reduxUser.redirectToRegister && getPage() }
+			<MiddlewareRedirectionPage toReturn={getPage()}/>
 		</React.Fragment>
 	)
 }

@@ -9,7 +9,7 @@ import { Provider } from 'react-redux';
 import store, { AppDispatch, RootState } from './redux/store';
 import ClientApi from './components/ClientApi.class';
 import { useDispatch, useSelector } from 'react-redux';
-import SignIn from './components/SignIn';
+import Signin from './components/Signin';
 
 const router = createBrowserRouter([
 	{
@@ -22,7 +22,7 @@ const router = createBrowserRouter([
 	},
 	{
 		path: '/signin',
-		element: <SignIn />
+		element: <Signin />
 	},
 	{
 		path: '/gamepage',

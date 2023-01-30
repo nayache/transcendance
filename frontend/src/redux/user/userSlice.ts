@@ -7,6 +7,7 @@ export interface UserProps {
 	loading: boolean,
 	user?: IUser,
 	redirectToRegister?: boolean,
+	redirectToSignin?: boolean,
 	error?: string,
 }
 
@@ -32,16 +33,25 @@ export const verifyToken = createAsyncThunk('user/verify', async (undefined, { g
 })
 
 export const getUserPseudo = createAsyncThunk('user/getPseudo',
-async (undefined, { getState }) => {
+async (undefined, { dispatch, getState }) => {
 	const url: string = baseOfUrlUser + '/pseudo';
 
-	const data = await ClientApi.get(url);
-	const { pseudo } = data;
-	const user: IUser = {
-		...(<RootState>getState()).user.user,
-		pseudo
+	try {
+		const data = await ClientApi.get(url);
+		const { pseudo } = data;
+		const user: IUser = {
+			...(<RootState>getState()).user.user,
+			pseudo
+		}
+		
+		return user;
+	} catch (e) {
+		const err: Error = <Error>e;
+
+		if (err.name == '404')
+			dispatch(enableRedirectToSignin());
+		throw err;
 	}
-	return user;
 })
 
 export const patchUserPseudo = createAsyncThunk('user/patchPseudo',
@@ -68,6 +78,15 @@ const userSlice = createSlice({
 		},
 		disableRedirectToRegister: (state) => {
 			state.redirectToRegister = false;
+		},
+		enableRedirectToSignin: (state) => {
+			console.log("state.redirectToSignin = ", state.redirectToSignin);
+			state.redirectToSignin = true;
+			console.log('on vient d\'enable');
+			console.log("state.redirectToSignin = ", state.redirectToSignin);
+		},
+		disableRedirectToSignin: (state) => {
+			state.redirectToSignin = false;
 		}
 	},
 	extraReducers(builder) {
@@ -108,5 +127,5 @@ const userSlice = createSlice({
 })
 const userReducer = userSlice.reducer;
 
-export const { enableRedirectToRegister, disableRedirectToRegister } = userSlice.actions;
+export const { enableRedirectToRegister, disableRedirectToRegister, enableRedirectToSignin, disableRedirectToSignin } = userSlice.actions;
 export default userReducer;
