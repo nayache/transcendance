@@ -1,8 +1,8 @@
-import { configureStore } from "@reduxjs/toolkit";
-import thunk from "redux-thunk";
+import { configureStore } from '@reduxjs/toolkit';
+import thunk from 'redux-thunk';
 import cakeReducer from "./Cake/CakeSlice";
 import iceCreamReducer from "./IceCream/iceCreamSlice";
-import userReducer from "./User/userSlice";
+import userReducer from './user/userSlice';
 
 const store = configureStore({
 	reducer: {

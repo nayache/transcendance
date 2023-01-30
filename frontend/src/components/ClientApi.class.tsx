@@ -1,15 +1,17 @@
 import { useDispatch, useSelector } from "react-redux";
-import { disableRedirectToRegister, enableRedirectToRegister, UserProps } from '../Redux/User/userSlice';
-import { AppDispatch, RootState } from "../Redux/store";
+import { disableRedirectToRegister, enableRedirectToRegister, UserProps } from '../redux/user/userSlice';
+import { AppDispatch, RootState } from '../redux/store';
 
-export const REGISTERAPIROUTE = 'http://localhost:3042/auth'
-export const REGISTERROUTE = '/register'
+export const REGISTERAPIROUTE: string = 'http://localhost:3042/auth'
+export const REGISTERROUTE: string = '/register'
+export const SIGNINROUTE: string = '/signin'
 
 class ClientApi {
 
 	private static readonly keyTokenLocalStorage: string = 'token';
-	public static readonly registerApiRoute: string | undefined = REGISTERAPIROUTE;
-	public static readonly registerRoute: string | undefined = REGISTERROUTE;
+	public static readonly registerApiRoute: string = REGISTERAPIROUTE;
+	public static readonly registerRoute: string = REGISTERROUTE;
+	public static readonly signinRoute: string = SIGNINROUTE;
 	private static _dispatch?: AppDispatch;
 
 	public static set dispatch(dispatch: AppDispatch) {
@@ -42,6 +44,38 @@ class ClientApi {
 		return window.location.href;
 	}
 
+	private static async fetchEndpoint(url: string, init?: RequestInit | undefined): Promise<any> {
+		const res = await fetch(url, init);
+		console.log("res = ", res);
+		const data: any = await res.json();
+		console.log("data = ", data);
+		if (!res.ok)
+		{
+			if ("token" in data && !data.token)
+			{
+				console.log("dans le 2nd if")
+				ClientApi.dispatch(enableRedirectToRegister())
+			}
+			else if ("token" in data && data.token)
+				ClientApi.token = data.token;
+			throw new Error(res.status.toString())
+		}
+		return data;
+	}
+
+	public static async verifyToken(): Promise<any> {
+		const endOfEndpoint: string = '/verify';
+		const url: string = ClientApi.registerApiRoute + endOfEndpoint;
+		let headers: HeadersInit | undefined;
+
+		if (ClientApi.token)
+			headers = {
+				Authorization: `Bearer ${ClientApi.token}`,
+			}
+		const data: any = await ClientApi.fetchEndpoint(url, { headers });
+		return (data);
+	}
+
 	public static async register(code: string | null, location: string = '/') {
 
 		if (!code)
@@ -59,23 +93,6 @@ class ClientApi {
 			ClientApi.token = data.token;
 			ClientApi.redirect = location;
 		}
-	}
-
-	private static async fetchEndpoint(url: string, init?: RequestInit | undefined) {
-		const res = await fetch(url, init);
-		console.log("res = ", res);
-		const data: any = await res.json();
-		console.log("data = ", data);
-		if ("token" in data && !data.token)
-		{
-			console.log("dans le 1er if")
-			ClientApi.dispatch(enableRedirectToRegister())
-		}
-		else if ("token" in data && data.token)
-			ClientApi.token = data.token;
-		if (!res.ok)
-			throw new Error(res.status.toString())
-		return data;
 	}
 
 	public static async get(url: string): Promise<any> {

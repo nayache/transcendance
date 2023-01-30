@@ -1,14 +1,15 @@
 import * as React from 'react'
 import './App.css';
-import Home from './Components/Home'
-import Register from './Components/Register'
-import GamePage from './Components/GamePage'
-import ErrorPage from './Components/ErrorPage';
+import Home from './components/Home'
+import Register from './components/Register'
+import GamePage from './components/GamePage'
+import ErrorPage from './components/ErrorPage';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Provider } from 'react-redux';
-import store, { AppDispatch, RootState } from './Redux/store';
-import ClientApi from './Components/ClientApi.class';
+import store, { AppDispatch, RootState } from './redux/store';
+import ClientApi from './components/ClientApi.class';
 import { useDispatch, useSelector } from 'react-redux';
+import SignIn from './components/SignIn';
 
 const router = createBrowserRouter([
 	{
@@ -18,6 +19,10 @@ const router = createBrowserRouter([
 	{
 		path: '/register',
 		element: <Register />
+	},
+	{
+		path: '/signin',
+		element: <SignIn />
 	},
 	{
 		path: '/gamepage',

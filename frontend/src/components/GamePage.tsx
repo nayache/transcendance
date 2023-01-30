@@ -4,9 +4,9 @@ import Baseline from "./Baseline";
 import Playground from "./Playground";
 import styled from "styled-components";
 import ClientApi from "./ClientApi.class";
-import { AppDispatch, RootState } from "../Redux/store";
+import { AppDispatch, RootState } from '../redux/store';
 import { useDispatch, useSelector } from "react-redux";
-import { UserProps } from "../Redux/User/userSlice";
+import { UserProps } from '../redux/user/userSlice';
 
 const GamePage: React.FC = () => {
 

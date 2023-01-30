@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useParams } from 'react-router-dom';
 import ClientApi from './ClientApi.class';
-import { AppDispatch, RootState } from "../Redux/store";
+import { AppDispatch, RootState } from '../redux/store';
 import { useDispatch, useSelector } from "react-redux";
 
 const Register: React.FC = () => {

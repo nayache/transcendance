@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { CanvasStyled } from '../Styles/Canvas.style'
+import { CanvasStyled } from '../styles/Canvas.style'
 
 type MyProps = {
 	draw: (context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, canvas: HTMLCanvasElement) => void;

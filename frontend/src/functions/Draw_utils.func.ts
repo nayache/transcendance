@@ -1,7 +1,7 @@
-import { GameState } from "../Components/Playground";
-import { Player } from "../Components/Playground";
-import Paddle from "../Components/Paddle.class"
-import Ball from "../Components/Ball.class"
+import { GameState } from "../components/Playground";
+import { Player } from "../components/Playground";
+import Paddle from "../components/Paddle.class"
+import Ball from "../components/Ball.class"
 
 interface GameVariables {
 	player1: Player,

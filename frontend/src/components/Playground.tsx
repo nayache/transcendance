@@ -1,10 +1,10 @@
-import React, { useState, useRef, useEffect } from "react"
-import { Container } from '../Styles/Playground.style'
+import React, { useState, useRef, useEffect } from 'react'
+import { Container } from '../styles/Playground.style'
 import Canvas from './Canvas'
-import { drawBgnd, clearBgnd, setUpGame } from "../Functions/Draw_utils.func"
-import Paddle from "./Paddle.class"
-import Ball from "./Ball.class"
-import Referee from "./Referee.class"
+import { drawBgnd, clearBgnd, setUpGame } from '../functions/Draw_utils.func'
+import Paddle from './Paddle.class'
+import Ball from './Ball.class'
+import Referee from './Referee.class'
 
 interface Props {
 }

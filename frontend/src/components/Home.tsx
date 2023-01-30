@@ -2,28 +2,30 @@ import React, { useEffect, useState } from "react"
 import Background from './Background'
 import Baseline from "./Baseline";
 import SignIn from "./SignIn";
-import userReducer, { getUserPseudo, patchUserPseudo, UserProps } from "../Redux/User/userSlice";
+import userReducer, { getUserPseudo, patchUserPseudo, UserProps, verifyToken } from '../redux/user/userSlice';
 import ClientApi from "./ClientApi.class";
 import { useSelector } from "react-redux";
-import { RootState } from "../Redux/store";
+import { RootState } from '../redux/store';
 
 const Home = () => {
 
 	const reduxUser: UserProps = useSelector((state: RootState) => state.user);
 
-	useEffect(() => {
-		const token = localStorage.token;
-		const body = JSON.stringify({
-			pseudo: 'alalongue170'
-		})
-		console.log("home dans didMount")
-		ClientApi.dispatch(getUserPseudo());
-	}, [])
+    useEffect(() => {
+        ClientApi.dispatch(verifyToken());
+    }, [])
 
 	useEffect(() => {
 		if (reduxUser.redirectToRegister)
-			ClientApi.redirect = '/register'
-	}, [reduxUser.redirectToRegister, ClientApi.token])
+			ClientApi.redirect = ClientApi.registerRoute;
+	}, [ reduxUser.redirectToRegister ])
+
+	useEffect(() => {
+		ClientApi.dispatch(getUserPseudo());
+		console.log("reduxUser.user?.pseudo = ", reduxUser.user?.pseudo);
+		if (reduxUser.user && !reduxUser.user?.pseudo)
+			ClientApi.redirect = ClientApi.signinRoute;
+	}, [ reduxUser.user?.pseudo ])
 
 
 	return (

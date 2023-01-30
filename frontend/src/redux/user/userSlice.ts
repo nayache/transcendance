@@ -1,7 +1,7 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import ClientApi from "../../Components/ClientApi.class";
-import { IUser } from "../../Interface/User";
-import { AppDispatch, RootState } from "../store";
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import ClientApi from '../../components/ClientApi.class';
+import { IUser } from '../../interface/User';
+import { AppDispatch, RootState } from '../store';
 
 export interface UserProps {
 	loading: boolean,
@@ -19,36 +19,41 @@ const initialState: UserProps = {
 }
 
 
-const baseOfUrl: string = 'http://localhost:3042/user'
-const redirectToRegister: string = '/register';
+const baseOfUrlUser: string = 'http://localhost:3042/user'
 
 
 
-export const verify = createAsyncThunk('user/verify',
-
-)
+export const verifyToken = createAsyncThunk('user/verify', async (undefined, { getState }) => {
+	await ClientApi.verifyToken();
+	const user: IUser = {
+		...(<RootState>getState()).user.user
+	}
+	return user;
+})
 
 export const getUserPseudo = createAsyncThunk('user/getPseudo',
 async (undefined, { getState }) => {
-	const url: string = baseOfUrl + '/pseudo';
+	const url: string = baseOfUrlUser + '/pseudo';
 
 	const data = await ClientApi.get(url);
 	const { pseudo } = data;
-	return {
-		...(<RootState>getState()).user,
+	const user: IUser = {
+		...(<RootState>getState()).user.user,
 		pseudo
 	}
+	return user;
 })
 
 export const patchUserPseudo = createAsyncThunk('user/patchPseudo',
 async ({body}: ThunkProps, { getState }) => {
-	const url = baseOfUrl + '/pseudo'
+	const url = baseOfUrlUser + '/pseudo'
 	
 	const { pseudo } = await ClientApi.patch(url, body);
-	return {
-		...(<RootState>getState()).user,
+	const user: IUser = {
+		...(<RootState>getState()).user.user,
 		pseudo
 	}
+	return user;
 })
 
 const userSlice = createSlice({
@@ -88,7 +93,17 @@ const userSlice = createSlice({
 			state.loading = false;
 			state.error = action.error.message
 		})
-		
+		builder.addCase(verifyToken.pending, (state, action) => {
+			state.loading = true;
+		})
+		builder.addCase(verifyToken.fulfilled, (state, action) => {
+			state.loading = false;
+			state.user = action.payload
+		})
+		builder.addCase(verifyToken.rejected, (state, action) => {
+			state.loading = false;
+			state.error = action.error.message
+		})
 	},
 })
 const userReducer = userSlice.reducer;
