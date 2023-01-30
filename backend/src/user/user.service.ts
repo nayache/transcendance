@@ -76,7 +76,22 @@ export class UserService {
         return this.friendRepository.save(new FriendEntity(user1, user2));
     }
 
+    async removeFriendship(userId: string, userId2: string) {
+        try {
+            const friendshipId = await this.friendRepository.find({where: [
+                {user1Id: userId, user2Id: userId2},
+                {user1Id: userId2, user2Id: userId}
+            ]})
+            console.log("friendship find: ", friendshipId);
+            return await this.friendRepository.remove(friendshipId);
+        }
+        catch(err) {
+            throw new HttpException('data not found or database error', HttpStatus.NOT_FOUND);
+        }
+    }
+
     async friendshipExist(userId: string, userId2: string) : Promise<boolean> {
+        console.log(userId, ' / ', userId2)
         return this.friendRepository.exist({where: [
             {user1Id: userId , user2Id: userId2},
             {user1Id: userId2, user2Id: userId}

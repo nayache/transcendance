@@ -32,8 +32,8 @@ import { FriendController } from './friend/friend.controller';
 //export class AppModule {}
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtDecoding).exclude('/auth', '/user/add/', '/user/rm', '/user/all').forRoutes('/user/friend/lala')
-    consumer.apply(TokenFtVerify).exclude('/auth', '/user/add', '/user/rm', '/user/all').forRoutes('/user/friend/lala')
-    consumer.apply(TwoFaAuth).exclude('/auth', '/user/add', '/user/rm', '/user/all').forRoutes('/user/friend/lala')
+    consumer.apply(JwtDecoding).exclude('/auth', '/user/add/', '/user/rm', '/user/all').forRoutes('/')
+    consumer.apply(TokenFtVerify).exclude('/auth', '/user/add', '/user/rm', '/user/all').forRoutes('/')
+    consumer.apply(TwoFaAuth).exclude('/auth', '/user/add', '/user/rm', '/user/all').forRoutes('/')
   }  
 }

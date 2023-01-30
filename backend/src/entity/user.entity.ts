@@ -1,5 +1,6 @@
 //import { ExistingProvider } from "@nestjs/common";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { FriendEntity } from "./friend.entity";
 
 @Entity()
 export class UserEntity {
