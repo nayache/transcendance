@@ -1,11 +1,15 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query, StreamableFile, UploadedFile, UseInterceptors, Put} from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UserEntity } from 'src/entity/user.entity';
 import { UserService } from './user.service';
-
+import { Avatar } from 'src/entity/avatar.entity';
+import { AvatarService } from './avatar.service';
 @Controller('user')
 export class UserController {
-    constructor(private readonly userService: UserService) {}
+    constructor(
+		private readonly userService: UserService,
+		private readonly avatarService: AvatarService,){}
 
     @Get('pseudo')
     async getPseudo(@User() userId: string) {
@@ -45,5 +49,23 @@ export class UserController {
     @Delete('rm')
     async removeUser(@Query('login') login: string) {
         return this.userService.removeUser(login);
+    }
+	//avatar
+	@Get('avatar')
+	async getAvatar(
+	  @User() userId: string,
+	): Promise<StreamableFile> {
+	  const avatar = await this.userService.getAvatar(userId);
+	  return this.avatarService.toStreamableFile(avatar.datafile);
+	}
+  
+
+	@Put('avatar')
+  	@UseInterceptors(FileInterceptor('file'))
+  	updateAvatar(
+   	  @User() userId: string,
+   	  @UploadedFile() file: Express.Multer.File,
+  	): Promise<void> {
+      return this.userService.setAvatar(userId, file);
     }
 }

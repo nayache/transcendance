@@ -1,6 +1,6 @@
 //import { ExistingProvider } from "@nestjs/common";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-
+import { Column, Entity, PrimaryGeneratedColumn, OneToOne } from "typeorm";
+import { Avatar } from "./avatar.entity";
 @Entity()
 export class UserEntity {
 
@@ -11,6 +11,9 @@ export class UserEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string
     
+	@OneToOne(() => Avatar, (avatar) => avatar.user)
+  	avatar: Avatar;
+
     @Column()
     login: string
     
