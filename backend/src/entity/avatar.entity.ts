@@ -1,5 +1,3 @@
-import { type } from 'os';
-import { User } from 'src/decorators/user.decorator';
 import {
 	Column,
 	Entity,
@@ -11,7 +9,7 @@ import {UserEntity} from './user.entity'
 
 @Entity()
 export class Avatar {
-	@PrimaryGeneratedColumn()
+	@PrimaryGeneratedColumn('uuid')
 	id: string;
 
 	@Column()
@@ -21,7 +19,13 @@ export class Avatar {
 	datafile: Buffer;
 
 	@ManyToOne(() => UserEntity, { onDelete: 'CASCADE'})
-	@JoinColumn()
+	@JoinColumn({name: 'userId'})
 	user: UserEntity;
+
+	@Column()
+	userId: string;
+
+	@Column({ type: "bool", default: true })
+	Current: boolean;
 }
 

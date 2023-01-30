@@ -5,6 +5,7 @@ import {
 	StreamableFile,
   } from '@nestjs/common';
   import { InjectRepository } from '@nestjs/typeorm';
+import { use } from 'passport';
   import { Readable } from 'stream';
   import { Repository } from 'typeorm';
   import { Avatar } from '../entity/avatar.entity';
@@ -42,5 +43,32 @@ import {
   
 	toStreamableFile(data: Buffer): StreamableFile {
 	  return new StreamableFile(Readable.from(data));
+	}
+
+	async getCurrentAvatar(userId: string): Promise<Avatar> {
+		try {
+			const avatars: Avatar[] = await this.avatarRepository.find({where: {userId: userId, Current: true}});
+			return avatars[0];
+		}
+		catch(e)
+		{
+			return (null);
+		}
+	}
+
+	async exist(userId: string, filename: string): Promise<boolean> {
+		const res: boolean = await this.avatarRepository.exist({where: [{userId: userId, file: filename}]})
+		console.log(res)
+		return (res);
+	}
+
+	async disabled(avatarId: string): Promise<void> {
+		try {
+			await this.avatarRepository.update(avatarId, {Current: false});
+		}
+		catch (e)
+		{
+			throw new HttpException('Cannot update turnoff current avatar', HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
   }

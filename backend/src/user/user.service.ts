@@ -14,6 +14,7 @@ export class UserService {
 	private readonly avatarService: AvatarService,) {}
     
     async saveUser(login: string) {
+		this.userRepository.create({login});
         return this.userRepository.save(new UserEntity(login))
     }
     
@@ -122,21 +123,26 @@ export class UserService {
 	async setAvatar(userId: string, file: Express.Multer.File): Promise<void> {
 		if (!file)
 		  throw new HttpException('File required', HttpStatus.NOT_ACCEPTABLE);
-	
+		
 		const filename = file.originalname;
 		const datafile = file.buffer;
-	
-		const user: UserEntity = await this.findById(userId);
-	
+		if (await this.avatarService.exist(userId, filename))
+			throw new HttpException('Avatar Filename is already in database for this user', HttpStatus.CONFLICT);
+		
+		const user: UserEntity = await this.getUser(userId);
+		const curr_avatar: Avatar = await this.avatarService.getCurrentAvatar(userId);
 		await this.avatarService.createAvatar(filename, datafile, user);
-		if (user.avatar) await this.avatarService.deleteAvatar(user.avatar.id);
+		if (curr_avatar)
+			await this.avatarService.disabled(curr_avatar.id);
+		//if (user.avatar) await this.avatarService.deleteAvatar(user.avatar.id);
 	  }
 	
 	async getAvatar(userId: string): Promise<Avatar> {
-		const user: UserEntity = await this.getUser(userId);
-		if (!user.avatar)
-		  throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-	
-		return user.avatar;
+		//const user: UserEntity = await this.getUser(userId);
+		const avatar: Avatar = await this.avatarService.getCurrentAvatar(userId);
+		//console.log(avatar)
+		if (!avatar)
+		  throw new HttpException('Avatar not found', HttpStatus.NOT_FOUND);
+		return avatar;
 	  }
 }

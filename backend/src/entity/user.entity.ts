@@ -1,5 +1,5 @@
 //import { ExistingProvider } from "@nestjs/common";
-import { Column, Entity, PrimaryGeneratedColumn, OneToOne } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, OneToOne, JoinColumn, OneToMany } from "typeorm";
 import { Avatar } from "./avatar.entity";
 @Entity()
 export class UserEntity {

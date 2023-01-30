@@ -13,6 +13,7 @@ export class UserController {
 
     @Get('pseudo')
     async getPseudo(@User() userId: string) {
+		console.log('userId:',userId)
         const pseudo = await this.userService.getPseudoById(userId)
         if (!pseudo)
             throw new HttpException('pseudo not found', HttpStatus.BAD_REQUEST)
@@ -24,8 +25,8 @@ export class UserController {
     async savePseudo(@User() userId: string, @Body('pseudo') pseudo: string) {
         console.log('userId received: ', userId, 'pseudo in param: ', pseudo) 
         
-        if (!this.userService.isValidPseudo(pseudo))
-            throw new HttpException('invalid argument', HttpStatus.BAD_REQUEST)    
+        //if (!this.userService.isValidPseudo(pseudo))
+        //    throw new HttpException('invalid argument', HttpStatus.BAD_REQUEST)    
         
         if (!await this.userService.addPseudo(userId, pseudo))
             throw new HttpException('pseudo already used by other user', HttpStatus.CONFLICT)
@@ -56,6 +57,7 @@ export class UserController {
 	  @User() userId: string,
 	): Promise<StreamableFile> {
 	  const avatar = await this.userService.getAvatar(userId);
+	  console.log(avatar)
 	  return this.avatarService.toStreamableFile(avatar.datafile);
 	}
   
