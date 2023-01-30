@@ -24,6 +24,9 @@ const redirectToRegister: string = '/register';
 
 
 
+export const verify = createAsyncThunk('user/verify',
+
+)
 
 export const getUserPseudo = createAsyncThunk('user/getPseudo',
 async (undefined, { getState }) => {
@@ -53,7 +56,10 @@ const userSlice = createSlice({
 	initialState,
 	reducers: {
 		enableRedirectToRegister: (state) => {
+			console.log("state.redirectToRegister = ", state.redirectToRegister);
 			state.redirectToRegister = true;
+			console.log('on vient d\'enable');
+			console.log("state.redirectToRegister = ", state.redirectToRegister);
 		},
 		disableRedirectToRegister: (state) => {
 			state.redirectToRegister = false;

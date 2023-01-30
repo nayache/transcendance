@@ -11,7 +11,6 @@ class ClientApi {
 	public static readonly registerApiRoute: string | undefined = REGISTERAPIROUTE;
 	public static readonly registerRoute: string | undefined = REGISTERROUTE;
 	private static _dispatch?: AppDispatch;
-	private static _reduxUser?: UserProps;
 
 	public static set dispatch(dispatch: AppDispatch) {
 		ClientApi._dispatch = dispatch;
@@ -21,17 +20,7 @@ class ClientApi {
 		if (!ClientApi._dispatch)
 			throw new Error('The dispatch in ClientApi have not been set up')
 		return ClientApi._dispatch;
-	}
-
-	public static set reduxUser(reduxUser: UserProps) {
-		ClientApi._reduxUser = reduxUser;
-	}
-	
-	public static get reduxUser() {
-		if (!ClientApi._reduxUser)
-			throw new Error('The redux user state in ClientApi have not been set up')
-		return ClientApi._reduxUser;
-	}
+	}	
 
 	public static get token(): string | null {
 		return localStorage.getItem(ClientApi.keyTokenLocalStorage);
@@ -74,9 +63,14 @@ class ClientApi {
 
 	private static async fetchEndpoint(url: string, init?: RequestInit | undefined) {
 		const res = await fetch(url, init);
+		console.log("res = ", res);
 		const data: any = await res.json();
+		console.log("data = ", data);
 		if ("token" in data && !data.token)
+		{
+			console.log("dans le 1er if")
 			ClientApi.dispatch(enableRedirectToRegister())
+		}
 		else if ("token" in data && data.token)
 			ClientApi.token = data.token;
 		if (!res.ok)
@@ -103,6 +97,7 @@ class ClientApi {
 	}
 
 	public static async patch(url: string, body: BodyInit | null | undefined): Promise<any> {
+		
 		const method: string = 'PATCH'
 		let headers: HeadersInit | undefined;
 	

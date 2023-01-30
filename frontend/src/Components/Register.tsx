@@ -21,7 +21,8 @@ const Register: React.FC = () => {
 		const code: string | null = cleanUrlParameters.get('code');
 		
 		try {
-			ClientApi.register(code, '/');
+			if (code)
+				ClientApi.register(code, '/');
 		} catch (e) {
 			console.log("e = ", e);
 		}

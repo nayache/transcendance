@@ -5,7 +5,6 @@ import Register from './Components/Register'
 import GamePage from './Components/GamePage'
 import ErrorPage from './Components/ErrorPage';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import User from './Components/User';
 import { Provider } from 'react-redux';
 import store, { AppDispatch, RootState } from './Redux/store';
 import ClientApi from './Components/ClientApi.class';
@@ -42,7 +41,6 @@ const App: React.FC = () => {
 const AppChild: React.FC = () => {
 
 	ClientApi.dispatch = useDispatch<AppDispatch>();
-	ClientApi.reduxUser = useSelector((state: RootState) => state.user);
 
 	return (
 		<React.Fragment>

@@ -2,15 +2,14 @@ import React, { useEffect, useState } from "react"
 import Background from './Background'
 import Baseline from "./Baseline";
 import SignIn from "./SignIn";
-import { useDispatch, useSelector } from "react-redux";
-import { cakeActions } from "../Redux/Cake/CakeSlice";
-import userReducer, { getUserPseudo, patchUserPseudo } from "../Redux/User/userSlice";
-import { AppDispatch, RootState } from "../Redux/store";
+import userReducer, { getUserPseudo, patchUserPseudo, UserProps } from "../Redux/User/userSlice";
 import ClientApi from "./ClientApi.class";
+import { useSelector } from "react-redux";
+import { RootState } from "../Redux/store";
 
 const Home = () => {
 
-	const numOfCakes = useSelector((state: RootState) => state.cake.numOfCakes)
+	const reduxUser: UserProps = useSelector((state: RootState) => state.user);
 
 	useEffect(() => {
 		const token = localStorage.token;
@@ -18,21 +17,19 @@ const Home = () => {
 			pseudo: 'alalongue170'
 		})
 		console.log("home dans didMount")
-		ClientApi.dispatch(patchUserPseudo({body}));
+		ClientApi.dispatch(getUserPseudo());
 	}, [])
 
 	useEffect(() => {
-		if (ClientApi.reduxUser.redirectToRegister)
+		if (reduxUser.redirectToRegister)
 			ClientApi.redirect = '/register'
-	}, [ClientApi.reduxUser])
+	}, [reduxUser.redirectToRegister, ClientApi.token])
 
 
 	return (
 		<React.Fragment>
 			<Background />
 			<Baseline title={"Ping pong"}/>
-			<p>Ceci est un test : { numOfCakes }</p>
-			<button onClick={() => ClientApi.dispatch(cakeActions.ordered(2))}></button>
 			{/* {ClientApi.reduxUser.loading && <p>Loading...</p>}
 			{!ClientApi.reduxUser.loading && ClientApi.reduxUser.error && <h2>{ClientApi.reduxUser.error}</h2>} */}
 			{/* {!ClientApi.reduxUser.loading && ClientApi.reduxUser.data && <h2>{ClientApi.reduxUser.data}</h2>} */}

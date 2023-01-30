@@ -6,17 +6,20 @@ import styled from "styled-components";
 import ClientApi from "./ClientApi.class";
 import { AppDispatch, RootState } from "../Redux/store";
 import { useDispatch, useSelector } from "react-redux";
+import { UserProps } from "../Redux/User/userSlice";
 
 const GamePage: React.FC = () => {
+
+	const reduxUser: UserProps = useSelector((state: RootState) => state.user);
 
 	useEffect(() => {
 		const token = localStorage.token;
 	}, [])
-	
+
 	useEffect(() => {
-		if (ClientApi.reduxUser.redirectToRegister)
+		if (reduxUser.redirectToRegister)
 			ClientApi.redirect = '/register'
-	}, [ClientApi.reduxUser])
+	}, [reduxUser.redirectToRegister])
 
 	return (
 		<React.Fragment>
