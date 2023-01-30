@@ -1,6 +1,9 @@
 //import { ExistingProvider } from "@nestjs/common";
 import { Column, Entity, PrimaryGeneratedColumn, OneToOne, JoinColumn, OneToMany } from "typeorm";
 import { Avatar } from "./avatar.entity";
+import { DataUserEntity } from "./data-user.entity";
+import { FriendEntity } from "./friend.entity";
+
 @Entity()
 export class UserEntity {
 
@@ -25,4 +28,9 @@ export class UserEntity {
 
     @Column({ type: "bool", default: false })
     twoFaEnabled: boolean;
+
+
+  //  @OneToOne(() => DataUserEntity, (data) => data.user, {onDelete: 'CASCADE'})
+  //  @JoinColumn()
+  //  data: DataUserEntity
 }

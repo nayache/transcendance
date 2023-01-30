@@ -12,11 +12,11 @@ export class FriendEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string
 
-    @ManyToOne(() => UserEntity, (user1) => user1, {onDelete: 'CASCADE', onUpdate: 'CASCADE'})
+    @ManyToOne(() => UserEntity, (user1) => user1, {eager: true, onDelete: 'CASCADE', onUpdate: 'CASCADE'})
     @JoinColumn({name: 'user1Id'})
     user1: UserEntity
     
-    @ManyToOne(() => UserEntity, (user2) => user2, {onDelete: 'CASCADE', onUpdate: 'CASCADE'})
+    @ManyToOne(() => UserEntity, (user2) => user2, {eager: true, onDelete: 'CASCADE', onUpdate: 'CASCADE'})
     @JoinColumn({name: 'user2Id'})
     user2: UserEntity
 
