@@ -14,7 +14,6 @@ import { TwoFactorAuthService } from './two-factor-auth/two-factor-auth.service'
 import { FriendEntity } from './entity/friend.entity';
 import { FriendController } from './friend/friend.controller';
 import { Avatar } from './entity/avatar.entity';
-import { UserController } from './user/user.controller';
 import { DataUserEntity } from './entity/data-user.entity';
 
 @Module({
@@ -28,7 +27,7 @@ import { DataUserEntity } from './entity/data-user.entity';
     database: process.env.DB_NAME,
     entities: [UserEntity, FriendEntity, DataUserEntity, Avatar],
     synchronize: true,
-  })],
+  }),],
   controllers: [AppController, TwoFactorAuthController, TwoFactorAuthController, FriendController],
   providers: [AppService, TwoFactorAuthService],
 })

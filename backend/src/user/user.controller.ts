@@ -3,7 +3,6 @@ import { User } from 'src/decorators/user.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserEntity } from 'src/entity/user.entity';
 import { UserService } from './user.service';
-import { Avatar } from 'src/entity/avatar.entity';
 import { AvatarService } from './avatar.service';
 @Controller('user')
 export class UserController {
@@ -16,7 +15,7 @@ export class UserController {
 		console.log('userId:',userId)
         const pseudo = await this.userService.getPseudoById(userId)
         if (!pseudo)
-            throw new HttpException('pseudo not found', HttpStatus.BAD_REQUEST)
+            throw new HttpException('pseudo not found', HttpStatus.NOT_FOUND)
         
         return { pseudo: pseudo }
     }

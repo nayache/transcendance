@@ -5,18 +5,15 @@ import {
 	StreamableFile,
   } from '@nestjs/common';
   import { InjectRepository } from '@nestjs/typeorm';
-import { use } from 'passport';
   import { Readable } from 'stream';
   import { Repository } from 'typeorm';
   import { Avatar } from '../entity/avatar.entity';
   import { UserEntity } from '../entity/user.entity';
+import { UserService } from './user.service';
   
   @Injectable()
   export class AvatarService {
-	constructor(
-	  @InjectRepository(Avatar)
-	  private avatarRepository: Repository<Avatar>,
-	) {}
+	constructor(@InjectRepository(Avatar) private avatarRepository: Repository<Avatar>) {}
   
 	async createAvatar(
 	  file: string,
@@ -71,4 +68,5 @@ import { use } from 'passport';
 			throw new HttpException('Cannot update turnoff current avatar', HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
   }
