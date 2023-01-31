@@ -14,7 +14,7 @@ export class UserEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string
     
-	@OneToOne(() => Avatar, (avatar) => avatar.user)
+	  @OneToOne(() => Avatar, (avatar) => avatar.user)
   	avatar: Avatar;
 
     @Column()
@@ -30,7 +30,7 @@ export class UserEntity {
     twoFaEnabled: boolean;
 
 
-  //  @OneToOne(() => DataUserEntity, (data) => data.user, {onDelete: 'CASCADE'})
-  //  @JoinColumn()
-  //  data: DataUserEntity
+    @OneToOne(() => DataUserEntity, (data) => data.user, {onDelete: 'CASCADE'})
+    @JoinColumn()
+    data: DataUserEntity
 }

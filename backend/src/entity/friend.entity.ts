@@ -4,7 +4,8 @@ import { UserEntity } from "./user.entity";
 @Entity()
 @Unique(['user1', 'user2'])
 export class FriendEntity {
-    constructor(user1: UserEntity, user2: UserEntity) {
+    constructor(author: UserEntity, user1: UserEntity, user2: UserEntity) {
+        this.author = author;
         this.user1 = user1;
         this.user2 = user2;
     }
@@ -12,6 +13,10 @@ export class FriendEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string
 
+    @ManyToOne(() => UserEntity, (author) => author, {eager: true, onDelete: 'CASCADE', onUpdate: 'CASCADE'})
+    @JoinColumn({name: 'authorId'})
+    author: UserEntity
+    
     @ManyToOne(() => UserEntity, (user1) => user1, {eager: true, onDelete: 'CASCADE', onUpdate: 'CASCADE'})
     @JoinColumn({name: 'user1Id'})
     user1: UserEntity
@@ -21,8 +26,14 @@ export class FriendEntity {
     user2: UserEntity
 
     @Column({nullable: false})
+    authorId: string
+    
+    @Column({nullable: false})
     user1Id: string
     
     @Column({nullable: false})
     user2Id: string
+
+    @Column({type: 'bool', default: false})
+    accepted: boolean
 }

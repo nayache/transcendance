@@ -3,7 +3,6 @@ import { User } from 'src/decorators/user.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserEntity } from 'src/entity/user.entity';
 import { UserService } from './user.service';
-import { Avatar } from 'src/entity/avatar.entity';
 import { AvatarService } from './avatar.service';
 @Controller('user')
 export class UserController {

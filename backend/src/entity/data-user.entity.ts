@@ -19,6 +19,6 @@ export class DataUserEntity {
     @Column({default: 0})
     loose: number
 
-    @OneToOne(() => UserEntity, (user) => user)
+    @OneToOne(() => UserEntity, (user) => user.data)
     user: UserEntity
 }

@@ -78,31 +78,65 @@ export class UserService {
 
     async createFriendship(userId: string, userId2: string) {
         // je creer le friend entity avec le premier id inferieur au second pour eviter doublon
+        const author : UserEntity = await this.findById(userId);
         const user1 : UserEntity = (userId < userId2) ? await this.findById(userId) : await this.findById(userId2);
         const user2 : UserEntity = (user1.id == userId) ? await this.findById(userId2) : await this.findById(userId);
-        return this.friendRepository.save(new FriendEntity(user1, user2));
+        return this.friendRepository.save(new FriendEntity(author, user1, user2));
     }
 
     async removeFriendship(userId: string, userId2: string) {
         try {
-            const friendshipId = await this.friendRepository.find({where: [
+            const friendship = await this.friendRepository.find({where: [
                 {user1Id: userId, user2Id: userId2},
                 {user1Id: userId2, user2Id: userId}
             ]})
-            console.log("friendship find: ", friendshipId);
-            return await this.friendRepository.remove(friendshipId);
+            console.log("friendship find: ", friendship);
+            return await this.friendRepository.remove(friendship[0]);
         }
         catch(err) {
             throw new HttpException('data not found or database error', HttpStatus.NOT_FOUND);
         }
     }
 
+    async frienshipWaiting(userId: string, userId2: string) : Promise<boolean> {
+        return this.friendRepository.exist({where: [
+            {authorId: userId2, user1Id: userId2, user2Id: userId, accepted: false},
+            {authorId: userId2, user1Id: userId, user2Id: userId2, accepted: false}
+        ]});
+    }
+
     async friendshipExist(userId: string, userId2: string) : Promise<boolean> {
         console.log(userId, userId2)
         return this.friendRepository.exist({where: [
-            {user1Id: userId , user2Id: userId2},
-            {user1Id: userId2, user2Id: userId}
+            {user1Id: userId2, user2Id: userId, accepted: true},
+            {user1Id: userId, user2Id: userId2, accepted: true},
+            {authorId: userId, user1Id: userId, user2Id: userId2, accepted: false},
+            {authorId: userId, user1Id: userId2, user2Id: userId, accepted: false}
         ]});
+    }
+
+    async friendshipPendingFromOther(otherId: string, userId: string) : Promise<boolean> {
+        return this.friendRepository.exist({where: [
+            {authorId: otherId, user1Id: userId, user2Id: otherId, accepted: false},
+            {authorId: otherId, user1Id: otherId, user2Id: userId, accepted: false}
+        ]});
+    }
+
+    async getFriendshipPending(userId: string, userId2: string) : Promise<FriendEntity> {
+        const friendship = await this.friendRepository.find({where: [
+            {authorId: userId2, user1Id: userId2, user2Id: userId, accepted: false},
+            {authorId: userId2, user1Id: userId, user2Id: userId2, accepted: false}
+        ]});
+        return friendship[0];
+    }
+    
+    async acceptFriendship(userId: string, userId2: string) {
+        try {
+            const friendship : FriendEntity = await this.getFriendshipPending(userId, userId2);
+            return await this.friendRepository.update(friendship.id, {accepted: true})
+        } catch (e) {
+            throw new HttpException('error friend database', HttpStatus.INTERNAL_SERVER_ERROR)
+        }
     }
 
     async makeFriendList(userId: string, friends: FriendEntity[]) : Promise<string[]> {
@@ -117,26 +151,17 @@ export class UserService {
         return friendList;
     }
 
-    async getFriends(userId: string) : Promise<FriendEntity[]> {
+    async getFriends(userId: string, value: boolean) : Promise<FriendEntity[]> {
         try {
             const friends : FriendEntity[] = await this.friendRepository.find({where: [
-                {user1Id: userId},
-                {user2Id: userId}
+                {user1Id: userId, accepted: value},
+                {user2Id: userId, accepted: value}
             ]});
             return friends;
         } catch (e) {
             throw new HttpException('data not found', HttpStatus.NOT_FOUND);
         }
     }
-
-	async getUser(id: string): Promise<UserEntity> {
-		let user = null;
-		if (id) user = await this.userRepository.findOneBy({id: id});
-	
-		if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-	
-		return user;
-	  }
 
 	async setAvatar(userId: string, file: Express.Multer.File): Promise<void> {
 		if (!file)
@@ -147,20 +172,17 @@ export class UserService {
 		if (await this.avatarService.exist(userId, filename))
 			throw new HttpException('Avatar Filename is already in database for this user', HttpStatus.CONFLICT);
 		
-		const user: UserEntity = await this.getUser(userId);
+		const user: UserEntity = await this.findById(userId);
 		const curr_avatar: Avatar = await this.avatarService.getCurrentAvatar(userId);
 		await this.avatarService.createAvatar(filename, datafile, user);
 		if (curr_avatar)
 			await this.avatarService.disabled(curr_avatar.id);
-		//if (user.avatar) await this.avatarService.deleteAvatar(user.avatar.id);
 	  }
 	
 	async getAvatar(userId: string): Promise<Avatar> {
-		//const user: UserEntity = await this.getUser(userId);
 		const avatar: Avatar = await this.avatarService.getCurrentAvatar(userId);
-		//console.log(avatar)
 		if (!avatar)
 		  throw new HttpException('Avatar not found', HttpStatus.NOT_FOUND);
 		return avatar;
-	  }
+	}
 }
