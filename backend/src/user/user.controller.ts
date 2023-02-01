@@ -22,7 +22,10 @@ export class UserController {
     }
 
     @Patch('pseudo')
-    async savePseudo(@User() userId: string, @Body('pseudo') pseudo: string) {
+    async savePseudo(@User() userId: string, @Body('pseudo') pseudo?: string) {
+        if (!pseudo)
+            throw new HttpException('invalid argument', HttpStatus.BAD_REQUEST)
+
         console.log('userId received: ', userId, 'pseudo in param: ', pseudo) 
         
         //if (!this.userService.isValidPseudo(pseudo))
@@ -51,6 +54,7 @@ export class UserController {
     async removeUser(@Query('login') login: string) {
         return this.userService.removeUser(login);
     }
+
 	//avatar
 	@Get('avatar')
 	async getAvatar(
@@ -69,13 +73,28 @@ export class UserController {
 		return (this.avatarService.toStreamableFiles(avatar_array));
 	}
   
+    @Patch('avatar')
+      @UseInterceptors(FileInterceptor('file'))
+      async updateAvatar(
+         @User() userId: string,
+         @UploadedFile() file?: Express.Multer.File,
+      ): Promise<StreamableFile> {
+        if(!file)
+            throw new HttpException('invalid argument', HttpStatus.BAD_REQUEST)
+        this.userService.setAvatar(userId, file);
+        const avatar = await this.userService.getAvatar(userId);
+        console.log('avatar:', avatar);
+        return this.avatarService.toStreamableFile(avatar.datafile);
+    }
 
-	@Put('avatar')
+/*	@Patch('avatar')
   	@UseInterceptors(FileInterceptor('file'))
   	updateAvatar(
    	  @User() userId: string,
-   	  @UploadedFile() file: Express.Multer.File,
+   	  @UploadedFile() file?: Express.Multer.File,
   	): Promise<void> {
+        if(!file)
+            throw new HttpException('invalid argument', HttpStatus.BAD_REQUEST)
       return this.userService.setAvatar(userId, file);
-    }
+    }*/
 }

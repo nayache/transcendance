@@ -29,7 +29,9 @@ constructor(private readonly authService: AuthService,
     }
 
     @Get('/verify')
-    verify() {}
+    verify() {
+        return {};
+    }
 
     @Post('/2fa')
     async setTwoFa(@User() userId: string, @Query('twofa') value: boolean): Promise<any> {

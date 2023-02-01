@@ -1,5 +1,5 @@
 //import { ExistingProvider } from "@nestjs/common";
-import { Column, Entity, PrimaryGeneratedColumn, OneToOne, JoinColumn, OneToMany } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, OneToOne, JoinColumn, OneToMany, ManyToOne, ManyToMany } from "typeorm";
 import { Avatar } from "./avatar.entity";
 import { DataUserEntity } from "./data-user.entity";
 import { FriendEntity } from "./friend.entity";
@@ -14,7 +14,7 @@ export class UserEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string
     
-	  @OneToOne(() => Avatar, (avatar) => avatar.user)
+	@OneToOne(() => Avatar, (avatar) => avatar.user)
   	avatar: Avatar;
 
     @Column()
@@ -29,8 +29,7 @@ export class UserEntity {
     @Column({ type: "bool", default: false })
     twoFaEnabled: boolean;
 
-
-    @OneToOne(() => DataUserEntity, (data) => data.user, {onDelete: 'CASCADE'})
+    @OneToOne(() => DataUserEntity, (data) => data, {eager: true})
     @JoinColumn()
     data: DataUserEntity
 }
