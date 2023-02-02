@@ -4,6 +4,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { UserEntity } from 'src/entity/user.entity';
 import { UserService } from './user.service';
 import { AvatarService } from './avatar.service';
+import { Avatar } from 'src/entity/avatar.entity';
 @Controller('user')
 export class UserController {
     constructor(
@@ -58,6 +59,14 @@ export class UserController {
 	  const avatar = await this.userService.getAvatar(userId);
 	  console.log(avatar)
 	  return this.avatarService.toStreamableFile(avatar.datafile);
+	}
+
+	@Get('avatar/all')
+	async getAllAvatar(
+		@User() userId: string,
+	): Promise <StreamableFile[]> {
+		const avatar_array : Avatar[] = await this.avatarService.getAllAvatars(userId);
+		return (this.avatarService.toStreamableFiles(avatar_array));
 	}
   
 
