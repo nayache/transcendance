@@ -23,7 +23,7 @@ export enum Side {
 
 abstract class CanvasObject {
 
-	private _speed?: Vector2D;
+	private _startingSpeed?: Vector2D;
 
 	constructor(
 		private _dimensions?: Dimensions,
@@ -108,14 +108,14 @@ abstract class CanvasObject {
 		this._color = color;
 	}
 	
-	public get speed() {
-		if (!this._speed)
-			throw new Error('The speed have not been set up')
-		return this._speed;
+	public get startingSpeed() {
+		if (!this._startingSpeed)
+			throw new Error('The startingSpeed have not been set up')
+		return this._startingSpeed;
 	}
 
-	protected set speed(speed: Vector2D) {
-		this._speed = speed;
+	protected set startingSpeed(startingSpeed: Vector2D) {
+		this._startingSpeed = startingSpeed;
 	}
 
 	protected setUp(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, canvasPosY?: number): void {
@@ -126,13 +126,24 @@ abstract class CanvasObject {
 			this.canvasPosY = canvasPosY;
 	}
 
-	private static isBetween<T>(myItem: T, limitInf: T, limitSup: T, inclusive: boolean = true): boolean {
+	protected static isBetween<T>(myItem: T, limitInf: T, limitSup: T, inclusive: boolean = true): boolean {
 		if (!inclusive)
 			return (myItem > limitInf && myItem < limitSup)
 		return (myItem >= limitInf && myItem <= limitSup)
 	}
 
-	protected isInsideX(solidObject: CanvasObject): boolean {
+	protected static randomIntFromInterval(min: number, max: number): number {
+		return Math.floor(Math.random() * (max - min + 1) + min)
+	}
+
+	protected static randomIntFrom2Intervals(interval1: [number, number], interval2: [number, number]): number {
+		if (Math.random() > 0.5)
+			return CanvasObject.randomIntFromInterval(interval1[0], interval1[1])
+		else
+			return CanvasObject.randomIntFromInterval(interval2[0], interval2[1])
+	}
+
+	public isInsideX(solidObject: CanvasObject): boolean {
 		if (
 			(this.pos.x - this.dimensions.width <= solidObject.pos.x + solidObject.dimensions.width &&
 			this.pos.x + this.dimensions.width >= solidObject.pos.x) &&

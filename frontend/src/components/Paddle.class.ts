@@ -42,10 +42,10 @@ class Paddle extends CanvasObject {
 
 
 	onMouseMove(e: MouseEvent): void {
-		if (!this.canvasPosY)
-			this.canvasPosY = 0;
-		// if (this.pos)
+		try {
 			this.pos.y = e.clientY - this.canvasPosY - this.dimensions.height / 2;
+		} catch (err) {
+		}
 	}
 
 	setUp(
@@ -54,9 +54,15 @@ class Paddle extends CanvasObject {
 		canvasHeight: number,
 		canvasPosY?: number
 	): void {
+		let y: number;
+
 		super.setUp(ctx, canvasWidth, canvasHeight, canvasPosY);
-		const y: number = canvasHeight / 2 - this.dimensions.height / 2;
-		if (this.player.playerNb == PlayerSide.Right && this.canvasWidth)
+		try {
+			y = this.pos.y;
+		} catch (err) {
+			y = canvasHeight / 2 - this.dimensions.height / 2
+		}
+		if (this.player.playerSide == PlayerSide.Right && this.canvasWidth)
 			this.pos = { x: this.canvasWidth - this.dimensions.width - PADDLE_XSPACE, y }
 		else
 			this.pos = { x: PADDLE_XSPACE, y }

@@ -17,7 +17,7 @@ const Playground = () => {
 	const paddle_left: Paddle = new Paddle(
 		undefined,
 		110,
-		"red"
+		"blue"
 	)
 	const player_left: Player = new Player(PlayerSide.Left, paddle_left)
 	const paddle_right: Paddle = new Paddle(
@@ -27,7 +27,7 @@ const Playground = () => {
 	)
 	const player_right: Player = new Player(PlayerSide.Right, paddle_right)
 	const ball: Ball = new Ball(
-		7,
+		50,
 		"grey",
 	)
 	const ref: Referee = new Referee(

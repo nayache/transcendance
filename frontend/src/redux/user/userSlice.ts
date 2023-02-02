@@ -48,7 +48,6 @@ async (undefined, { dispatch, getState }) => {
 
 		if (err.name == '404')
 			dispatch(enableRedirectToSignin());
-		throw err;
 	}
 })
 
@@ -69,7 +68,7 @@ export const patchUserAvatar = createAsyncThunk('user/patchAvatar',
 async ({ avatar }: ThunkPropsPseudo, { getState }) => {
 	const url = baseOfUrlUser + '/avatar'
 
-	const data = await ClientApi.patch(url, JSON.stringify({ avatar }));
+	const data = await ClientApi.patch(url, JSON.stringify({ file: avatar }));
 	const _pseudo = data.pseudo
 	const user: IUser = {
 		...(<RootState>getState()).user.user,

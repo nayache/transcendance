@@ -11,7 +11,7 @@ class Player {
 	private _ready: boolean;
 
 	constructor(
-		private _playerNb: PlayerSide,
+		private _playerSide: PlayerSide,
 		private _paddle: Paddle,
 	) {
 		this._paddle.bindToplayer(this)
@@ -32,15 +32,15 @@ class Player {
 		this._nbGoals = nbGoals;
 	}
 
-	public get playerNb(): PlayerSide {
-		return this._playerNb;
+	public get playerSide(): PlayerSide {
+		return this._playerSide;
 	}
 	
 	public get ready(): boolean {
 		return this._ready;
 	}
 	
-	private set ready(ready: boolean) {
+	public set ready(ready: boolean) {
 		this._ready = ready;
 	}
 
@@ -48,10 +48,6 @@ class Player {
 	public addOneGoal() {
 		this.nbGoals++;
 	}
-	
-	// public setToReady(): boolean {
-	// 	this.ready = true
-	// }
 }
 
 export default Player;

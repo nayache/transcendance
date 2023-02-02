@@ -47,7 +47,15 @@ const MiddlewareRedirectionPage = ({ toReturn }: Props) => {
 		}
 		else {
 			if (!doRedirectToRegister() && !doRedirectToSignin())
-				return toReturn;
+			{
+				if (!reduxUser.error)
+					return toReturn;
+				else
+				{
+					console.log("reduxUser.error = ", reduxUser.error)
+					return <div>Failed to fetch an api. Try to relog later</div>
+				}
+			}
 		}
 		return <></>
 	}

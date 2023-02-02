@@ -1,5 +1,5 @@
 import React from 'react'
-import Player from './Player.class';
+import Player, { PlayerSide } from './Player.class';
 import Ball from './Ball.class';
 
 export enum GameState {
@@ -40,6 +40,11 @@ class Referee {
 
 	private playersSetter(players: [Player, Player]) {
 		
+		if (players[0].playerSide == players[1].playerSide)
+			throw new Error("These two players are in the same sides");
+		this._player_left = players[0].playerSide == PlayerSide.Left ? players[0] : players[1];
+		this._player_right = players[0].playerSide == PlayerSide.Right ? players[0] : players[1];
+		/*
 		if (players[0] == players[1] || players[0].paddle == players[1].paddle)
 			throw new Error("These two players paddle are the same")
 		if (players[0].paddle.pos.x == players[1].paddle.pos.x)
@@ -54,6 +59,7 @@ class Referee {
 			this._player_left = players[1];
 			this._player_right = players[0];
 		}
+		*/
 	}
 
 	private set player_left(player_left: Player) {
@@ -91,8 +97,6 @@ class Referee {
 	}
 	
 	public get gamestate(): GameState {
-		if (!this._gamestate)
-			throw new Error('The gamestate have not been set up')
 		return this._gamestate
 	}
 
@@ -108,18 +112,23 @@ class Referee {
 
 
 	private isBehindPaddleLeft(): boolean {
-		this.player_right.addOneGoal()
-		return (
-			this.ball.pos.x - this.ball.radius <
-			this.player_left.paddle.pos.x + this.player_left.paddle.dimensions.width
-		)
+
+		const isBehindPaddleLeft: boolean = 
+			this.ball.pos.x + this.ball.radius <
+			this.player_left.paddle.pos.x
+		if (isBehindPaddleLeft)
+			this.player_right.addOneGoal();
+		return isBehindPaddleLeft;
 	}
 	
 	private isBehindPaddleRight(): boolean {
-		this.player_left.addOneGoal()
-		return (
-			this.ball.pos.x + this.ball.radius > this.player_right.paddle.pos.x
-		)
+
+		const isBehindPaddleRight: boolean = 
+			this.ball.pos.x - this.ball.radius > this.player_right.paddle.pos.x
+			+ this.player_right.paddle.dimensions.width
+		if (isBehindPaddleRight)
+			this.player_left.addOneGoal();
+		return isBehindPaddleRight;
 	}
 
 	private isBallOutsideOfField(): boolean {

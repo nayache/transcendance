@@ -59,6 +59,7 @@ class ClientApi {
 			console.log("avant de throw")
 			const error = new Error(data.message);
 			error.name = data.statusCode;
+			error.message = error.name + ': ' + error.message
 			throw error;
 		}
 		return data;

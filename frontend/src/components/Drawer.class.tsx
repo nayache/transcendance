@@ -71,15 +71,14 @@ class Drawer {
 		canvasHeight: number,
 		canvas: HTMLCanvasElement
 	) {
-		const { paddle_left, paddle_right, ball } = this
-
-		paddle_left.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
-		paddle_right.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
-		ball.setUp(context, canvasWidth, canvasHeight);
+		this.drawBgnd(context, canvasWidth, canvasHeight)
+		this.paddle_left.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
+		this.paddle_right.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
+		this.ball.setUp(context, canvasWidth, canvasHeight, undefined, {x: 1, y: 2});
 		//on va set 2 boutons qui vont permettre de mettre respectivement les 2 joueurs prets a jouer,
 		// quand les 2 joueurs sont prets, ca demarre
-		// player1.isReadyToPlay = true;
-		// player2.isReadyToPlay = true;
+		this.player_left.ready = true
+		this.player_right.ready = true
 		// if (player1.isReadyToPlay && player2.isReadyToPlay || true)
 	}
 
