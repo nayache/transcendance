@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { UserEntity } from "./user.entity";
 
 @Entity()
@@ -19,6 +19,6 @@ export class DataUserEntity {
     @Column({default: 0})
     loose: number
 
-    @OneToOne(() => UserEntity, (user) => user)
+    @ManyToOne(() => UserEntity, (user) => user, {onDelete: 'CASCADE'})
     user: UserEntity
 }

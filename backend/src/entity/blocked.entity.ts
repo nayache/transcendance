@@ -3,7 +3,7 @@ import { UserEntity } from "./user.entity";
 
 @Entity()
 @Unique(['user1', 'user2'])
-export class FriendEntity {
+export class BlockedEntity {
     constructor(author: UserEntity, user1: UserEntity, user2: UserEntity) {
         this.author = author;
         this.user1 = user1;
@@ -33,7 +33,4 @@ export class FriendEntity {
     
     @Column({nullable: false})
     user2Id: string
-
-    @Column({type: 'bool', default: false})
-    accepted: boolean
 }
