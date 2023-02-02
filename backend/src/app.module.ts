@@ -15,6 +15,8 @@ import { FriendEntity } from './entity/friend.entity';
 import { FriendController } from './friend/friend.controller';
 import { Avatar } from './entity/avatar.entity';
 import { DataUserEntity } from './entity/data-user.entity';
+import { BlockedEntity } from './entity/blocked.entity';
+import { BlockedController } from './blocked/blocked.controller';
 
 @Module({
   imports: [AuthModule, UserModule, ConfigModule, ConfigModule.forRoot(),
@@ -25,10 +27,10 @@ import { DataUserEntity } from './entity/data-user.entity';
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    entities: [UserEntity, FriendEntity, DataUserEntity, Avatar],
+    entities: [UserEntity, FriendEntity, DataUserEntity, Avatar, BlockedEntity],
     synchronize: true,
   }),],
-  controllers: [AppController, TwoFactorAuthController, TwoFactorAuthController, FriendController],
+  controllers: [AppController, TwoFactorAuthController, TwoFactorAuthController, FriendController, BlockedController],
   providers: [AppService, TwoFactorAuthService],
 })
 //export class AppModule {}

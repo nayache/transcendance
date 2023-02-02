@@ -5,6 +5,7 @@ import {
 	StreamableFile,
   } from '@nestjs/common';
   import { InjectRepository } from '@nestjs/typeorm';
+import { catchError } from 'rxjs';
   import { Readable } from 'stream';
   import { Repository } from 'typeorm';
   import { Avatar } from '../entity/avatar.entity';
@@ -42,6 +43,13 @@ import { UserService } from './user.service';
 	  return new StreamableFile(Readable.from(data));
 	}
 
+	toStreamableFiles(avatar_array: Avatar[]): StreamableFile[] {
+		let avatar_data : StreamableFile[] = [];
+		for (let i = 0; i < avatar_array.length; i++)
+			avatar_data.push(this.toStreamableFile(avatar_array[i].datafile));
+		return avatar_data;
+	}
+
 	async getCurrentAvatar(userId: string): Promise<Avatar> {
 		try {
 			const avatars: Avatar[] = await this.avatarRepository.find({where: {userId: userId, Current: true}});
@@ -69,4 +77,15 @@ import { UserService } from './user.service';
 		}
 	}
 	
+	async getAllAvatars(userId: string): Promise<Avatar[]> {
+		try {
+			const avatars: Avatar[] = await this.avatarRepository.find({where: {userId: userId}, select: {datafile: true}});
+			//console.log(avatars)
+			return avatars;
+		} catch(error)
+		{
+			return (null);
+		}
+	}
+
   }
