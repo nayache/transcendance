@@ -138,7 +138,8 @@ export class UserService {
 		return user;
 	  }
 
-	async setAvatar(userId: string, file: Express.Multer.File): Promise<void> {
+	async setAvatar(userId: string, file?: Express.Multer.File): Promise<void> {
+        console.log("file dans userService = ", file)
 		if (!file)
 		  throw new HttpException('File required', HttpStatus.NOT_ACCEPTABLE);
 		

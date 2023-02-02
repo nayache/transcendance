@@ -5,6 +5,10 @@ body * {
 	color: black;
 }
 
+button {
+	cursor: pointer;
+}
+
 .bgnd {
 	width: 100vw;
 	height: 100vh;

@@ -62,12 +62,15 @@ export class UserController {
 	}
   
 
-	@Put('avatar')
+	@Patch('avatar')
   	@UseInterceptors(FileInterceptor('file'))
-  	updateAvatar(
+  	async updateAvatar(
    	  @User() userId: string,
-   	  @UploadedFile() file: Express.Multer.File,
-  	): Promise<void> {
-      return this.userService.setAvatar(userId, file);
+   	  @UploadedFile() file?: Express.Multer.File,
+  	): Promise<StreamableFile> {
+        this.userService.setAvatar(userId, file);
+        const avatar = await this.userService.getAvatar(userId);
+        console.log(avatar)
+        return this.avatarService.toStreamableFile(avatar.datafile);
     }
 }

@@ -122,6 +122,7 @@ class ClientApi {
 		if (ClientApi.token)
 			headers = {
 				Authorization: `Bearer ${ClientApi.token}`,
+				'Accept': 'application/json',
 				'Content-type': 'application/json; charset=UTF-8'
 			}
 		else

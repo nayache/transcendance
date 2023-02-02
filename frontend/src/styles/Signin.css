@@ -2,6 +2,10 @@ body {
     background :  linear-gradient(to right, lightskyblue, lightblue);
 }
 
+img[alt=Avatar] {
+    cursor: pointer;
+}
+
 .signIn {
     padding: 150px 0;
 }

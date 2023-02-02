@@ -1,6 +1,6 @@
 export type Point = {
-	x?: number,
-	y?: number
+	x: number,
+	y: number
 }
 
 export type Vector2D = {
@@ -23,70 +23,74 @@ export enum Side {
 
 abstract class CanvasObject {
 
-	private _speed: Vector2D | undefined;
-	private _oldPos?: Point;
+	private _speed?: Vector2D;
 
 	constructor(
-		private _dimensions: Dimensions = {width: 10, height: 10},
+		private _dimensions?: Dimensions,
 		private _pos?: Point,
-		private _color: string = 'black',
+		private _color?: string,
 		private _context?: CanvasRenderingContext2D,
 		private _canvasWidth?: number,
 		private _canvasHeight?: number,
 		private _canvasPosY?: number,
 	) {
 		console.log("CanvasObject creation")
-		this._speed = undefined;
-		this._oldPos = _pos;
 	}
 
 
 	protected get context() {
+		if (!this._context)
+			throw new Error('The context have not been set up')
 		return this._context;
 	}
 
-	protected set context(ctx: CanvasRenderingContext2D | undefined) {
+	protected set context(ctx: CanvasRenderingContext2D) {
 		this._context = ctx;
 	}
 
 	protected get canvasWidth() {
+		if (!this._canvasWidth)
+			throw new Error('The canvasWidth have not been set up')
 		return this._canvasWidth;
 	}
 
-	protected set canvasWidth(canvasWidth: number | undefined) {
+	protected set canvasWidth(canvasWidth: number) {
 		this._canvasWidth = canvasWidth;
 	}
 
 	protected get canvasHeight() {
-		return this._canvasHeight;
+		if (!this._canvasHeight)
+			throw new Error('The canvasHeight have not been set up')
+		return this._canvasHeight
 	}
 
-	protected set canvasHeight(canvasHeight: number | undefined) {
+	protected set canvasHeight(canvasHeight: number) {
 		this._canvasHeight = canvasHeight;
 	}
 
 	protected get canvasPosY() {
+		if (!this._canvasPosY)
+			throw new Error('The canvasPosY have not been set up')
 		return this._canvasPosY;
 	}
 
-	protected set canvasPosY(canvasPosY: number | undefined) {
+	protected set canvasPosY(canvasPosY: number) {
 		this._canvasPosY = canvasPosY;
 	}
 	
 	public get pos() {
+		if (!this._pos)
+			throw new Error('The pos have not been set up')
 		return this._pos;
 	}
-
-	protected set pos(pos: Point | undefined) {
-		this._oldPos = this._pos
+	
+	public set pos(pos: Point) {
 		this._pos = pos;
-	}
-
-	protected get oldPos() {
-		return this._oldPos;
 	}
 	
 	public get dimensions() {
+		if (!this._dimensions)
+			throw new Error('The dimen_dimensions have not been set up')
 		return this._dimensions;
 	}
 
@@ -95,6 +99,8 @@ abstract class CanvasObject {
 	}
 	
 	protected get color() {
+		if (!this._color)
+			throw new Error('The dimen_color have not been set up')
 		return this._color;
 	}
 
@@ -103,10 +109,12 @@ abstract class CanvasObject {
 	}
 	
 	public get speed() {
+		if (!this._speed)
+			throw new Error('The speed have not been set up')
 		return this._speed;
 	}
 
-	protected set speed(speed: Vector2D | undefined) {
+	protected set speed(speed: Vector2D) {
 		this._speed = speed;
 	}
 
@@ -114,13 +122,8 @@ abstract class CanvasObject {
 		this.context = ctx;
 		this.canvasWidth = canvasWidth;
 		this.canvasHeight = canvasHeight;
-		this.canvasPosY = canvasPosY;
-	}
-
-	public isPosSetUp(): boolean {
-		if (this._pos && this._pos.x && this._pos.y)
-			return (true);
-		return (false)
+		if (canvasPosY)
+			this.canvasPosY = canvasPosY;
 	}
 
 	private static isBetween<T>(myItem: T, limitInf: T, limitSup: T, inclusive: boolean = true): boolean {
@@ -130,16 +133,15 @@ abstract class CanvasObject {
 	}
 
 	protected isInsideX(solidObject: CanvasObject): boolean {
-		if (this.pos?.x && this.pos?.y && solidObject.pos?.x && solidObject.pos?.y)
-			if (
-				(this.pos.x - this.dimensions.width <= solidObject.pos.x + solidObject.dimensions.width &&
-				this.pos.x + this.dimensions.width >= solidObject.pos.x) &&
-				(this.pos.y - this.dimensions.height <= solidObject.pos.y + solidObject.dimensions.height &&
-				this.pos.y + this.dimensions.height >= solidObject.pos.y)// &&
-				// (this.oldPos.y - this.dimensions.height <= solidObject.pos.y + solidObject.dimensions.height &&
-				// this.oldPos.y + this.dimensions.height >= solidObject.pos.y)
-			)
-				return (true);
+		if (
+			(this.pos.x - this.dimensions.width <= solidObject.pos.x + solidObject.dimensions.width &&
+			this.pos.x + this.dimensions.width >= solidObject.pos.x) &&
+			(this.pos.y - this.dimensions.height <= solidObject.pos.y + solidObject.dimensions.height &&
+			this.pos.y + this.dimensions.height >= solidObject.pos.y)// &&
+			// (this.oldPos.y - this.dimensions.height <= solidObject.pos.y + solidObject.dimensions.height &&
+			// this.oldPos.y + this.dimensions.height >= solidObject.pos.y)
+		)
+			return (true);
 		return (false);
 	}
 	
@@ -167,9 +169,7 @@ abstract class CanvasObject {
 	}
 	*/
 
-	draw(): void {
-		if (!this.context || !this.pos || !this.dimensions)
-			return ;
+	display(): void {
 		this.context.beginPath();
 		this.context.fillStyle = this.color;
 	}

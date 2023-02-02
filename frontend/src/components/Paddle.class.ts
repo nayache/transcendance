@@ -1,4 +1,5 @@
-import CanvasObject, { Point, Dimensions } from "./Object.class";
+import CanvasObject, { Point, Dimensions } from "./CanvasObject.class";
+import Player, { PlayerSide } from "./Player.class";
 
 const PADDLE_WIDTH: number = 20;
 const PADDLE_XSPACE: number = 10;
@@ -8,14 +9,14 @@ interface Props {
 
 class Paddle extends CanvasObject {
 
-	constructor(
-		private _nbPlayer: 1 | 2,
+	constructor(	
+		private _player?: Player,
 		height: number = 100,
 		color: string = 'black',
 		context?: CanvasRenderingContext2D,
 		canvasWidth?: number,
 		canvasHeight?: number,
-		canvasPosY: number = 0,
+		canvasPosY?: number,
 	) {
 		super(
 			{ width: PADDLE_WIDTH, height },
@@ -29,39 +30,43 @@ class Paddle extends CanvasObject {
 		document.addEventListener('mousemove', this.onMouseMove.bind(this));
 	}
 
-	public get nbPlayer() {
-		return (this._nbPlayer);
+	public bindToplayer(player: Player) {
+		this._player = player;
+	}
+	
+	public get player(): Player {
+		if (!this._player)
+			throw new Error('The player have not been set up');
+		return this._player;
 	}
 
-	private set y(y: number | undefined) {
-		this.pos = { ...this.pos, y }
-	}
-
-	private get y() {
-		return this.pos?.y;
-	}
 
 	onMouseMove(e: MouseEvent): void {
 		if (!this.canvasPosY)
 			this.canvasPosY = 0;
-		this.y = e.clientY - this.canvasPosY - this.dimensions.height / 2;
+		// if (this.pos)
+			this.pos.y = e.clientY - this.canvasPosY - this.dimensions.height / 2;
 	}
 
-	setUp(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, canvasPosY?: number): void {
+	setUp(
+		ctx: CanvasRenderingContext2D,
+		canvasWidth: number,
+		canvasHeight: number,
+		canvasPosY?: number
+	): void {
 		super.setUp(ctx, canvasWidth, canvasHeight, canvasPosY);
-		this.y = canvasHeight / 2 - this.dimensions.height / 2;
-		if (this._nbPlayer == 2 && this.canvasWidth)
-			this.pos = { ...this.pos, x: this.canvasWidth - this.dimensions.width - PADDLE_XSPACE }
+		const y: number = canvasHeight / 2 - this.dimensions.height / 2;
+		if (this.player.playerNb == PlayerSide.Right && this.canvasWidth)
+			this.pos = { x: this.canvasWidth - this.dimensions.width - PADDLE_XSPACE, y }
 		else
-			this.pos = { ...this.pos, x: PADDLE_XSPACE }
+			this.pos = { x: PADDLE_XSPACE, y }
 	}
 
-	draw(canvasPosY?: number): void {
-		console.log("this.pos dans draw paddle = ", this.pos)
-		if (!this.context || !this.pos?.x || !this.pos?.y || !this.dimensions)
-			return ;
-		this.canvasPosY = canvasPosY;
-		super.draw()
+	display(canvasPosY?: number): void {
+		console.log("this.pos dans display paddle = ", this.pos)
+		if (canvasPosY)
+			this.canvasPosY = canvasPosY;
+		super.display()
 		this.context.rect(this.pos.x, this.pos.y, this.dimensions.width, this.dimensions.height)
 		this.context.fill();
 	}

@@ -11,9 +11,7 @@ export interface UserProps {
 	error?: string,
 }
 
-interface ThunkProps {
-	body?: BodyInit | null
-}
+type ThunkPropsPseudo = IUser
 
 const initialState: UserProps = {
 	loading: false
@@ -55,13 +53,27 @@ async (undefined, { dispatch, getState }) => {
 })
 
 export const patchUserPseudo = createAsyncThunk('user/patchPseudo',
-async ({body}: ThunkProps, { getState }) => {
+async ({ pseudo }: ThunkPropsPseudo, { getState }) => {
 	const url = baseOfUrlUser + '/pseudo'
-	
-	const { pseudo } = await ClientApi.patch(url, body);
+
+	const data = await ClientApi.patch(url, JSON.stringify({ pseudo }));
+	const _pseudo = data.pseudo
 	const user: IUser = {
 		...(<RootState>getState()).user.user,
-		pseudo
+		pseudo: _pseudo
+	}
+	return user;
+})
+
+export const patchUserAvatar = createAsyncThunk('user/patchAvatar',
+async ({ avatar }: ThunkPropsPseudo, { getState }) => {
+	const url = baseOfUrlUser + '/avatar'
+
+	const data = await ClientApi.patch(url, JSON.stringify({ avatar }));
+	const _pseudo = data.pseudo
+	const user: IUser = {
+		...(<RootState>getState()).user.user,
+		pseudo: _pseudo
 	}
 	return user;
 })
