@@ -15,7 +15,6 @@ import { FriendEntity } from './entity/friend.entity';
 import { FriendController } from './friend/friend.controller';
 import { Avatar } from './entity/avatar.entity';
 import { DataUserEntity } from './entity/data-user.entity';
-import { BlockedService } from './blocked/blocked.service';
 import { BlockedEntity } from './entity/blocked.entity';
 import { BlockedController } from './blocked/blocked.controller';
 
@@ -32,7 +31,7 @@ import { BlockedController } from './blocked/blocked.controller';
     synchronize: true,
   }),],
   controllers: [AppController, TwoFactorAuthController, TwoFactorAuthController, FriendController, BlockedController],
-  providers: [AppService, TwoFactorAuthService, BlockedService],
+  providers: [AppService, TwoFactorAuthService],
 })
 //export class AppModule {}
 export class AppModule implements NestModule {

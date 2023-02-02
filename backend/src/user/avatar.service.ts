@@ -44,11 +44,12 @@ import { UserService } from './user.service';
 	}
 
 	toStreamableFiles(avatar_array: Avatar[]): StreamableFile[] {
-		let avatar_data : StreamableFile[];
+		let avatar_data : StreamableFile[] = [];
 		for (let i = 0; i < avatar_array.length; i++)
-			avatar_data[i] = this.toStreamableFile(avatar_array[i].datafile);
+			avatar_data.push(this.toStreamableFile(avatar_array[i].datafile));
 		return avatar_data;
 	}
+
 	async getCurrentAvatar(userId: string): Promise<Avatar> {
 		try {
 			const avatars: Avatar[] = await this.avatarRepository.find({where: {userId: userId, Current: true}});
@@ -79,6 +80,7 @@ import { UserService } from './user.service';
 	async getAllAvatars(userId: string): Promise<Avatar[]> {
 		try {
 			const avatars: Avatar[] = await this.avatarRepository.find({where: {userId: userId}, select: {datafile: true}});
+			//console.log(avatars)
 			return avatars;
 		} catch(error)
 		{

@@ -9,12 +9,12 @@ import { Avatar } from 'src/entity/avatar.entity';
 import { AvatarService } from './avatar.service';
 import { DataUserEntity } from 'src/entity/data-user.entity';
 import { BlockedEntity } from 'src/entity/blocked.entity';
-import { BlockedService } from 'src/blocked/blocked.service';
+import { BlockedController } from 'src/blocked/blocked.controller';
 
 @Module({
   imports: [ConfigModule.forRoot(), TypeOrmModule.forFeature([UserEntity, FriendEntity, DataUserEntity, Avatar, BlockedEntity])],
-  providers: [UserService, AvatarService, BlockedService],
-  controllers: [UserController],
+  providers: [UserService, AvatarService],
+  controllers: [UserController, BlockedController],
   exports: [UserService]
 })
 export class UserModule {}
