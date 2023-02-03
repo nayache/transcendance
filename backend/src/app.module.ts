@@ -6,9 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { UserEntity } from './entity/user.entity';
-import { TokenFtVerify } from './middlewares/token42.middleware';
 import { JwtDecoding } from './middlewares/jwt.middleware';
-import { TwoFaAuth } from './middlewares/twofaAuth.middleware';
 import { TwoFactorAuthController } from './two-factor-auth/two-factor-auth.controller';
 import { TwoFactorAuthService } from './two-factor-auth/two-factor-auth.service';
 import { FriendEntity } from './entity/friend.entity';
@@ -17,6 +15,7 @@ import { Avatar } from './entity/avatar.entity';
 import { DataUserEntity } from './entity/data-user.entity';
 import { BlockedEntity } from './entity/blocked.entity';
 import { BlockedController } from './blocked/blocked.controller';
+import { MiddlewareService } from './middlewares/middleware.service';
 
 @Module({
   imports: [AuthModule, UserModule, ConfigModule, ConfigModule.forRoot(),
@@ -31,13 +30,11 @@ import { BlockedController } from './blocked/blocked.controller';
     synchronize: true,
   }),],
   controllers: [AppController, TwoFactorAuthController, TwoFactorAuthController, FriendController, BlockedController],
-  providers: [AppService, TwoFactorAuthService],
+  providers: [AppService, TwoFactorAuthService, MiddlewareService],
 })
 //export class AppModule {}
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(JwtDecoding).exclude('/auth', '/user/add/', '/user/rm', '/user/all').forRoutes('/')
-    consumer.apply(TokenFtVerify).exclude('/auth', '/user/add', '/user/rm', '/user/all').forRoutes('/')
-    consumer.apply(TwoFaAuth).exclude('/auth', '/user/add', '/user/rm', '/user/all').forRoutes('/')
   }  
 }
