@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { TokenFtEntity } from 'src/entity/tokenFt.entitiy';
 import { JwtService } from '@nestjs/jwt';
 import { UserEntity } from 'src/entity/user.entity';
+import { JwtDataDto } from 'src/dto/jwtdata.dto';
 
 @Injectable()
 export class AuthService {
@@ -71,10 +72,16 @@ export class AuthService {
         return data.login;
     }
 
-    generateJwt(id: string, token: TokenFtEntity) : string {
-        const expire = this.getExpire(token.expires_in);
-        const payload = { id, token, expire };
-        return this.jwtService.sign(payload);
+    generateJwt(id: string, token?: TokenFtEntity, data?: JwtDataDto) : string {
+        let payload : any;
+        if (token) {
+            const expire = this.getExpire(token.expires_in);
+            payload = { infos: { userId: id, accessToken: token.access_token, refreshToken: token.refresh_token, expire: expire }};
+        }
+        else {
+            payload = { infos: { userId: id, accessToken: data.accessToken, refreshToken: data.refreshToken, expire: data.expire }};
+        }
+        return this.jwtService.sign(payload); 
     }
 
     decodeJwt(token: string) {
