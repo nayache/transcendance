@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react"
 import Background from './Background'
 import Baseline from "./Baseline";
-import { getUserPseudo, UserProps } from '../redux/user/userSlice';
+import { UserProps } from '../redux/user/userSlice';
+import { getUserPseudo } from "../redux/user/getPseudoSlice";
 import ClientApi from "./ClientApi.class";
 import { useSelector } from "react-redux";
 import { RootState } from '../redux/store';

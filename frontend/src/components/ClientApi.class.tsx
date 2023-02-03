@@ -42,6 +42,15 @@ class ClientApi {
 		return window.location.href;
 	}
 
+
+	public static async getFileFromImgSrc(filename: string, imgSrc: string) {
+		const res = await fetch(imgSrc)
+		const blob = await res.blob()
+		const file = new File([blob], filename + '.png', blob)
+		console.log(file)
+		return file
+	}
+
 	private static async fetchEndpoint(url: string, init?: RequestInit | undefined): Promise<any> {
 		const res = await fetch(url, init);
 		console.log("res = ", res);

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react"
-import { UserProps, verifyToken } from '../redux/user/userSlice';
+import { UserProps } from '../redux/user/userSlice';
+import { getVerifyToken, VerifyTokenProps } from "../redux/user/getVerifyTokenSlice";
 import ClientApi from "./ClientApi.class";
 import { useSelector } from "react-redux";
 import { RootState } from '../redux/store';
@@ -11,9 +12,10 @@ interface Props {
 const MiddlewareRedirectionPage = ({ toReturn }: Props) => {
 
 	const reduxUser: UserProps = useSelector((state: RootState) => state.user);
+	const reduxGetVerifyToken: VerifyTokenProps = useSelector((state: RootState) => state.getVerifyToken);
 
 	useEffect(() => {
-        ClientApi.dispatch(verifyToken());
+        ClientApi.dispatch(getVerifyToken());
     }, [])
 
 	useEffect(() => {
@@ -48,11 +50,11 @@ const MiddlewareRedirectionPage = ({ toReturn }: Props) => {
 		else {
 			if (!doRedirectToRegister() && !doRedirectToSignin())
 			{
-				if (!reduxUser.error)
+				if (reduxGetVerifyToken.getVerifyTokenError?.name != '401')
 					return toReturn;
 				else
 				{
-					console.log("reduxUser.error = ", reduxUser.error)
+					console.log("reduxUser.error = ", reduxGetVerifyToken.getVerifyTokenError)
 					return <div>Failed to fetch an api. Try to relog later</div>
 				}
 			}
