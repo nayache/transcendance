@@ -15,10 +15,10 @@ import { Avatar } from './entity/avatar.entity';
 import { DataUserEntity } from './entity/data-user.entity';
 import { BlockedEntity } from './entity/blocked.entity';
 import { BlockedController } from './blocked/blocked.controller';
-import { MiddlewareService } from './middlewares/middleware.service';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
-  imports: [AuthModule, UserModule, ConfigModule, ConfigModule.forRoot(),
+  imports: [AuthModule, UserModule, ChatModule, ConfigModule, ConfigModule.forRoot(),
   TypeOrmModule.forRoot({
     type: 'postgres',
     host: process.env.DB_HOST,
@@ -28,9 +28,10 @@ import { MiddlewareService } from './middlewares/middleware.service';
     database: process.env.DB_NAME,
     entities: [UserEntity, FriendEntity, DataUserEntity, Avatar, BlockedEntity],
     synchronize: true,
-  }),],
+  }),
+  ],
   controllers: [AppController, TwoFactorAuthController, TwoFactorAuthController, FriendController, BlockedController],
-  providers: [AppService, TwoFactorAuthService, MiddlewareService],
+  providers: [AppService, TwoFactorAuthService],
 })
 //export class AppModule {}
 export class AppModule implements NestModule {
