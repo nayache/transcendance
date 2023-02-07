@@ -6,8 +6,7 @@ import userReducer, { baseOfUrlUser, enableRedirectToSignin } from "./userSlice"
 export interface GetAvatarProps {
 	loading: boolean,
 	avatar?: File,
-	redirectToRegister?: boolean,
-	redirectToSignin?: boolean,
+	getAvatarStatusCode?: number,
 	getAvatarError?: SerializedError,
 }
 
@@ -30,7 +29,7 @@ async (undefined, { dispatch }) => {
 
 		if (err.name == '404')
 			dispatch(enableRedirectToSignin());
-		throw new Error(err.name + ': ' + err.message);
+		throw new Error(err.message);
 	}
 })
 

@@ -1,6 +1,8 @@
 import { useDispatch, useSelector } from "react-redux";
 import { UserProps, enableRedirectToRegister } from '../redux/user/userSlice';
 import { AppDispatch, RootState } from '../redux/store';
+import FileResizer from 'react-image-file-resizer'
+import axios from "axios";
 
 export const REGISTERAPIROUTE: string = 'http://localhost:3042/auth'
 export const REGISTERROUTE: string = '/register'
@@ -12,6 +14,7 @@ class ClientApi {
 	public static readonly registerApiRoute: string = REGISTERAPIROUTE;
 	public static readonly registerRoute: string = REGISTERROUTE;
 	public static readonly signinRoute: string = SIGNINROUTE;
+	/*
 	private static _dispatch?: AppDispatch;
 
 	public static set dispatch(dispatch: AppDispatch) {
@@ -22,7 +25,8 @@ class ClientApi {
 		if (!ClientApi._dispatch)
 			throw new Error('The dispatch in ClientApi have not been set up')
 		return ClientApi._dispatch;
-	}	
+	}
+	*/
 
 	public static get token(): string | null {
 		return localStorage.getItem(ClientApi.keyTokenLocalStorage);
@@ -42,15 +46,59 @@ class ClientApi {
 		return window.location.href;
 	}
 
+	public static async getBlobFromImgSrc(filename: string, imgSrc: string) {
+		const res = await fetch(imgSrc)
+		const blob = await res.blob()
+		// const file = new File([blob], filename + '.png', blob)
+		// console.log(file)
+		console.log("blob dans formation = ", blob)
+		return blob
+	}
 
 	public static async getFileFromImgSrc(filename: string, imgSrc: string) {
 		const res = await fetch(imgSrc)
 		const blob = await res.blob()
 		const file = new File([blob], filename + '.png', blob)
-		console.log(file)
+		console.log("file dans formation = ", file)
 		return file
 	}
+	
+	public static resizeFile(file: Blob) {
+		return new Promise((resolve) => {
+		FileResizer.imageFileResizer(
+			file,
+			300,
+			300,
+			"JPEG",
+			100,
+			0,
+			(uri) => {
+			resolve(uri);
+			},
+			"base64"
+		);
+		})
+	}
 
+	// public static async verifyCode(res: Response) {
+	// 	const data: any = await res.json();
+	// 	if (!res.ok)
+	// 	{
+	// 		if (data.statusCode == 401 || "token" in data && !data.token)
+	// 		{
+	// 			console.log("dans le 2nd if")
+	// 			ClientApi.redirect = ClientApi.registerRoute
+	// 		}
+	// 		else if ("token" in data && data.token)
+	// 			ClientApi.token = data.token;
+	// 		console.log("avant de throw")
+	// 		const error = new Error(data.message);
+	// 		error.name = data.statusCode;
+	// 		error.message = error.message
+	// 		throw error;
+	// 	}
+	// }
+	
 	private static async fetchEndpoint(url: string, init?: RequestInit | undefined): Promise<any> {
 		const res = await fetch(url, init);
 		console.log("res = ", res);
@@ -61,17 +109,20 @@ class ClientApi {
 			if (data.statusCode == 401 || "token" in data && !data.token)
 			{
 				console.log("dans le 2nd if")
-				ClientApi.dispatch(enableRedirectToRegister())
+				ClientApi.redirect = ClientApi.registerRoute
 			}
 			else if ("token" in data && data.token)
+			{
 				ClientApi.token = data.token;
+				ClientApi.redirect = '/'
+			}
 			console.log("avant de throw")
 			const error = new Error(data.message);
 			error.name = data.statusCode;
-			error.message = error.name + ': ' + error.message
+			error.message = error.message
 			throw error;
 		}
-		return data;
+		return data
 	}
 
 	public static async verifyToken(): Promise<any> {
@@ -105,6 +156,7 @@ class ClientApi {
 			ClientApi.redirect = location;
 		}
 	}
+	
 
 	public static async get(url: string): Promise<any> {
 
@@ -113,7 +165,7 @@ class ClientApi {
 		if (ClientApi.token)
 			headers = {
 				Authorization: `Bearer ${ClientApi.token}`,
-				'Content-type': 'application/json; charset=UTF-8'
+				// 'Content-type': 'application/json; charset=UTF-8'
 			}
 		else
 			headers = undefined;
@@ -124,23 +176,36 @@ class ClientApi {
 		return (data);
 	}
 
-	public static async patch(url: string, body: BodyInit | null | undefined): Promise<any> {
-		
+	
+	public static async patch(url: string, body: BodyInit | null | undefined, contentType?: string): Promise<any> {
+
 		const method: string = 'PATCH'
-		let headers: HeadersInit | undefined;
+		const headers: HeadersInit = {};
 	
 		if (ClientApi.token)
-			headers = {
-				Authorization: `Bearer ${ClientApi.token}`,
-				'Accept': 'application/json',
-				'Content-type': 'application/json; charset=UTF-8'
-			}
-		else
-			headers = undefined;
+			headers['Authorization'] = `Bearer ${ClientApi.token}`
+		if (contentType)
+			headers["Content-Type"] = contentType
 		let init: RequestInit | undefined = {
 			method, headers, body
 		};
-		const data: any = ClientApi.fetchEndpoint(url, init)
+		const data: any = await ClientApi.fetchEndpoint(url, init)
+		return (data);
+	}
+	
+	public static async post(url: string, body: BodyInit | null | undefined, contentType?: string): Promise<any> {
+		
+		const method: string = 'POST'
+		let headers: HeadersInit = {};
+		
+		if (ClientApi.token)
+			headers['Authorization'] = `Bearer ${ClientApi.token}`
+		if (contentType)
+			headers["Content-Type"] = contentType
+		let init: RequestInit | undefined = {
+			method, headers, body
+		};
+		const data: any = await ClientApi.fetchEndpoint(url, init)
 		return (data);
 	}
 }

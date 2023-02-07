@@ -23,7 +23,7 @@ const Register: React.FC = () => {
 	useEffect(() => {
 		const code: string | null = cleanUrlParameters.get('code');
 		
-		ClientApi.dispatch(disableRedirectToRegister());
+		// ClientApi.dispatch(disableRedirectToRegister());
 		try {
 			if (code)
 				ClientApi.register(code, '/');

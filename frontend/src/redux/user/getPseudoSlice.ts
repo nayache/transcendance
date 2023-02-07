@@ -6,8 +6,7 @@ import userReducer, { baseOfUrlUser, enableRedirectToSignin } from "./userSlice"
 export interface GetPseudoProps {
 	loading: boolean,
 	pseudo?: string,
-	redirectToRegister?: boolean,
-	redirectToSignin?: boolean,
+	getPseudoStatusCode?: number,
 	getPseudoError?: SerializedError,
 }
 

@@ -51,3 +51,9 @@ img[alt=Avatar] {
     margin: 1rem;
     border-radius: 15px 15px 15px 15px;
 }
+
+.error-text {
+    font-size: small;
+    color: red;
+    text-shadow: 0.5px 0.5px 0px black;
+}

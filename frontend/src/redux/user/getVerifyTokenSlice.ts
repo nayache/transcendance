@@ -5,8 +5,7 @@ import { RootState } from "../store";
 export interface VerifyTokenProps {
 	loading: boolean,
 	isGood?: true,
-	redirectToRegister?: boolean,
-	redirectToSignin?: boolean,
+	getVerifyTokenStatusCode?: number,
 	getVerifyTokenError?: SerializedError,
 }
 

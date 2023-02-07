@@ -1,8 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Neucha&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300');
 
-body * {
-	font-family: "Neucha", cursive;
-	color: black;
+
+body *{
+    font-family: "Poppins", cursive;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+a {
+    text-decoration: none;
 }
 
 button {

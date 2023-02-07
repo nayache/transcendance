@@ -5,10 +5,7 @@ import Register from './components/Register'
 import GamePage from './components/GamePage'
 import ErrorPage from './components/ErrorPage';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import store, { AppDispatch, RootState } from './redux/store';
 import ClientApi from './components/ClientApi.class';
-import { useDispatch, useSelector } from 'react-redux';
 import Signin from './components/Signin';
 
 const router = createBrowserRouter([
@@ -37,15 +34,15 @@ const router = createBrowserRouter([
 const App: React.FC = () => {
 
 	return (
-		<Provider store={store}>
+		// <Provider store={store}>
 			<AppChild/>
-		</Provider>
+		// </Provider>
 	)
 }
 
 const AppChild: React.FC = () => {
 
-	ClientApi.dispatch = useDispatch<AppDispatch>();
+	// ClientApi.dispatch = useDispatch<AppDispatch>();
 
 	return (
 		<React.Fragment>

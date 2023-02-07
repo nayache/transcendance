@@ -6,8 +6,8 @@ import userReducer, { baseOfUrlUser, enableRedirectToSignin } from "./userSlice"
 export interface PatchPseudoProps {
 	loading: boolean,
 	pseudo?: string,
-	redirectToRegister?: boolean,
-	redirectToSignin?: boolean,
+	errorMsg?: string,
+	patchPseudoStatusCode?: number,
 	patchPseudoError?: SerializedError,
 }
 
@@ -17,33 +17,56 @@ type ThunkPropsPseudo = {
 
 const initialState: PatchPseudoProps = {
 	loading: false,
-	pseudo: undefined,
 }
 
 export const patchUserPseudo = createAsyncThunk('user/patchPseudo',
-async ({ pseudo }: ThunkPropsPseudo, { getState }) => {
+async ({ pseudo }: ThunkPropsPseudo, { dispatch, getState }) => {
 	const endUrl:string = '/pseudo'
 	const url = baseOfUrlUser + endUrl
 
-	const data = await ClientApi.patch(url, JSON.stringify({ pseudo }));
-	return data.pseudo;
+	try {
+		const data = await ClientApi.patch(url, JSON.stringify({ pseudo }));
+		console.log("data dans patchPseudo = ", data)
+		return data.pseudo;
+	} catch (err) {
+		dispatch(patchPseudoSlice.actions.setStatusCode((<Error>err).name))
+		throw <SerializedError>err
+	}
 })
 
 const patchPseudoSlice = createSlice({
 	name: "getPseudo",
 	initialState,
-	reducers: {},
+	reducers: {
+		setStatusCode: (state, action) => {
+			state.patchPseudoStatusCode = action.payload
+		}
+	},
 	extraReducers(builder) {
 		builder.addCase(patchUserPseudo.pending, (state, action) => {
 			state.loading = true;
+			console.log("loading fut a true")
 		})
 		builder.addCase(patchUserPseudo.fulfilled, (state, action) => {
 			state.loading = false;
+			console.log("loading fut a false fulfilled")
 			state.pseudo = action.payload
 		})
 		builder.addCase(patchUserPseudo.rejected, (state, action) => {
 			state.loading = false;
+			console.log("loading fut a false rejected")
+			console.log("action.error.name = ", action.error.name);
+			console.log("action.error = ", action.error);
+			// state.patchPseudoError = {
+			// 	name: action.error.name,
+			// 	message: action.error.message,
+			// 	stack: action.error.stack,
+			// }
+
+			// installer un debugger redux pour voir ce qui se passe
+			state.errorMsg = action.error.message
 			state.patchPseudoError = action.error
+			console.log("state.patchPseudoError dans rejected = ", state.patchPseudoError);
 		})
 	},
 })

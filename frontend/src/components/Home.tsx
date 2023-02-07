@@ -1,33 +1,43 @@
 import React, { useEffect, useState } from "react"
-import Background from './Background'
-import Baseline from "./Baseline";
-import { UserProps } from '../redux/user/userSlice';
-import { getUserPseudo } from "../redux/user/getPseudoSlice";
+import { API_PSEUDO_ROUTE, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
 import ClientApi from "./ClientApi.class";
-import { useSelector } from "react-redux";
-import { RootState } from '../redux/store';
-import MiddlewareRedirectionPage from "./MiddlewareRedirectionPage";
+import MiddlewareRedirection from "./MiddlewareRedirection.class";
+import Navbar from "./Navbar";
 
 const Home = () => {
 
-	const reduxUser: UserProps = useSelector((state: RootState) => state.user);
+	const [isOkay, setIsOkay] = useState<boolean>(false);
+	const [pseudo, setPseudo] = useState<string>();
 
     useEffect(() => {
-        ClientApi.dispatch(getUserPseudo()); // pas besoin de verify token car getUserPseudo verifie 
+		(async () => {
+			try {
+				const data = await ClientApi.get(API_PSEUDO_ROUTE)
+				console.log("data.pseudo = ", data.pseudo)
+				setPseudo(data.pseudo)
+				console.log("pseudo = ", pseudo)
+				if (pseudo)
+					setIsOkay(true);
+			} catch (err) {
+				console.log('error')
+				console.log('err = ', err)
+				if (!pseudo)
+					ClientApi.redirect = SIGNIN_ROUTE
+			}
+		})()
     }, [])
 
 	const getPage = () => {
 		return (
 			<React.Fragment>
-				<Background />
-				<Baseline title={"Ping pong"}/>
+				<Navbar />
 			</React.Fragment>
 		)
 	}
 
 	return (
 		<React.Fragment>
-			<MiddlewareRedirectionPage toReturn={getPage()}/>
+			{isOkay && getPage()}
 		</React.Fragment>
 	)
 }

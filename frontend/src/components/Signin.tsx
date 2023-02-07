@@ -2,27 +2,27 @@ import '../styles/Signin.css'
 import AvatarDefault from '../img/avatar2.jpeg'
 import React, { useEffect, useState } from "react"
 import ClientApi from './ClientApi.class'
-import { disableRedirectToSignin } from '../redux/user/userSlice'
-import { patchUserAvatar } from '../redux/user/patchAvatarSlice'
-import { patchUserPseudo } from '../redux/user/patchPseudoSlice'
-import { useSelector } from "react-redux";
-import { RootState } from '../redux/store'
-import MiddlewareRedirectionPage from './MiddlewareRedirectionPage'
+import MiddlewareRedirection from './MiddlewareRedirection.class'
+import { API_AVATAR_ROUTE, API_BASE_USER, API_PSEUDO_ROUTE } from '../constants/RoutesApi'
 
 const Signin = () => {
 
-	const reduxGetAvatar = useSelector((state: RootState) => state.getAvatar)
-	const reduxPatchAvatar = useSelector((state: RootState) => state.patchAvatar)
-	const reduxGetPseudo = useSelector((state: RootState) => state.getPseudo)
-	const reduxPatchPseudo = useSelector((state: RootState) => state.patchPseudo)
-	const [username, setUsername] = useState<string>("");
+	const [pseudo, setPseudo] = useState<string>();
+	const [pseudoErrorText, setPseudoErrorText] = useState<string>("")
 	const [avatar, setAvatar] = useState<string>(AvatarDefault);
-	const [avatarFile, setAvatarFile] = useState<File | undefined>()
-	const promiseAvatarFile = ClientApi.getFileFromImgSrc("default", AvatarDefault)
+	const [avatarErrorText, setAvatarErrorText] = useState<string>("")
+	const [avatarFile, setAvatarFile] = useState<File>()
+	const [isOkay, setIsOkay] = useState<boolean>(false);
 
 
 	useEffect(() => {
-		ClientApi.dispatch(disableRedirectToSignin());
+		(async () => {
+			try {
+				setIsOkay(await MiddlewareRedirection.isTokenOkay())
+			} catch (err) {
+				console.log("err = ", err);
+			}
+		})()
 	}, [])
 
 
@@ -30,52 +30,51 @@ const Signin = () => {
 		event.preventDefault();
 
 		try {
-			if (!avatarFile)
-				setAvatarFile(await promiseAvatarFile)
-		} catch(err) {
-			console.log("err = ", err)
+			const formData = new FormData()
+			if (pseudo)
+				formData.append('pseudo', pseudo)
+			if (avatar && avatarFile)
+				formData.append("file", avatarFile, avatarFile.name)
+			const data = await ClientApi.post(API_BASE_USER, formData)
+			ClientApi.redirect = '/'
+		} catch (err) {
+			// setPseudoErrorText("Please choose a valid pseudo")
+			// setAvatarErrorText("Please choose a good avatar with a new filename")
 		}
-		console.log('username = ', username)
-		console.log('avatar = ', avatar)
-		console.log('avatarFile = ', avatarFile)
-		ClientApi.dispatch(patchUserPseudo({ pseudo: username }))
-		// if (reduxUser.error) 400 bad request mettre un message d'erreur pour le pseudo
-		ClientApi.dispatch(patchUserAvatar({ avatar: avatarFile }))
-		console.log("reduxPatchAvatar = ", reduxPatchAvatar);
-		console.log("reduxPatchPseudo = ", reduxPatchPseudo);
-		if (!reduxPatchAvatar.loading && !reduxPatchAvatar.patchAvatarError
-		&& !reduxPatchPseudo.loading && !reduxPatchPseudo.patchPseudoError)
-			ClientApi.redirect = "/"
 	}
 
 	const handleChangeName = (event: React.ChangeEvent<HTMLInputElement>) => {
-		setUsername(event.target.value);
+		setPseudo(event.target.value);
 	}
 
-	const handleChangeAvatar = (event: React.ChangeEvent<HTMLInputElement>) => {
+	const handleChangeAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
 		if (event.target.files)
 		{
-			console.log("event.target.files[0] = ", event.target.files[0]);
+			console.log("event.target.fiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiles[0] = ", event.target.files[0]);
 			setAvatar(URL.createObjectURL(event.target.files[0]));
-			setAvatarFile(event.target.files[0]);
+			setAvatarFile(event.target.files[0])
+			// const file = ClientApi.resizeFile(event.target.files[0]) as Promise<File>
+			// setAvatarFile(await file);
 		}
 	}
 	
 	const getPage = () => {
 		return (
 			<div className="signIn">
-				<form onSubmit={handleSubmit} encType="multipart/form-data"> 
-					<h3>Choose your name</h3>
-					<input value={username} type="text" 
+				<form onSubmit={(e) => handleSubmit(e)} encType="multipart/form-data"> 
+					<h3>Choose your pseudo</h3>
+					<input value={pseudo} type="text" 
 					id="input1"
-					placeholder="Enter your name..."
-					onChange={handleChangeName}/>
+					placeholder="Enter your pseudo..."
+					onChange={(e) => handleChangeName(e)}/>
+					{pseudoErrorText && <p className='error-text'>{pseudoErrorText}</p>}
 					<h3>Choose your avatar</h3>
 					<label htmlFor="fileChange">
 						<input type="file" accept="image/png, image/jpeg" id="fileChange" hidden 
-						onChange={handleChangeAvatar}/>
+						onChange={(e) => handleChangeAvatar(e)}/>
 						<img src={avatar} alt="Avatar"/>
 					</label>
+					{avatarErrorText && <p className='error-text'>{avatarErrorText}</p>}
 					<br></br>
 					<button type="submit">
 						LOGIN
@@ -88,7 +87,7 @@ const Signin = () => {
 
 	return (
 		<React.Fragment>
-			<MiddlewareRedirectionPage toReturn={getPage()}/>
+			{isOkay && getPage()}
 		</React.Fragment>
 	)
 }
