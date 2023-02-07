@@ -1,5 +1,11 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useParams } from 'react-router-dom';
+import ClientApi from './ClientApi.class';
+import { disableRedirectToRegister } from '../redux/user/userSlice';
+import { AppDispatch, RootState } from '../redux/store';
+import { useDispatch, useSelector } from "react-redux";
+import "../styles/Register.css"
+import logo42 from "../img/42.jpg"
 
 const Register: React.FC = () => {
 	
@@ -8,38 +14,42 @@ const Register: React.FC = () => {
 	const rawUrlParameters: string = window.location.search;
 	const cleanUrlParameters: URLSearchParams = new URLSearchParams(rawUrlParameters);
 
-	const code: string | null = cleanUrlParameters.get('code');
 	/**
 	 * code vaut null au debut mais au second appel de <Register />
 	 * avec "code" en parametre de l'url ("/register?code=ssfejjg") (cf window.location.href),
 	 * "code" va valoir la valeur en parametre (en l'occurence 'ssfejjg')
 	 */
-	const redirectDependingOnToken = async (location: string = '/') => {
-		console.log('code = ', code)
-		if (code)
-		{
-			try {
-				const res: Response = await fetch(domain + '/auth?code=' + code);
-				const data = await res.json();
-				localStorage.setItem('token', JSON.stringify(data));
-				window.location.href = location;
-			} catch (e) {
-				console.log("e = ", e); // dire de reessayer car probleme dans le fetch 
-			}
+	
+	useEffect(() => {
+		const code: string | null = cleanUrlParameters.get('code');
+		
+		// ClientApi.dispatch(disableRedirectToRegister());
+		try {
+			if (code)
+				ClientApi.register(code, '/');
+		} catch (e) {
+			console.log("e = ", e);
 		}
-	}
+	}, [])
 
 	const onClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
 		event.preventDefault();
 		window.location.href = api42Url;
 	}
-
-	redirectDependingOnToken('/');
-
+	
 	return (
-		<React.Fragment>
-			<button onClick={onClick}>Clique ici pour se log mgl</button>
-		</React.Fragment>
+		<div className='Register'>
+			<button onClick={onClick}> 
+				<img src={logo42} alt="42"/>
+			</button>
+			<div className ="field">
+			<div className ="net"></div>
+			<div className="ping"></div>
+			<div className="pong"></div>
+			<div className="ball"></div>
+			</div>
+		</div>
 	)
 }
+
 export default Register;

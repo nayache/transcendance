@@ -90,7 +90,7 @@ export class UserController {
 
 /*	@Patch('avatar')
   	@UseInterceptors(FileInterceptor('file'))
-  	updateAvatar(
+  	async updateAvatar(
    	  @User() userId: string,
    	  @UploadedFile() file?: Express.Multer.File,
   	): Promise<void> {
