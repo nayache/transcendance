@@ -33,7 +33,7 @@ export class UserService {
 
     isValidPseudo(pseudo: string) : boolean {
         console.log('in validpseudo()',pseudo)
-        return (pseudo.length > 3 && pseudo.length < 25);
+        return (pseudo.length > 3 && pseudo.length < 26);
     }
 
     async pseudoExist(pseudo: string): Promise<boolean> {

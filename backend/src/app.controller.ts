@@ -9,19 +9,13 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
   
   @Get()
-  @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req) {
-  }
-
-  @Get('auth/google/callback')
-  @UseGuards(AuthGuard('google'))
-  googleAuthRedirect(@Req() req) {
-    return this.appService.googleLogin(req);
+  fnn() {
+    return "Hi"
   }
 
   @Get('/hello')
-  fn(@User() user: UserEntity) {
-    console.log('Welcome ' + user.login);
+  fn(@User() userId: string) {
+    return ('hello')
   }
 
 }
