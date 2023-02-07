@@ -5,6 +5,7 @@ import { JwtDataDto } from 'src/dto/jwtdata.dto';
 import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
 import { UserService } from 'src/user/user.service';
 import { ErrorException } from 'src/exceptions/error.exception';
+import { AboutErr, TypeErr } from '../enums/error_constants';
 
 @Injectable()
 export class AuthService {
@@ -106,7 +107,7 @@ export class AuthService {
 
     async jwtVerif(token: string): Promise<string> {
         if (!this.authorizationBearerHeader(token))
-            throw new ErrorException(HttpStatus.UNAUTHORIZED, 'header', 'invalid', 'authorization header (bearer) incorrect')
+            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.HEADER, TypeErr.INVALID, 'authorization header (bearer) incorrect')
         
         const decoded = this.decodeJwt(token.split(' ')[1]);
         if (!decoded) {
@@ -114,7 +115,7 @@ export class AuthService {
         }
         const user = await this.userService.findById(decoded.infos.userId);
         if (!user) {
-            throw new ErrorException(HttpStatus.FORBIDDEN, 'user', 'not_found', 'token not associated with an user');
+            throw new ErrorException(HttpStatus.FORBIDDEN, AboutErr.USER, TypeErr.NOT_FOUND, 'token not associated with an user');
         }
         if (this.tokenIsExpire(decoded.infos.expire)) {
             const newToken = await this.updateToken(decoded.data.refreshToken)
