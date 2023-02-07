@@ -1,9 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { TokenFtEntity } from 'src/entity/tokenFt.entitiy';
 import { JwtService } from '@nestjs/jwt';
 import { JwtDataDto } from 'src/dto/jwtdata.dto';
 import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
 import { UserService } from 'src/user/user.service';
+import { ErrorException } from 'src/exceptions/error.exception';
 
 @Injectable()
 export class AuthService {
@@ -105,7 +106,7 @@ export class AuthService {
 
     async jwtVerif(token: string): Promise<string> {
         if (!this.authorizationBearerHeader(token))
-            throw new HttpException('Error authorization header', HttpStatus.UNAUTHORIZED)
+            throw new ErrorException(HttpStatus.UNAUTHORIZED, 'header', 'invalid', 'authorization header (bearer) incorrect')
         
         const decoded = this.decodeJwt(token.split(' ')[1]);
         if (!decoded) {
@@ -113,12 +114,13 @@ export class AuthService {
         }
         const user = await this.userService.findById(decoded.infos.userId);
         if (!user) {
-            throw new HttpException({ message: 'User not found', token: null }, HttpStatus.FORBIDDEN)
+            throw new ErrorException(HttpStatus.FORBIDDEN, 'user', 'not_found', 'token not associated with an user');
         }
         if (this.tokenIsExpire(decoded.infos.expire)) {
             const newToken = await this.updateToken(decoded.data.refreshToken)
             if (!newToken) {
                 throw new InvalidTokenException(null);
+               // throw new InvalidTokenException(null);
             }
             throw new InvalidTokenException(this.generateJwt(decoded.infos.userId, newToken));
         } 
