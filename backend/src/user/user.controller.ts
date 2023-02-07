@@ -6,6 +6,7 @@ import { UserService } from './user.service';
 import { AvatarService } from './avatar.service';
 import { Avatar } from 'src/entity/avatar.entity';
 import { ErrorException } from 'src/exceptions/error.exception';
+import { AboutErr, TypeErr } from '../enums/error_constants';
 @Controller('user')
 export class UserController {
     constructor(
@@ -17,7 +18,7 @@ export class UserController {
 		console.log('userId:',userId)
         const pseudo = await this.userService.getPseudoById(userId)
         if (!pseudo)
-            throw new ErrorException(HttpStatus.NOT_FOUND, 'pseudo', 'not_found', 'user not have pseudo')
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.PSEUDO, TypeErr.NOT_FOUND, 'user not have pseudo');
         
         return { pseudo: pseudo }
     }
@@ -25,15 +26,15 @@ export class UserController {
     @Patch('pseudo')
     async savePseudo(@User() userId: string, @Body('pseudo') pseudo?: string) {
         if (!pseudo)
-            throw new ErrorException(HttpStatus.BAD_REQUEST, 'pseudo', 'empty', 'cannot read pseudo parameter');
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.EMPTY, 'cannot read pseudo parameter');
 
         console.log('userId received: ', userId, 'pseudo in param: ', pseudo) 
         
         if (!this.userService.isValidPseudo(pseudo))
-            throw new ErrorException(HttpStatus.BAD_REQUEST, 'pseudo', 'invalid', 'pseudo input is invalid');
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.INVALID, 'pseudo input is invalid');
         
         if (!await this.userService.addPseudo(userId, pseudo))
-            throw new ErrorException(HttpStatus.BAD_REQUEST, 'pseudo', 'duplicated', 'pseudo is already used');
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.DUPLICATED, 'pseudo is already used');
 
         return { pseudo: pseudo }
     }

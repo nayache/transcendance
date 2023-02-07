@@ -1,11 +1,12 @@
-export enum AboutError {
+export enum AboutErr {
 	TOKEN,
 	HEADER,
 	USER,
-	PSEUDO
+	PSEUDO,
+	AVATAR
 }
 
-export enum TypeError {
+export enum TypeErr {
 	UPDATED,
 	EXPIRED,
 	NOT_FOUND,
