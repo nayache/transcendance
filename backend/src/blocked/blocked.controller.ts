@@ -24,7 +24,7 @@ export class BlockedController {
 		return this.userService.deleteBlock(userId, id);
 	}
 
-	@Get('/:id')
+	@Get('')
 	async getBlocked(@User() userId: string)
 	{
 		return this.userService.getBlock(userId);

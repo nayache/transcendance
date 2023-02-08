@@ -99,7 +99,8 @@ export class UserController {
          @UploadedFile('file') file?: Express.Multer.File,
       ): Promise<any> {
 		const num = await this.avatarService.countavatar(userId);
-		if (num < 10 && file) {
+		console.log(num)
+		if (num < 10) {
         	await this.userService.setAvatar(userId, file);
 			const avatar = await this.userService.getAvatar(userId);
        		 console.log('avatar:', avatar);
@@ -109,9 +110,8 @@ export class UserController {
             	avatar: this.avatarService.toStreamableFile(avatar.datafile)
         	}
 		}
-		if (num > 9 || !file) {
-			throw new HttpException('Already 10 avatars or no file provided', HttpStatus.BAD_REQUEST);
-			//this.deleteAvatar(userId, )
+		if (num > 9) {
+			throw new HttpException('Already 10 avatars', HttpStatus.BAD_REQUEST);
 		}
     }
 
