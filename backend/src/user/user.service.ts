@@ -170,13 +170,14 @@ export class UserService {
 
 	async setAvatar(userId: string, file: Express.Multer.File): Promise<void> {
 		if (!file)
-		  throw new HttpException('File required', HttpStatus.NOT_ACCEPTABLE);
+		  throw new HttpException('File required', HttpStatus.BAD_REQUEST);
 		
 		const filename = file.originalname;
 		const datafile = file.buffer;
 		if (await this.avatarService.exist(userId, filename))
+		{
 			throw new HttpException('Avatar Filename is already in database for this user', HttpStatus.CONFLICT);
-		
+		}
 		const user: UserEntity = await this.findById(userId);
 		const curr_avatar: Avatar = await this.avatarService.getCurrentAvatar(userId);
 		await this.avatarService.createAvatar(filename, datafile, user);
@@ -212,20 +213,28 @@ export class UserService {
 		userId: string,
 		user2Id: string
 	): Promise <boolean> {
-		return this.blockedRepository.exist({where: [
+		try {
+		return await this.blockedRepository.exist({where: [
 			{user1Id: user2Id, user2Id: userId},
 			{user1Id: userId, user2Id: user2Id}
 		]});
+	} catch (error) {
+		throw new HttpException('Error Database', HttpStatus.NOT_FOUND);
+	}
 	}
 
 	async blockandauthorExist(
 		userId: string,
 		user2Id: string
 	): Promise <boolean> {
-		return this.blockedRepository.exist({where: [
+		try {
+		return await this.blockedRepository.exist({where: [
 			{user1Id: user2Id, user2Id: userId, authorId: userId},
 			{user1Id: userId, user2Id: user2Id, authorId: userId}
 		]});
+		} catch(error) {
+			throw new HttpException('Error database', HttpStatus.NOT_FOUND);
+		}
 	}
 
 	async deleteBlock(userId: string, id: string): Promise<void> {
@@ -236,5 +245,10 @@ export class UserService {
 		} catch (error) {
 		  throw new HttpException('Could not destroy blockEntity', HttpStatus.BAD_REQUEST);
 		}
+	}
+
+	async getBlock(userId: string): Promise<BlockedEntity[]> {
+		const block: BlockedEntity[] = await this.blockedRepository.find({where: {authorId: userId}});
+		return block;
 	}
 }

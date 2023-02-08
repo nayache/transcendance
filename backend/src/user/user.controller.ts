@@ -61,42 +61,78 @@ export class UserController {
 	@Get('avatar')
 	async getAvatar(
 	  @User() userId: string,
-	): Promise<StreamableFile> {
+	): Promise<{avatar: StreamableFile}> {
 	  const avatar = await this.userService.getAvatar(userId);
-	  console.log(avatar)
-	  return this.avatarService.toStreamableFile(avatar.datafile);
+	  return ({avatar: this.avatarService.toStreamableFile(avatar.datafile)});
 	}
 
 	@Get('avatar/all')
 	async getAllAvatar(
 		@User() userId: string,
-	): Promise <StreamableFile[]> {
+	): Promise <{avatars: StreamableFile[]}> {
 		const avatar_array : Avatar[] = await this.avatarService.getAllAvatars(userId);
-		return (this.avatarService.toStreamableFiles(avatar_array));
+		return ({avatars: this.avatarService.toStreamableFiles(avatar_array)});
 	}
-  
-    @Patch('avatar')
+	
+	@Post('')
+	  @UseInterceptors(FileInterceptor('file'))
+	  async postpseudoAvatar(
+		@User() userId: string,
+		@Body('pseudo') pseudo?: string,
+		@UploadedFile('file') file?: Express.Multer.File,
+	): Promise <any> {
+		try {
+		  if (!pseudo)
+			throw new HttpException('invalid argument', HttpStatus.BAD_REQUEST);
+		  await this.userService.setAvatar(userId, file);
+		  const avatar = await this.userService.getAvatar(userId);
+		  if (!await this.userService.addPseudo(userId, pseudo))
+            throw new HttpException('pseudo already used by other user', HttpStatus.CONFLICT)
+		  return {statuscode: 200,
+			pseudo: pseudo, avatar: this.avatarService.toStreamableFile(avatar.datafile)
+		  }
+		} catch (error)
+		{
+			if (await this.userService.getPseudoById(userId) != pseudo && (await this.avatarService.getCurrentAvatar(userId)).file != file.filename)
+				return {statuscode:400, errors: {type:"peusdo and avatar not set", pseudo:pseudo, avatar: file}};
+		}
+	}
+
+	@Patch('avatar')
       @UseInterceptors(FileInterceptor('file'))
       async updateAvatar(
          @User() userId: string,
-         @UploadedFile() file?: Express.Multer.File,
-      ): Promise<StreamableFile> {
-        if(!file)
-            throw new HttpException('invalid argument', HttpStatus.BAD_REQUEST)
-        this.userService.setAvatar(userId, file);
-        const avatar = await this.userService.getAvatar(userId);
-        console.log('avatar:', avatar);
-        return this.avatarService.toStreamableFile(avatar.datafile);
+         @UploadedFile('file') file?: Express.Multer.File,
+      ): Promise<any> {
+		const num = await this.avatarService.countavatar(userId);
+		console.log(num)
+		if (num < 10) {
+        	await this.userService.setAvatar(userId, file);
+			const avatar = await this.userService.getAvatar(userId);
+       		 console.log('avatar:', avatar);
+			if (!avatar)
+				return {};
+       		return {
+            	avatar: this.avatarService.toStreamableFile(avatar.datafile)
+        	}
+		}
+		if (num > 9) {
+			throw new HttpException('Already 10 avatars', HttpStatus.BAD_REQUEST);
+		}
     }
 
-/*	@Patch('avatar')
-  	@UseInterceptors(FileInterceptor('file'))
-  	async updateAvatar(
-   	  @User() userId: string,
-   	  @UploadedFile() file?: Express.Multer.File,
-  	): Promise<void> {
-        if(!file)
-            throw new HttpException('invalid argument', HttpStatus.BAD_REQUEST)
-      return this.userService.setAvatar(userId, file);
-    }*/
+	@Delete('avatar/:filename')
+	  async deleteAvatar(
+		 @User() userId: string,
+		 @Body('filename') filename?: string
+	  ) {
+			if (!filename)
+				throw new HttpException('filename for delete is not provided', HttpStatus.BAD_REQUEST);
+			const avatarId = await this.avatarService.getavatarId(userId, filename);
+			if (!avatarId)
+				throw new HttpException('filename is not in database for this user', HttpStatus.BAD_REQUEST);
+			if (avatarId == (await this.avatarService.getCurrentAvatar(userId)).id)
+				throw new HttpException('cannot delete current avatar', HttpStatus.BAD_REQUEST);
+			return this.avatarService.deleteAvatar(avatarId);
+	  }
 }

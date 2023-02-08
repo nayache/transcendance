@@ -63,7 +63,6 @@ import { UserService } from './user.service';
 
 	async exist(userId: string, filename: string): Promise<boolean> {
 		const res: boolean = await this.avatarRepository.exist({where: [{userId: userId, file: filename}]})
-		console.log(res)
 		return (res);
 	}
 
@@ -80,12 +79,27 @@ import { UserService } from './user.service';
 	async getAllAvatars(userId: string): Promise<Avatar[]> {
 		try {
 			const avatars: Avatar[] = await this.avatarRepository.find({where: {userId: userId}, select: {datafile: true}});
-			//console.log(avatars)
 			return avatars;
 		} catch(error)
 		{
 			return (null);
 		}
+	}
+
+	async getavatarId(userId:string, filename: string): Promise<string> {
+		try {
+			const avatar: Avatar[] = await this.avatarRepository.find({where: {userId: userId, file: filename}});
+			return avatar[0].id;
+		}
+		catch (error)
+		{
+			return (null);
+		}
+	}
+
+	async countavatar(userId: string): Promise<number> {
+		const num: number = await this.avatarRepository.count({where: {userId: userId}});
+		return num;
 	}
 
   }

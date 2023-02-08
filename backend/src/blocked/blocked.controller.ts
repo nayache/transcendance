@@ -1,4 +1,4 @@
-import { Controller, Delete, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
+import { Controller, Delete, Get, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
 import { Http2ServerRequest } from 'http2';
 import { User } from 'src/decorators/user.decorator';
 import { UserService } from 'src/user/user.service';
@@ -17,10 +17,16 @@ export class BlockedController {
 	}
 
 	@Delete('/:id')
-	async unblockUser(@User() userId: string, @Param('id') id: string)
+	async unblockUser(@User() userId: string, @Param('id') id?: string)
 	{
 		if (!await this.userService.blockandauthorExist(userId, id))
-			throw new HttpException('Blockship does not exist', HttpStatus.BAD_REQUEST);
+			throw new HttpException('Blockship does not exist or User is not the creator of Block', HttpStatus.BAD_REQUEST);
 		return this.userService.deleteBlock(userId, id);
+	}
+
+	@Get('')
+	async getBlocked(@User() userId: string)
+	{
+		return this.userService.getBlock(userId);
 	}
 }
