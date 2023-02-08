@@ -7,8 +7,8 @@ export enum AboutErr {
 }
 
 export enum TypeErr {
-	UPDATED,
-	EXPIRED,
+	EXPIRED, //token expire
+	TIMEOUT, // token cannot resfresh
 	NOT_FOUND,
 	EMPTY, // parametre vide
 	INVALID,

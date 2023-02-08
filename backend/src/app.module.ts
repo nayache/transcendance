@@ -33,9 +33,8 @@ import { ChatModule } from './chat/chat.module';
   controllers: [AppController, TwoFactorAuthController, TwoFactorAuthController, FriendController, BlockedController],
   providers: [AppService, TwoFactorAuthService],
 })
-//export class AppModule {}
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtDecoding).exclude('/auth', '/user/add/', '/user/rm', '/user/all').forRoutes('/')
+    consumer.apply(JwtDecoding).exclude('/auth', '/auth/token', '/user/add/', '/user/rm', '/user/all').forRoutes('/')
   }  
 }
