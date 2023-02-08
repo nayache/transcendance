@@ -243,4 +243,9 @@ export class UserService {
 		  throw new HttpException('Could not destroy blockEntity', HttpStatus.BAD_REQUEST);
 		}
 	}
+
+	async getBlock(userId: string): Promise<BlockedEntity[]> {
+		const block: BlockedEntity[] = await this.blockedRepository.find({where: {authorId: userId}});
+		return block;
+	}
 }
