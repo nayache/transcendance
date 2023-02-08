@@ -1,11 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { TokenFtEntity } from 'src/entity/tokenFt.entitiy';
 import { JwtService } from '@nestjs/jwt';
-import { UserEntity } from 'src/entity/user.entity';
+import { JwtDataDto } from 'src/dto/jwtdata.dto';
+import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
+import { UserService } from 'src/user/user.service';
+import { ErrorException } from 'src/exceptions/error.exception';
+import { AboutErr, TypeErr } from '../enums/error_constants';
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly jwtService: JwtService) {}
+    constructor(private readonly jwtService: JwtService, private readonly userService: UserService) {}
 
     async generateToken(code: string): Promise<TokenFtEntity> | null {
        if (!code) {
@@ -71,10 +75,16 @@ export class AuthService {
         return data.login;
     }
 
-    generateJwt(id: string, token: TokenFtEntity) : string {
-        const expire = this.getExpire(token.expires_in);
-        const payload = { id, token, expire };
-        return this.jwtService.sign(payload);
+    generateJwt(id: string, token?: TokenFtEntity, data?: JwtDataDto) : string {
+        let payload : any;
+        if (token) {
+            const expire = this.getExpire(token.expires_in);
+            payload = { infos: { userId: id, accessToken: token.access_token, refreshToken: token.refresh_token, expire: expire }};
+        }
+        else {
+            payload = { infos: { userId: id, accessToken: data.accessToken, refreshToken: data.refreshToken, expire: data.expire }};
+        }
+        return this.jwtService.sign(payload); 
     }
 
     decodeJwt(token: string) {
@@ -86,5 +96,39 @@ export class AuthService {
                 console.log('expired');
             return null
         }
+    }
+
+    authorizationBearerHeader(data: string) : boolean {
+        if (data && data.split(' ')[0] === 'Bearer' && data.split(' ')[1])
+            return true;
+        else
+            return false;
+    }
+
+    async jwtVerif(token: string): Promise<string> {
+        if (!this.authorizationBearerHeader(token))
+            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.HEADER, TypeErr.INVALID, 'authorization header (bearer) incorrect')
+        
+        const decoded = this.decodeJwt(token.split(' ')[1]);
+        if (!decoded) {
+            throw new InvalidTokenException(null);
+        }
+        const user = await this.userService.findById(decoded.infos.userId);
+        if (!user) {
+            throw new ErrorException(HttpStatus.FORBIDDEN, AboutErr.USER, TypeErr.NOT_FOUND, 'token not associated with an user');
+        }
+        if (this.tokenIsExpire(decoded.infos.expire)) {
+            const newToken = await this.updateToken(decoded.data.refreshToken)
+            if (!newToken) {
+                throw new InvalidTokenException(null);
+               // throw new InvalidTokenException(null);
+            }
+            throw new InvalidTokenException(this.generateJwt(decoded.infos.userId, newToken));
+        } 
+        else if (this.tokenIsExpiring(decoded.exp)) {
+            console.log('jwt expriring.. -> regenerate')
+            throw new InvalidTokenException(this.generateJwt(decoded.infos.userId, undefined, decoded.infos));
+        }
+        return user.id;
     }
 }

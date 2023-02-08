@@ -2,7 +2,6 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataUserEntity } from 'src/entity/data-user.entity';
 import { FriendEntity } from 'src/entity/friend.entity';
-import { TokenFtEntity } from 'src/entity/tokenFt.entitiy';
 import { UserEntity } from 'src/entity/user.entity';
 import { Repository } from 'typeorm';
 import { Avatar } from 'src/entity/avatar.entity';
@@ -19,7 +18,8 @@ export class UserService {
     
     async saveUser(login: string) {
         const user : UserEntity = await this.userRepository.save(new UserEntity(login))
-        await this.dataUserRepository.save(new DataUserEntity(user));
+        const data : DataUserEntity = await this.dataUserRepository.save(new DataUserEntity(user))
+        await this.userRepository.update(user.id, {data: data})
         return user
     }
     
@@ -33,7 +33,7 @@ export class UserService {
 
     isValidPseudo(pseudo: string) : boolean {
         console.log('in validpseudo()',pseudo)
-        return (pseudo.length > 3 && pseudo.length < 25);
+        return (pseudo.length > 3 && pseudo.length < 26);
     }
 
     async pseudoExist(pseudo: string): Promise<boolean> {
@@ -70,7 +70,10 @@ export class UserService {
     }
 
     async getUsers() : Promise<UserEntity[]> {
-        return this.userRepository.find();
+
+        const users = await this.userRepository.find();
+        console.log(users[0].data)
+        return users
     }
     
     async removeUser(login: string) {

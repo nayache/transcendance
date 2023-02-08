@@ -1,10 +1,12 @@
 import * as React from 'react'
 import './App.css';
-import Home from './Components/Home'
-import Register from './Components/Register'
-import GamePage from './Components/GamePage'
-import ErrorPage from './Components/ErrorPage';
+import Home from './components/Home'
+import Register from './components/Register'
+import GamePage from './components/GamePage'
+import ErrorPage from './components/ErrorPage';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import ClientApi from './components/ClientApi.class';
+import Signin from './components/Signin';
 
 const router = createBrowserRouter([
 	{
@@ -14,6 +16,10 @@ const router = createBrowserRouter([
 	{
 		path: '/register',
 		element: <Register />
+	},
+	{
+		path: '/signin',
+		element: <Signin />
 	},
 	{
 		path: '/gamepage',
@@ -26,6 +32,17 @@ const router = createBrowserRouter([
 ])
 
 const App: React.FC = () => {
+
+	return (
+		// <Provider store={store}>
+			<AppChild/>
+		// </Provider>
+	)
+}
+
+const AppChild: React.FC = () => {
+
+	// ClientApi.dispatch = useDispatch<AppDispatch>();
 
 	return (
 		<React.Fragment>

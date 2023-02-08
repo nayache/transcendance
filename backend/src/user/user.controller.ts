@@ -5,6 +5,8 @@ import { UserEntity } from 'src/entity/user.entity';
 import { UserService } from './user.service';
 import { AvatarService } from './avatar.service';
 import { Avatar } from 'src/entity/avatar.entity';
+import { ErrorException } from 'src/exceptions/error.exception';
+import { AboutErr, TypeErr } from '../enums/error_constants';
 @Controller('user')
 export class UserController {
     constructor(
@@ -16,22 +18,25 @@ export class UserController {
 		console.log('userId:',userId)
         const pseudo = await this.userService.getPseudoById(userId)
         if (!pseudo)
-            throw new HttpException('pseudo not found', HttpStatus.NOT_FOUND)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.PSEUDO, TypeErr.NOT_FOUND, 'user not have pseudo');
         
         return { pseudo: pseudo }
     }
 
     @Patch('pseudo')
-    async savePseudo(@User() userId: string, @Body('pseudo') pseudo: string) {
+    async savePseudo(@User() userId: string, @Body('pseudo') pseudo?: string) {
+        if (!pseudo)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.EMPTY, 'cannot read pseudo parameter');
+
         console.log('userId received: ', userId, 'pseudo in param: ', pseudo) 
         
-        //if (!this.userService.isValidPseudo(pseudo))
-        //    throw new HttpException('invalid argument', HttpStatus.BAD_REQUEST)    
+        if (!this.userService.isValidPseudo(pseudo))
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.INVALID, 'pseudo input is invalid');
         
         if (!await this.userService.addPseudo(userId, pseudo))
-            throw new HttpException('pseudo already used by other user', HttpStatus.CONFLICT)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.DUPLICATED, 'pseudo is already used');
 
-        return { statuscode: "200", pseudo: pseudo }
+        return { pseudo: pseudo }
     }
 
     //for test
@@ -51,6 +56,7 @@ export class UserController {
     async removeUser(@Query('login') login: string) {
         return this.userService.removeUser(login);
     }
+
 	//avatar
 	@Get('avatar')
 	async getAvatar(

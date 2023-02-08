@@ -1,31 +1,16 @@
 import { HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
-import { NextFunction, Request, Response } from 'express';
-import { UserService } from 'src/user/user.service';
-import { AuthService } from '../auth/auth.service';
-import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
+import { Request, Response } from 'express';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class JwtDecoding implements NestMiddleware {
-  constructor(private authService: AuthService, private userService: UserService) {}
+  constructor(private authService: AuthService) {}
 
-  async use(req: Request, res: Response, next: NextFunction) {
+  async use(req: Request, res: Response, next: () => void) {
     console.log('==========in Middleware==========')
-    
-    const authHeader = req.headers.authorization;
-    if (authHeader && (authHeader as string).split(' ')[1]) {
-      const token = (authHeader as string).split(' ')[1];
-      const decoded = this.authService.decodeJwt(token);
-      if (!decoded) {
-        throw new InvalidTokenException(null);
-      }
-      const user = await this.userService.findById(decoded.id);
-      if (!user) {
-        throw new HttpException({ message: 'User not found', token: null }, HttpStatus.FORBIDDEN)
-      }
-      res.locals.info = { decoded: decoded, twoFa: user.twoFaEnabled };
+      const userId: string = await this.authService.jwtVerif(req.headers.authorization); 
+      req.user = userId;
+      console.log('==========out Middleware==========')
       next();
-    } else {
-        throw new HttpException('Error header authorization', HttpStatus.UNAUTHORIZED)
-    }
   }
 }
