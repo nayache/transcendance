@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { API_PSEUDO_ROUTE, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
 import ClientApi from "./ClientApi.class";
-import MiddlewareRedirection from "./MiddlewareRedirection.class";
 import Navbar from "./Navbar";
 
 const Home = () => {
@@ -21,11 +20,12 @@ const Home = () => {
 			} catch (err) {
 				console.log('error')
 				console.log('err = ', err)
+				setIsOkay(false);
 				if (!pseudo)
-					ClientApi.redirect = SIGNIN_ROUTE
+					ClientApi.redirect = new URL(SIGNIN_ROUTE)
 			}
 		})()
-    }, [])
+    }, [pseudo])
 
 	const getPage = () => {
 		return (

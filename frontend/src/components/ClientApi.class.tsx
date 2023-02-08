@@ -1,19 +1,15 @@
-import { useDispatch, useSelector } from "react-redux";
-import { UserProps, enableRedirectToRegister } from '../redux/user/userSlice';
-import { AppDispatch, RootState } from '../redux/store';
 import FileResizer from 'react-image-file-resizer'
-import axios from "axios";
+import { AboutErr } from "../constants/error_constants";
+import { BASE_URL, API_BASE_AUTH, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
 
-export const REGISTERAPIROUTE: string = 'http://localhost:3042/auth'
-export const REGISTERROUTE: string = '/register'
-export const SIGNINROUTE: string = '/signin'
 
 class ClientApi {
 
 	private static readonly keyTokenLocalStorage: string = 'token';
-	public static readonly registerApiRoute: string = REGISTERAPIROUTE;
-	public static readonly registerRoute: string = REGISTERROUTE;
-	public static readonly signinRoute: string = SIGNINROUTE;
+	public static readonly registerApiRoute: string = API_BASE_AUTH;
+	public static readonly registerRoute: string = REGISTER_ROUTE;
+	public static readonly registerEndpoint: string = '/register';
+	public static readonly signinRoute: string = SIGNIN_ROUTE;
 	/*
 	private static _dispatch?: AppDispatch;
 
@@ -38,12 +34,18 @@ class ClientApi {
 		localStorage.setItem(ClientApi.keyTokenLocalStorage, token);
 	}
 
-	public static set redirect(redirect: string) {
-		window.location.href = redirect;
+	public static set redirect(redirect: URL) {
+		const rawUrlParameters: string = window.location.search;
+		const cleanUrlParameters: URLSearchParams = new URLSearchParams(rawUrlParameters);
+		
+		if (ClientApi.redirect.href == redirect.href
+		|| (redirect.pathname.includes(ClientApi.registerEndpoint) && cleanUrlParameters.has('code')))
+			return ;
+		window.location.href = redirect.href;
 	}
 
-	public static get redirect(): string {
-		return window.location.href;
+	public static get redirect(): URL {
+		return new URL(window.location.href);
 	}
 
 	public static async getBlobFromImgSrc(filename: string, imgSrc: string) {
@@ -106,26 +108,24 @@ class ClientApi {
 		console.log("data = ", data);
 		if (!res.ok)
 		{
-			if (data.statusCode == 401 || "token" in data && !data.token)
+			const err = data.error
+			if (err.about == AboutErr.TOKEN && !data.token)
 			{
 				console.log("dans le 2nd if")
-				ClientApi.redirect = ClientApi.registerRoute
+				ClientApi.redirect = new URL(ClientApi.registerRoute)
 			}
-			else if ("token" in data && data.token)
+			else if (err.about == AboutErr.TOKEN && data.token)
 			{
 				ClientApi.token = data.token;
-				ClientApi.redirect = '/'
+				ClientApi.redirect = new URL(BASE_URL)
 			}
 			console.log("avant de throw")
-			const error = new Error(data.message);
-			error.name = data.statusCode;
-			error.message = error.message
-			throw error;
+			throw data.error;
 		}
 		return data
 	}
 
-	public static async verifyToken(): Promise<any> {
+	public static async verifyToken(): Promise<true> {
 		const endOfEndpoint: string = '/verify';
 		const url: string = ClientApi.registerApiRoute + endOfEndpoint;
 		let headers: HeadersInit | undefined;
@@ -135,10 +135,10 @@ class ClientApi {
 				Authorization: `Bearer ${ClientApi.token}`,
 			}
 		const data: any = await ClientApi.fetchEndpoint(url, { headers });
-		return (data);
+		return (true);
 	}
 
-	public static async register(code: string | null, location: string = '/') {
+	public static async register(code: string | null, location: URL = new URL(BASE_URL)) {
 
 		if (!code)
 			throw new Error('The code does not exist');

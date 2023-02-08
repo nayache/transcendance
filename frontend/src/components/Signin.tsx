@@ -2,33 +2,50 @@ import '../styles/Signin.css'
 import AvatarDefault from '../img/avatar2.jpeg'
 import React, { useEffect, useState } from "react"
 import ClientApi from './ClientApi.class'
-import MiddlewareRedirection from './MiddlewareRedirection.class'
-import { API_AVATAR_ROUTE, API_BASE_USER, API_PSEUDO_ROUTE } from '../constants/RoutesApi'
+import { API_BASE_USER, API_PSEUDO_ROUTE, BASE_URL } from '../constants/RoutesApi'
+import { AboutErr, IError, TypeErr } from '../constants/error_constants'
 
 const Signin = () => {
 
-	const [pseudo, setPseudo] = useState<string>();
+	const [pseudo, setPseudo] = useState<string>("");
 	const [pseudoErrorText, setPseudoErrorText] = useState<string>("")
 	const [avatar, setAvatar] = useState<string>(AvatarDefault);
 	const [avatarErrorText, setAvatarErrorText] = useState<string>("")
 	const [avatarFile, setAvatarFile] = useState<File>()
+	const [servorErrorText, setServorErrorText] = useState<string>("");
 	const [isOkay, setIsOkay] = useState<boolean>(false);
 
 
 	useEffect(() => {
 		(async () => {
 			try {
-				setIsOkay(await MiddlewareRedirection.isTokenOkay())
+				const data = await ClientApi.get(API_PSEUDO_ROUTE)
+				setPseudo(data.pseudo);
+				if (pseudo)
+					throw {
+						about: AboutErr.PSEUDO,
+						type: TypeErr.DUPLICATED
+					} as IError
 			} catch (err) {
-				console.log("err = ", err);
+				const _error: IError = err as IError;
+				if (_error.about == AboutErr.PSEUDO && _error.type == TypeErr.DUPLICATED)
+				{
+					setIsOkay(false)
+					ClientApi.redirect = new URL(BASE_URL)
+				}
+				else if (_error.about == AboutErr.PSEUDO && _error.type == TypeErr.NOT_FOUND)
+					setIsOkay(true);
 			}
 		})()
-	}, [])
+	}, [pseudo])
 
 
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
+		setPseudoErrorText("")
+		setAvatarErrorText("")
+		setServorErrorText("")
 		try {
 			const formData = new FormData()
 			if (pseudo)
@@ -36,10 +53,29 @@ const Signin = () => {
 			if (avatar && avatarFile)
 				formData.append("file", avatarFile, avatarFile.name)
 			const data = await ClientApi.post(API_BASE_USER, formData)
-			ClientApi.redirect = '/'
+			ClientApi.redirect = new URL(BASE_URL)
 		} catch (err) {
-			// setPseudoErrorText("Please choose a valid pseudo")
-			// setAvatarErrorText("Please choose a good avatar with a new filename")
+			const _error: IError = err as IError
+			console.log("_error.about = ", _error.about)
+			console.log("_error = ", _error);
+			if (err == "Not Found")
+				setServorErrorText("Failed to fetch to the server")
+			else {
+				if (_error.about == AboutErr.PSEUDO) {
+					if (_error.type == TypeErr.EMPTY)
+						setPseudoErrorText("Don't leave an empty pseudo")
+					else if (_error.type == TypeErr.INVALID)
+						setPseudoErrorText("Please choose a valid pseudo. Size: 3 - 25 characters")
+					else if (_error.type == TypeErr.DUPLICATED)
+					setPseudoErrorText("The pseudo already exists. Please provide another pseudo")
+				}
+				else if (_error.about == AboutErr.AVATAR) {
+					if (_error.type == TypeErr.INVALID)
+						setAvatarErrorText("Please choose a image file (.png, .jpg)")
+					else if (_error.type == TypeErr.DUPLICATED)
+						setAvatarErrorText("Please provide a unique avatar filename among all avatar filenames already provided")
+				}
+			}
 		}
 	}
 
@@ -79,6 +115,7 @@ const Signin = () => {
 					<button type="submit">
 						LOGIN
 					</button>
+					{servorErrorText && <p className='error-text'>{servorErrorText}</p>}
 				</form>
 			</div>
 		)

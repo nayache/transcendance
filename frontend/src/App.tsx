@@ -5,8 +5,10 @@ import Register from './components/Register'
 import GamePage from './components/GamePage'
 import ErrorPage from './components/ErrorPage';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import ClientApi from './components/ClientApi.class';
 import Signin from './components/Signin';
+import Friends from './components/Friends';
+import Profil from './components/Profil';
+import Settings from './components/Settings';
 
 const router = createBrowserRouter([
 	{
@@ -24,6 +26,18 @@ const router = createBrowserRouter([
 	{
 		path: '/gamepage',
 		element: <GamePage />
+	},
+	{
+		path: '/profil',
+		element: <Profil />
+	},
+	{
+		path: '/friends',
+		element: <Friends />
+	},
+	{
+		path: '/settings',
+		element: <Settings />
 	},
 	{
 		path: '*',

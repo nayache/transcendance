@@ -1,13 +1,22 @@
 .navbar {
+	position: relative;
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	justify-content: space-between;
-	position:fixed;
-	width:100%;
-	padding:1rem;
-	background-color: black;
+	left: 0px;
+	right: 0px;
+	padding-top:1rem;
+	padding-bottom: 1rem;
+	padding-left: 1rem;
+	background: linear-gradient(to right, rgba(0, 0, 0, 0.521), rgba(0, 0, 0, 0.075));
 	color: white;
+	z-index: 1;
+	margin-bottom: 3%;
+}
+
+.navbar_logo {
+	cursor: pointer;
 }
 
 .navbar_links {
@@ -20,6 +29,7 @@
 }
 
 .navbar_burger {
+	position: relative;
 	width: 40px;
 	height: 40px;
 	background: transparent;
@@ -40,7 +50,7 @@
 		height: 100vh;
 		padding: 2rem;
 		visibility: hidden;
-		background-color: black;
+		background: linear-gradient(to right, black, transparent);
 		transition: all .8s ease-out;
 	}
 
@@ -69,11 +79,18 @@
 		font-size: 5vw;
 	}
 
-	.navbar_burger {
-		display:block;
+	.show-nav .navbar_burger {
+		display: block;
 		position: fixed;
-		top:1rem;
-		right:1rem;
+		top: 0rem;
+		right: 1rem;
+	}
+
+	.hide-nav .navbar_burger {
+		display: block;
+		position: relative;
+		top: 0rem;
+		right: 1rem;
 	}
 
 	.navbar_burger:hover {

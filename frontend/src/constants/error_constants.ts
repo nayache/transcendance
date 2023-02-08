@@ -1,12 +1,18 @@
-export enum AboutError {
+export interface IError {
+	about: AboutErr,
+	type: TypeErr,
+	message?: string,
+}
+
+export enum AboutErr {
 	TOKEN,
 	HEADER,
 	USER,
+	PSEUDO,
 	AVATAR,
-	PSEUDO
 }
 
-export enum TypeError {
+export enum TypeErr {
 	UPDATED,
 	EXPIRED,
 	NOT_FOUND,

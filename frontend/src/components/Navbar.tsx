@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import '../styles/Navbar.styles.css'
+import '../styles/Navbar.css'
 import {useState} from "react"
 import Logo from '../img/pong.png'
 
@@ -46,9 +46,9 @@ const Navbar = () => {
 
 	return (
 		<nav className={`navbar ${showLinks ? "show-nav" : "hide-nav"}`}>
-		<div className='navbar_logo'>
+		<a className='navbar_logo' href='/'>
 			<img src={Logo} alt="Logo"/>
-		</div>
+		</a>
 		<ul className='navbar_links'>
 			{ printBarItems() }
 		</ul>
