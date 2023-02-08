@@ -19,9 +19,14 @@ export class BlockedController {
 	@Delete('/:id')
 	async unblockUser(@User() userId: string, @Param('id') id?: string)
 	{
-		console.log(id)
 		if (!await this.userService.blockandauthorExist(userId, id))
 			throw new HttpException('Blockship does not exist or User is not the creator of Block', HttpStatus.BAD_REQUEST);
 		return this.userService.deleteBlock(userId, id);
+	}
+
+	@Get('/:id')
+	async getBlocked(@User() userId: string)
+	{
+		return this.userService.getBlock(userId);
 	}
 }
