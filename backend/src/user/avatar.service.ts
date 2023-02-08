@@ -97,4 +97,9 @@ import { UserService } from './user.service';
 		}
 	}
 
+	async countavatar(userId: string): Promise<number> {
+		const num: number = await this.avatarRepository.count({where: {userId: userId}});
+		return num;
+	}
+
   }
