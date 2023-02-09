@@ -1,9 +1,9 @@
-import React from "react"
-import "../styles/Profil.css"
-import "../styles/PseudoImagesProfil.css"
-import "../styles/LevelFriendsProfil.css"
-import "../styles/StatsProfil.css"
-import "../styles/MatchHistoryProfil.css"
+import React, { useEffect } from "react"
+import "../styles/Profile.css"
+import "../styles/PseudoImagesProfile.css"
+import "../styles/LevelFriendsProfile.css"
+import "../styles/StatsProfile.css"
+import "../styles/MatchHistoryProfile.css"
 import Avatar from "../img/avatar2.jpeg"
 import Navbar from "./Navbar"
 import Paysage from "../img/paysage3.jpg"
@@ -11,6 +11,10 @@ import { useState } from "react"
 import ProgressBar from "./ProgressBar"
 import { IUser } from "../interface/User"
 import Crown from "../img/crown.png"
+import ClientApi from "./ClientApi.class"
+import { AboutErr, IError, TypeErr } from "../constants/error_constants"
+import { API_BASE_USER } from "../constants/RoutesApi"
+import { useParams, useSearchParams } from "react-router-dom"
 
 enum Stat {
 	WINS,
@@ -36,17 +40,18 @@ interface Match {
 	gameMode: GameMode,
 }
 
-const Profil = () =>
-{
-	const [pseudo, setPseudo] = useState<string>("albertdu62")
+
+const Profile = () => {
+	const [isOkay, setIsOkay] = useState<boolean | undefined>()
+	const [user, setUser] = useState<IUser>()
+	const [pseudo, setPseudo] = useState(useParams().pseudo)
 	const [nbFriends, setNbFriends] = useState<number>(3);
 	const [nbWins, setNbWins] = useState<number>(3);
 	const [nbLoses, setLoses] = useState<number>(2);
 	const [rank, setRank] = useState<number>(12);
 	const [level, setLevel] = useState<number>(6);
 	const [status, setStatus] = useState<string>("En ligne");
-
-	const matches: Match[] = [
+	const matches: Match[] = [ // certains trucs comme match history doivent etre visible seulement si on est log
 		{
 			userStat: {
 				user: { pseudo },
@@ -100,6 +105,30 @@ const Profil = () =>
 			gameMode: GameMode.MEDIUM,
 		},
 	]
+
+
+	useEffect(() => {		
+		(async () => {
+			try {
+				console.log("ytrfygjvhbk")
+				console.log("pseudo = ", pseudo);
+				const url: string = API_BASE_USER + "/" + pseudo
+				const data = await ClientApi.get(url)
+				
+				setUser(data.user)
+				if (!user)
+					throw {
+						about: AboutErr.USER,
+						type: TypeErr.EMPTY,
+					} as IError
+				setIsOkay(true)
+			} catch (err) {
+				setIsOkay(false)
+				console.log("err = ", err)
+			}
+		})()
+	}, [])
+
 
 	const getProfilImagesAndPseudo = () => (
 		<div className="avatar-back-container">
@@ -189,9 +218,9 @@ const Profil = () =>
 		mode.set(GameMode.CLASSIC, "Classic");
 		mode.set(GameMode.MEDIUM, "Medium");
 		mode.set(GameMode.HARD, "Hard");
-		const matchesJSX =  matches.map((match: Match) => {
+		const matchesJSX =  matches.map((match: Match, index: number) => {
 			return (
-				<div className="match-mode-container">
+				<div key={index} className="match-mode-container">
 					<div className="match-container">
 						<div className="match-item match-user">
 							{match.userStat.win && <img className="crown" src={Crown} />}
@@ -232,7 +261,7 @@ const Profil = () =>
 		)
 	}
 
-	return (
+	const getPage = () => (
 		<div>
 			<Navbar/>
 			<div className="container">
@@ -242,8 +271,13 @@ const Profil = () =>
 				{ getMatchHistory() }
 			</div>
 		</div>
+	)
 
+	return (
+		<React.Fragment>
+			{isOkay && getPage()}
+		</React.Fragment>
 	);
 }
 
-export default Profil;
+export default Profile;

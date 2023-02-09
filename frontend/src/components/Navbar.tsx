@@ -14,12 +14,12 @@ const Navbar = () => {
 	const [showLinks, setShowLinks] = useState(false);
 	const barItems: BarItem[] = [
 		{
-			name: "Profil",
-			href: '/profil',
+			name: "Profile",
+			href: '/me/profile',
 		},
 		{
 			name: "Friends",
-			href: '/friends',
+			href: '/me/friends',
 		},
 		{
 			name: "Settings",

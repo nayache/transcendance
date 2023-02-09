@@ -5,7 +5,7 @@ import Navbar from "./Navbar";
 
 const Home = () => {
 
-	const [isOkay, setIsOkay] = useState<boolean>(false);
+	const [isOkay, setIsOkay] = useState<boolean | undefined>();
 	const [pseudo, setPseudo] = useState<string>();
 
     useEffect(() => {

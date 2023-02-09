@@ -1,5 +1,5 @@
 import FileResizer from 'react-image-file-resizer'
-import { AboutErr } from "../constants/error_constants";
+import { AboutErr, TypeErr } from "../constants/error_constants";
 import { BASE_URL, API_BASE_AUTH, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
 
 
@@ -41,6 +41,7 @@ class ClientApi {
 		if (ClientApi.redirect.href == redirect.href
 		|| (redirect.pathname.includes(ClientApi.registerEndpoint) && cleanUrlParameters.has('code')))
 			return ;
+		console.log("redirect.href = ", redirect.href)
 		window.location.href = redirect.href;
 	}
 
@@ -109,7 +110,9 @@ class ClientApi {
 		if (!res.ok)
 		{
 			const err = data.error
-			if (err.about == AboutErr.TOKEN && !data.token)
+			console.log("data.error = ", data.error)
+			if ((err.about == AboutErr.TOKEN && !data.token)
+			|| (err.about == AboutErr.HEADER && err.type == TypeErr.INVALID))
 			{
 				console.log("dans le 2nd if")
 				ClientApi.redirect = new URL(ClientApi.registerRoute)

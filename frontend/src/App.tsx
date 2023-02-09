@@ -1,14 +1,20 @@
-import * as React from 'react'
+import React, { useEffect, useState } from 'react'
 import './App.css';
 import Home from './components/Home'
 import Register from './components/Register'
 import GamePage from './components/GamePage'
 import ErrorPage from './components/ErrorPage';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, Link, RouterProvider } from 'react-router-dom';
 import Signin from './components/Signin';
 import Friends from './components/Friends';
-import Profil from './components/Profil';
+import Profile from './components/Profile';
 import Settings from './components/Settings';
+import { IUser } from './interface/User';
+import userEvent from '@testing-library/user-event';
+import ClientApi from './components/ClientApi.class';
+import { API_BASE_USER } from './constants/RoutesApi';
+import MyProfile from './components/MyProfile';
+
 
 const router = createBrowserRouter([
 	{
@@ -28,11 +34,19 @@ const router = createBrowserRouter([
 		element: <GamePage />
 	},
 	{
-		path: '/profil',
-		element: <Profil />
+		path: '/profile/:pseudo',
+		element: <Profile />
 	},
 	{
-		path: '/friends',
+		path: '/me/profile',
+		element: <MyProfile />
+	},
+	{
+		path: '/me/friends',
+		element: <Friends />
+	},
+	{
+		path: '/:pseudo/friends',
 		element: <Friends />
 	},
 	{
@@ -45,19 +59,10 @@ const router = createBrowserRouter([
 	},
 ])
 
-const App: React.FC = () => {
+const App = () => {
 
-	return (
-		// <Provider store={store}>
-			<AppChild/>
-		// </Provider>
-	)
-}
-
-const AppChild: React.FC = () => {
-
-	// ClientApi.dispatch = useDispatch<AppDispatch>();
-
+	const [user, setUser] = useState<IUser>()
+	
 	return (
 		<React.Fragment>
 			<RouterProvider router={router} />

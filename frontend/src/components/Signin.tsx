@@ -13,7 +13,7 @@ const Signin = () => {
 	const [avatarErrorText, setAvatarErrorText] = useState<string>("")
 	const [avatarFile, setAvatarFile] = useState<File>()
 	const [servorErrorText, setServorErrorText] = useState<string>("");
-	const [isOkay, setIsOkay] = useState<boolean>(false);
+	const [isOkay, setIsOkay] = useState<boolean | undefined>();
 
 
 	useEffect(() => {
