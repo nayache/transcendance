@@ -1,6 +1,6 @@
 import FileResizer from 'react-image-file-resizer'
 import { AboutErr, TypeErr } from "../constants/error_constants";
-import { BASE_URL, API_BASE_AUTH, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
+import { BASE_URL, API_BASE_AUTH, REGISTER_ROUTE, SIGNIN_ROUTE, API_VERIFY_TOKEN_ROUTE, API_TOKEN_ROUTE } from "../constants/RoutesApi";
 
 
 class ClientApi {
@@ -103,6 +103,7 @@ class ClientApi {
 	// }
 	
 	private static async fetchEndpoint(url: string, init?: RequestInit | undefined): Promise<any> {
+		console.log("------- Bienvenue dans fetchEndPoint -------");
 		const res = await fetch(url, init);
 		console.log("res = ", res);
 		const data: any = await res.json();
@@ -111,16 +112,51 @@ class ClientApi {
 		{
 			const err = data.error
 			console.log("data.error = ", data.error)
-			if ((err.about == AboutErr.TOKEN && !data.token)
+			/*
+			if (EXPIRED)
+			{
+				try {
+					const token = await GET /auth/token/ header bearer token
+				} catch (err) {
+					if (err == TIMEOUT)
+						il se mange un relog
+				}
+			}
+			*/
+			if ((err.about == AboutErr.TOKEN && err.type == TypeErr.TIMEOUT)
 			|| (err.about == AboutErr.HEADER && err.type == TypeErr.INVALID))
 			{
 				console.log("dans le 2nd if")
 				ClientApi.redirect = new URL(ClientApi.registerRoute)
 			}
-			else if (err.about == AboutErr.TOKEN && data.token)
+			else if (err.about == AboutErr.TOKEN && err.type == TypeErr.EXPIRED)
 			{
-				ClientApi.token = data.token;
-				ClientApi.redirect = new URL(BASE_URL)
+				try {
+					const res = await fetch(API_TOKEN_ROUTE, {
+						headers: {
+							Authorization: `Refresh ${ClientApi.token}`,
+						}
+					})
+					console.log("res dans expired = ", res);
+					const data: any = await res.json();
+					console.log("data dans expired = ", data);
+					ClientApi.token = data.token
+					if (!init)
+						init = {}
+					if (!init?.headers)
+						init.headers = {}
+					const data2ndChance = await ClientApi.fetchEndpoint(url, {...init,
+						headers: {...init.headers,
+							Authorization: `Bearer ${ClientApi.token}`,
+						}
+					});
+					console.log("apres le fetchendpoint")
+					return data2ndChance;
+				} catch (err) {
+					console.log("err ici = ", err);
+					console.log("avant de throw ici")
+					throw err;
+				}
 			}
 			console.log("avant de throw")
 			throw data.error;

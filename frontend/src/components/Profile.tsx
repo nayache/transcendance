@@ -116,11 +116,11 @@ const Profile = () => {
 				const data = await ClientApi.get(url)
 				
 				setUser(data.user)
-				if (!user)
-					throw {
-						about: AboutErr.USER,
-						type: TypeErr.EMPTY,
-					} as IError
+				// if (!user)
+				// 	throw {
+				// 		about: AboutErr.USER,
+				// 		type: TypeErr.EMPTY,
+				// 	} as IError
 				setIsOkay(true)
 			} catch (err) {
 				setIsOkay(false)

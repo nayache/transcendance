@@ -9,12 +9,12 @@ export enum AboutErr {
 	HEADER,
 	USER,
 	PSEUDO,
-	AVATAR,
+	AVATAR
 }
 
 export enum TypeErr {
-	UPDATED,
-	EXPIRED,
+	EXPIRED, //token expire
+	TIMEOUT, // token cannot resfresh
 	NOT_FOUND,
 	EMPTY, // parametre vide
 	INVALID,

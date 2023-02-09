@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { API_PSEUDO_ROUTE, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
 import ClientApi from "./ClientApi.class";
+import '../styles/Home.css'
 import Navbar from "./Navbar";
 
 const Home = () => {
@@ -28,10 +29,40 @@ const Home = () => {
     }, [pseudo])
 
 	const getPage = () => {
+		
+	//ajout de classements
+	//historique des dernieres parties
+	//(et si c pas trop chaud, chat general)
+
 		return (
-			<React.Fragment>
-				<Navbar />
-			</React.Fragment>
+			<div>
+				<Navbar/>
+				<div className="home-container">
+					<div>
+						<div className="title-container">
+							<h1 className="famous">THE FAMOUS</h1>
+							<h1 className="writepong"> PONG ┅┅</h1>
+							<h1 className="game">  ┅┅ GAME </h1>
+						</div>
+						<div className="reglejeu-container">
+							<p className="reglejeu">Choose your game mode and compete against your friends !</p>
+						</div>
+					</div>
+					<div>
+						<div className="button-container">
+							<button className="classic-game">
+								classic
+							</button>
+							<button className="medium-game">
+								medium
+							</button>
+							<button className="hard-game">
+								hard
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
 		)
 	}
 

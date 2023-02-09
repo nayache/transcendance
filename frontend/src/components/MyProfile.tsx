@@ -112,11 +112,11 @@ const MyProfile = (props: Props) => {
 		(async () => {
 			try {
 				await ClientApi.verifyToken();
-				if (!props.user)
-					throw {
-						about: AboutErr.USER,
-						type: TypeErr.EMPTY,
-					} as IError
+				// if (!props.user)
+				// 	throw {
+				// 		about: AboutErr.USER,
+				// 		type: TypeErr.EMPTY,
+				// 	} as IError
 				setIsOkay(true)
 			} catch (err) {
 				console.log("err = ", err)
