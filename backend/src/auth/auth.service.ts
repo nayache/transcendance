@@ -87,7 +87,7 @@ export class AuthService {
     }
 
     generateJwtRefresh(): string {
-        return this.jwtService.sign({expiresIn: '3h', secret: process.env.SECRET});
+        return this.jwtService.sign({},{expiresIn: '1h'});
     }
 
     generateJwt(payload: JwtDataDto) : string {
@@ -95,7 +95,7 @@ export class AuthService {
     }
 
     refreshJwt(payload: JwtDecodedDto, refresh: string) : string {
-        if (!this.decodeJwt(refresh))
+        if (!this.decodeJwt(refresh, true))
             return null;
         else 
             return this.generateJwt(this.decodedToDto(payload));
@@ -122,15 +122,15 @@ export class AuthService {
         return payload;
     }
 
-    authorizationBearerHeader(data: string) : boolean {
-        if (data && data.split(' ')[0] === 'Bearer' && data.split(' ')[1])
+    authorizationHeader(keyword: string, data: string) : boolean {
+        if (data && data.split(' ')[0] === keyword && data.split(' ')[1])
             return true;
         else
             return false;
     }
 
     async jwtVerif(token: string): Promise<string> {
-        if (!this.authorizationBearerHeader(token))
+        if (!this.authorizationHeader('Bearer', token))
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.HEADER, TypeErr.INVALID, 'authorization header (bearer) incorrect')
         
         const decoded: JwtDecodedDto = this.decodeJwt(token.split(' ')[1]);
@@ -138,7 +138,7 @@ export class AuthService {
             throw new InvalidTokenException(TypeErr.EXPIRED);
         }
         if (this.tokenFtIsExpire(decoded.expire)) {
-            console.log('ICI')
+            console.log('token ft is expire')
             throw new InvalidTokenException(TypeErr.EXPIRED);
         }
         const user = await this.userService.findById(decoded.userId);

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Query, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Headers, HttpException, HttpStatus, Post, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/decorators/user.decorator';
@@ -34,11 +34,11 @@ constructor(private readonly authService: AuthService,
     }
 
     @Get('token')
-    async refresh(@Body('token') token: string) {
-        if (!token)
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TOKEN, TypeErr.EMPTY, 'token parameter is empty');
+    async refresh(@Headers('authorization') data: string) {
+        if (!this.authService.authorizationHeader('Refresh', data))
+            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.HEADER, TypeErr.INVALID, 'authorization header (refresh) incorrect')
         
-        let decoded: JwtDecodedDto = this.authService.decodeJwt(token, true);
+        let decoded: JwtDecodedDto = this.authService.decodeJwt(data.split(' ')[1], true);
         if (this.authService.tokenFtIsExpire(decoded.expire)) {
             decoded = await this.authService.refreshPayload(decoded);
             if (!decoded)
