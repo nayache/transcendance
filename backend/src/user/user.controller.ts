@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query, StreamableFile, UploadedFile, UseInterceptors, Put} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Query, StreamableFile, UploadedFile, UseInterceptors, Put} from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserEntity } from 'src/entity/user.entity';
@@ -7,6 +7,8 @@ import { AvatarService } from './avatar.service';
 import { Avatar } from 'src/entity/avatar.entity';
 import { ErrorException } from 'src/exceptions/error.exception';
 import { AboutErr, TypeErr } from '../enums/error_constants';
+import { extname } from 'path';
+
 @Controller('user')
 export class UserController {
     constructor(
@@ -19,7 +21,6 @@ export class UserController {
         const pseudo = await this.userService.getPseudoById(userId)
         if (!pseudo)
             throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.PSEUDO, TypeErr.NOT_FOUND, 'user not have pseudo');
-        
         return { pseudo: pseudo }
     }
 
@@ -75,64 +76,82 @@ export class UserController {
 	}
 	
 	@Post('')
-	  @UseInterceptors(FileInterceptor('file'))
+	  @UseInterceptors(FileInterceptor('file', {fileFilter: (req: any, file: any, cb: any) => {
+        console.log(file.mimetype.split('/')[1])
+		if (file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+            // Allow storage of file
+			//if (file.mimetype.split('/')[1] != extname(file.originalname))
+			//	cb(new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID,`File Type does not match file extension ${file.mimetype}, ${extname(file.originalname)}`), false);
+            cb(null, true);
+        } else {
+            // Reject file
+            cb(new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID,`Unsupported file type ${extname(file.originalname)}`), false);
+        }
+    }}))
 	  async postpseudoAvatar(
 		@User() userId: string,
 		@Body('pseudo') pseudo?: string,
 		@UploadedFile('file') file?: Express.Multer.File,
 	): Promise <any> {
-		try {
 		  if (!pseudo)
-			throw new HttpException('invalid argument', HttpStatus.BAD_REQUEST);
-		  await this.userService.setAvatar(userId, file);
-		  const avatar = await this.userService.getAvatar(userId);
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.EMPTY, 'Empty pseudo');
 		  if (!await this.userService.addPseudo(userId, pseudo))
-            throw new HttpException('pseudo already used by other user', HttpStatus.CONFLICT)
-		  return {statuscode: 200,
-			pseudo: pseudo, avatar: this.avatarService.toStreamableFile(avatar.datafile)
+            throw new ErrorException(HttpStatus.CONFLICT, AboutErr.PSEUDO, TypeErr.DUPLICATED, 'pseudo already used')
+		  if (file) {
+			//console.log(await fileTypeFromBuffer(file.buffer))
+			console.log('here')
+		    await this.userService.setAvatar(userId, file);
 		  }
-		} catch (error)
-		{
-			if (await this.userService.getPseudoById(userId) != pseudo && (await this.avatarService.getCurrentAvatar(userId)).file != file.filename)
-				return {statuscode:400, errors: {type:"peusdo and avatar not set", pseudo:pseudo, avatar: file}};
-		}
+		  const avatar = await this.userService.getAvatar(userId);
+		  if (!avatar)
+		  	return {pseudo: pseudo, avatar: null}
+		  return {pseudo: pseudo, avatar: this.avatarService.toStreamableFile(avatar.datafile)}
 	}
 
 	@Patch('avatar')
-      @UseInterceptors(FileInterceptor('file'))
+      @UseInterceptors(FileInterceptor('file', {fileFilter: (req: any, file: any, cb: any) => {
+        //console.log(file.mimetype.split('/')[1])
+		if (file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+            // Allow storage of file
+			//if (file.mimetype.split('/')[1] != extname(file.originalname))
+			//	cb(new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID,`File Type does not match file extension ${file.mimetype}, ${extname(file.originalname)}`), false);
+            cb(null, true);
+        } else {
+            // Reject file
+            cb(new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID,`Unsupported file type ${extname(file.originalname)}`), false);
+        }
+    }}))
       async updateAvatar(
          @User() userId: string,
          @UploadedFile('file') file?: Express.Multer.File,
+		 @Body('number') number?: number
       ): Promise<any> {
 		const num = await this.avatarService.countavatar(userId);
-		console.log(num)
 		if (num < 10) {
-        	await this.userService.setAvatar(userId, file);
+        	await this.userService.setAvatar(userId, file, number);
 			const avatar = await this.userService.getAvatar(userId);
-       		 console.log('avatar:', avatar);
+       		 console.log('avatar:', this.avatarService.toStreamableFile(avatar.datafile));
 			if (!avatar)
 				return {};
        		return {
             	avatar: this.avatarService.toStreamableFile(avatar.datafile)
         	}
 		}
-		if (num > 9) {
-			throw new HttpException('Already 10 avatars', HttpStatus.BAD_REQUEST);
-		}
+		throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.DUPLICATED,'Already 10 avatars');
     }
 
-	@Delete('avatar/:filename')
+	@Delete('avatar/:id')
 	  async deleteAvatar(
 		 @User() userId: string,
-		 @Body('filename') filename?: string
+		 @Body('number') number?: number
 	  ) {
-			if (!filename)
-				throw new HttpException('filename for delete is not provided', HttpStatus.BAD_REQUEST);
-			const avatarId = await this.avatarService.getavatarId(userId, filename);
+			if (!number)
+				throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.EMPTY, 'number for delete is not provided');
+			const avatarId = await this.avatarService.getavatarId(userId, number);
 			if (!avatarId)
-				throw new HttpException('filename is not in database for this user', HttpStatus.BAD_REQUEST);
+				throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.NOT_FOUND, `number ${number} is not used by ${userId}`);
 			if (avatarId == (await this.avatarService.getCurrentAvatar(userId)).id)
-				throw new HttpException('cannot delete current avatar', HttpStatus.BAD_REQUEST);
+				throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID, 'cannot delete current avatar');
 			return this.avatarService.deleteAvatar(avatarId);
 	  }
 }
