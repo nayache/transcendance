@@ -7,6 +7,8 @@ import { Repository } from 'typeorm';
 import { Avatar } from 'src/entity/avatar.entity';
 import { AvatarService } from './avatar.service';
 import { BlockedEntity } from 'src/entity/blocked.entity';
+import { ErrorException } from 'src/exceptions/error.exception';
+import { AboutErr, TypeErr } from 'src/enums/error_constants';
 
 @Injectable()
 export class UserService {
@@ -170,27 +172,24 @@ export class UserService {
         }
     }
 
-	async setAvatar(userId: string, file: Express.Multer.File): Promise<void> {
+	async setAvatar(userId: string, file: Express.Multer.File, number?: number): Promise<void> {
 		if (!file)
 		  throw new HttpException('File required', HttpStatus.BAD_REQUEST);
-		
 		const filename = file.originalname;
 		const datafile = file.buffer;
 		if (await this.avatarService.exist(userId, filename))
-		{
 			throw new HttpException('Avatar Filename is already in database for this user', HttpStatus.CONFLICT);
-		}
 		const user: UserEntity = await this.findById(userId);
 		const curr_avatar: Avatar = await this.avatarService.getCurrentAvatar(userId);
-		await this.avatarService.createAvatar(filename, datafile, user);
+		await this.avatarService.createAvatar(filename, datafile, user, number);
 		if (curr_avatar)
 			await this.avatarService.disabled(curr_avatar.id);
 	  }
 	
 	async getAvatar(userId: string): Promise<Avatar> {
 		const avatar: Avatar = await this.avatarService.getCurrentAvatar(userId);
-		if (!avatar)
-		  throw new HttpException('Avatar not found', HttpStatus.NOT_FOUND);
+		/* if (!avatar)
+		  throw new HttpException('Avatar not found', HttpStatus.NOT_FOUND); */
 		return avatar;
 	}
 
@@ -205,7 +204,7 @@ export class UserService {
 		try {
 			await this.blockedRepository.save(blocked);
 		} catch (error) {
-			throw new HttpException('Could not save blocked entity', HttpStatus.BAD_REQUEST);
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.UPDATED, 'Could not save blocked entity');
 		}
 		return blocked;
 	}
@@ -249,8 +248,13 @@ export class UserService {
 		}
 	}
 
-	async getBlock(userId: string): Promise<BlockedEntity[]> {
-		const block: BlockedEntity[] = await this.blockedRepository.find({where: {authorId: userId}});
-		return block;
+	async getBlock(userId: string): Promise<UserEntity[]> {
+		const block: BlockedEntity[] = await this.blockedRepository.find({where: {authorId: userId},relations: ['user2']});
+		let user: UserEntity[] = [];
+		for (let i = 0; i < block.length; i++)
+		{
+			user.push(await this.findById(block[i].user2Id));
+		}
+		return user;
 	}
 }

@@ -6,6 +6,8 @@ import {
   } from '@nestjs/common';
   import { InjectRepository } from '@nestjs/typeorm';
 import { catchError } from 'rxjs';
+import { AboutErr, TypeErr } from 'src/enums/error_constants';
+import { ErrorException } from 'src/exceptions/error.exception';
   import { Readable } from 'stream';
   import { Repository } from 'typeorm';
   import { Avatar } from '../entity/avatar.entity';
@@ -20,8 +22,30 @@ import { UserService } from './user.service';
 	  file: string,
 	  datafile: Buffer,
 	  user: UserEntity,
+	  number?: number
 	): Promise<Avatar> {
-	  const avatar = this.avatarRepository.create({file, datafile, user });
+	  let highestNumber = 0;
+
+	  if (!number) {
+	    const avatars = await this.avatarRepository.find({
+	  	  where: { userId: user.id },
+		  });
+		  for (const avatar of avatars) {
+			if (avatar.number > highestNumber) {
+			  highestNumber = avatar.number;
+			}
+		  }
+		  highestNumber++;
+		} else {
+			const existingAvatar = await this.avatarRepository.findOne({
+			  where: { userId: user.id, number },
+			});
+			if (existingAvatar) {
+			  throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.DUPLICATED ,`Avatar with number ${number} already exists`);
+			}
+			highestNumber = number;
+		  }
+	  const avatar = this.avatarRepository.create({file, datafile, user, number: highestNumber});
   
 	  try {
 		await this.avatarRepository.save(avatar);
@@ -86,9 +110,9 @@ import { UserService } from './user.service';
 		}
 	}
 
-	async getavatarId(userId:string, filename: string): Promise<string> {
+	async getavatarId(userId:string, number: number): Promise<string> {
 		try {
-			const avatar: Avatar[] = await this.avatarRepository.find({where: {userId: userId, file: filename}});
+			const avatar: Avatar[] = await this.avatarRepository.find({where: {userId: userId, number}});
 			return avatar[0].id;
 		}
 		catch (error)
