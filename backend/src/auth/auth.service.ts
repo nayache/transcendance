@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { TokenFtEntity } from 'src/entity/tokenFt.entitiy';
 import { JwtService } from '@nestjs/jwt';
 import { JwtDataDto } from 'src/dto/jwtdata.dto';
@@ -6,6 +6,7 @@ import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
 import { UserService } from 'src/user/user.service';
 import { ErrorException } from 'src/exceptions/error.exception';
 import { AboutErr, TypeErr } from '../enums/error_constants';
+import { JwtDecodedDto } from 'src/dto/jwtdecoded.dto';
 
 @Injectable()
 export class AuthService {
@@ -50,7 +51,7 @@ export class AuthService {
         return (response.status != 200) ? null : response.json()
     } 
 
-    tokenIsExpire(expire: number) : boolean {
+    tokenFtIsExpire(expire: number) : boolean {
         return ((Date.now() / 1000) >= expire)
     }
 
@@ -75,59 +76,74 @@ export class AuthService {
         return data.login;
     }
 
-    generateJwt(id: string, token?: TokenFtEntity, data?: JwtDataDto) : string {
-        let payload : any;
-        if (token) {
-            const expire = this.getExpire(token.expires_in);
-            payload = { infos: { userId: id, accessToken: token.access_token, refreshToken: token.refresh_token, expire: expire }};
-        }
-        else {
-            payload = { infos: { userId: id, accessToken: data.accessToken, refreshToken: data.refreshToken, expire: data.expire }};
-        }
+    jwtDataToDto(userId: string, payload: TokenFtEntity, refreshJwt: string) : JwtDataDto {
+        const expire = this.getExpire(payload.expires_in);
+        return {JwtRefresh: refreshJwt, userId: userId, accessToken: payload.access_token, refreshToken: payload.refresh_token, expire: expire};
+    }
+
+    decodedToDto(decoded: JwtDecodedDto): JwtDataDto {
+        const {iat, exp, ...wanted} = decoded;
+        return wanted;
+    }
+
+    generateJwtRefresh(): string {
+        return this.jwtService.sign({},{expiresIn: '1h'});
+    }
+
+    generateJwt(payload: JwtDataDto) : string {
         return this.jwtService.sign(payload); 
     }
 
-    decodeJwt(token: string) {
+    refreshJwt(payload: JwtDecodedDto, refresh: string) : string {
+        if (!this.decodeJwt(refresh, true))
+            return null;
+        else 
+            return this.generateJwt(this.decodedToDto(payload));
+    }
+
+    decodeJwt(token: string, value: boolean = false) : JwtDecodedDto {
         try {
-            const decoded = this.jwtService.verify(token, {secret: process.env.JWT_SECRET});
+            const decoded : JwtDecodedDto = this.jwtService.verify(token, {secret: process.env.JWT_SECRET, ignoreExpiration: value});
             return decoded;
         } catch (err) {
             if (err.message == 'jwt expired')
-                console.log('expired');
+                console.log('decodeJwt(): expired');
             return null
         }
     }
 
-    authorizationBearerHeader(data: string) : boolean {
-        if (data && data.split(' ')[0] === 'Bearer' && data.split(' ')[1])
+    async refreshPayload(payload: JwtDecodedDto): Promise<JwtDecodedDto> {
+        const newToken42 : TokenFtEntity = await this.updateToken(payload.refreshToken);
+        if (!newToken42)
+            return null;
+        payload.accessToken = newToken42.access_token;
+        payload.refreshToken = newToken42.refresh_token;
+        payload.expire = this.getExpire(newToken42.expires_in);
+        return payload;
+    }
+
+    authorizationHeader(keyword: string, data: string) : boolean {
+        if (data && data.split(' ')[0] === keyword && data.split(' ')[1])
             return true;
         else
             return false;
     }
 
     async jwtVerif(token: string): Promise<string> {
-        if (!this.authorizationBearerHeader(token))
+        if (!this.authorizationHeader('Bearer', token))
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.HEADER, TypeErr.INVALID, 'authorization header (bearer) incorrect')
         
-        const decoded = this.decodeJwt(token.split(' ')[1]);
+        const decoded: JwtDecodedDto = this.decodeJwt(token.split(' ')[1]);
         if (!decoded) {
-            throw new InvalidTokenException(null);
+            throw new InvalidTokenException(TypeErr.EXPIRED);
         }
-        const user = await this.userService.findById(decoded.infos.userId);
+        if (this.tokenFtIsExpire(decoded.expire)) {
+            console.log('token ft is expire')
+            throw new InvalidTokenException(TypeErr.EXPIRED);
+        }
+        const user = await this.userService.findById(decoded.userId);
         if (!user) {
             throw new ErrorException(HttpStatus.FORBIDDEN, AboutErr.USER, TypeErr.NOT_FOUND, 'token not associated with an user');
-        }
-        if (this.tokenIsExpire(decoded.infos.expire)) {
-            const newToken = await this.updateToken(decoded.data.refreshToken)
-            if (!newToken) {
-                throw new InvalidTokenException(null);
-               // throw new InvalidTokenException(null);
-            }
-            throw new InvalidTokenException(this.generateJwt(decoded.infos.userId, newToken));
-        } 
-        else if (this.tokenIsExpiring(decoded.exp)) {
-            console.log('jwt expriring.. -> regenerate')
-            throw new InvalidTokenException(this.generateJwt(decoded.infos.userId, undefined, decoded.infos));
         }
         return user.id;
     }

@@ -64,11 +64,13 @@ export class UserService {
     }
 
     async getPseudoById(id: string) : Promise<string> {
-        const user = await this.findById(id);
-        if (user && user.pseudo) {
-            return user.pseudo;
+        try {
+            const user = await this.findById(id);
+            if (user && user.pseudo)
+                return user.pseudo 
+        } catch {
+            return null;
         }
-        return null;
     }
 
     async getUsers() : Promise<UserEntity[]> {
