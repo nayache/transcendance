@@ -204,7 +204,7 @@ export class UserService {
 		try {
 			await this.blockedRepository.save(blocked);
 		} catch (error) {
-			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.UPDATED, 'Could not save blocked entity');
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.TIMEOUT, 'Could not save blocked entity');
 		}
 		return blocked;
 	}
