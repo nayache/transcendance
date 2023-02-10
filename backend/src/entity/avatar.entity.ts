@@ -13,6 +13,9 @@ export class Avatar {
 	id: string;
 
 	@Column()
+	number: number;
+
+	@Column()
 	file: string;
 
 	@Column({type: 'bytea'})
