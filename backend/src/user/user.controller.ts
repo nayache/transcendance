@@ -8,6 +8,7 @@ import { Avatar } from 'src/entity/avatar.entity';
 import { ErrorException } from 'src/exceptions/error.exception';
 import { AboutErr, TypeErr } from '../enums/error_constants';
 import { extname } from 'path';
+import { userDto } from 'src/dto/user.dto';
 
 @Controller('user')
 export class UserController {
@@ -17,11 +18,11 @@ export class UserController {
 
     @Get('pseudo')
     async getPseudo(@User() userId: string) {
-		console.log('userId:',userId)
         const pseudo = await this.userService.getPseudoById(userId)
         if (!pseudo)
             throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.PSEUDO, TypeErr.NOT_FOUND, 'user not have pseudo');
-        return { pseudo: pseudo }
+        
+        return { pseudo };
     }
 
     @Patch('pseudo')
@@ -29,16 +30,32 @@ export class UserController {
         if (!pseudo)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.EMPTY, 'cannot read pseudo parameter');
 
-        console.log('userId received: ', userId, 'pseudo in param: ', pseudo) 
-        
         if (!this.userService.isValidPseudo(pseudo))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.INVALID, 'pseudo input is invalid');
         
         if (!await this.userService.addPseudo(userId, pseudo))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.DUPLICATED, 'pseudo is already used');
 
-        return { pseudo: pseudo }
+        return { pseudo };
     }
+
+	@Get()
+	async getUser(@User() userId: string) {
+		const user: UserEntity = await this.userService.findById(userId);
+		if (!user)
+			throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found');
+		const data: userDto = await this.userService.getUser(user);
+		return { user: data }
+	}
+	
+	@Get('/:pseudo')
+	async getAnUser(@Param('pseudo') pseudo: string) {
+		const user: UserEntity = await this.userService.findByPseudo(pseudo);
+		if (!user)
+			throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found');
+		const data: userDto = await this.userService.getUser(user);
+		return { user: data }
+	}
 
     //for test
     @Get('all')

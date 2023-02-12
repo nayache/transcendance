@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, StreamableFile } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataUserEntity } from 'src/entity/data-user.entity';
 import { FriendEntity } from 'src/entity/friend.entity';
@@ -9,6 +9,7 @@ import { AvatarService } from './avatar.service';
 import { BlockedEntity } from 'src/entity/blocked.entity';
 import { ErrorException } from 'src/exceptions/error.exception';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
+import { userDto } from 'src/dto/user.dto';
 
 @Injectable()
 export class UserService {
@@ -31,6 +32,10 @@ export class UserService {
 
     async findByLogin(login: string) {
         return this.userRepository.findOneBy({login: login});
+    }
+    
+    async findByPseudo(pseudo: string) {
+        return this.userRepository.findOneBy({pseudo: pseudo});
     }
 
     isValidPseudo(pseudo: string) : boolean {
@@ -73,6 +78,21 @@ export class UserService {
         }
     }
 
+    async getUser(user: UserEntity) : Promise<userDto> {
+        const avatar: StreamableFile = (user.avatar?.datafile) ? this.avatarService.toStreamableFile(user.avatar.datafile): null;
+        let friendlist: string[] = null;
+        let blockedlist: string[] = null;
+        
+        const friends: FriendEntity[] = await this.getFriends(user.id, true);
+        friendlist = await this.makeFriendList(user.id, friends);
+        
+     //   const blocked: UserEntity[] = await this.getBlock(user.id);
+      //  blockedlist = await this.makeBlockedList(user.id, blocked);
+        
+        return new userDto(user.pseudo, avatar, friendlist, blockedlist);
+    }
+
+    //test
     async getUsers() : Promise<UserEntity[]> {
 
         const users = await this.userRepository.find();
@@ -90,6 +110,8 @@ export class UserService {
         const author : UserEntity = await this.findById(userId);
         const user1 : UserEntity = (userId < userId2) ? await this.findById(userId) : await this.findById(userId2);
         const user2 : UserEntity = (user1.id == userId) ? await this.findById(userId2) : await this.findById(userId);
+        console.log(userId, userId2);
+        console.log(user1.id, user2.id);
         return this.friendRepository.save(new FriendEntity(author, user1, user2));
     }
 
@@ -147,7 +169,19 @@ export class UserService {
             throw new HttpException('error friend database', HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
-
+    
+    async makeBlockedList(userId: string, blocked: BlockedEntity[]) : Promise<string[]> {
+        let blockedList : string[] = blocked.map((blocked) => {
+          return (blocked.user1Id == userId) ? blocked.user2Id : blocked.user1Id;
+        })
+        
+        blockedList = await Promise.all( blockedList.map(async (id) => {
+            const user = await this.findById(id);
+            return user.pseudo
+        }))
+        return blockedList;
+    }
+    
     async makeFriendList(userId: string, friends: FriendEntity[]) : Promise<string[]> {
         let friendList : string[] = friends.map((friend) => {
           return (friend.user1Id == userId) ? friend.user2Id : friend.user1Id;
@@ -168,7 +202,8 @@ export class UserService {
             ]});
             return friends;
         } catch (e) {
-            throw new HttpException('data not found', HttpStatus.NOT_FOUND);
+            return null //possible better?
+           // throw new HttpException('data not found', HttpStatus.NOT_FOUND);
         }
     }
 

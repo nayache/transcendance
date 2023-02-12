@@ -3,7 +3,8 @@ export enum AboutErr {
 	HEADER,
 	USER,
 	PSEUDO,
-	AVATAR
+	AVATAR,
+	CHANNEL
 }
 
 export enum TypeErr {
@@ -13,4 +14,5 @@ export enum TypeErr {
 	EMPTY, // parametre vide
 	INVALID,
 	DUPLICATED,
+	REJECTED //exemple: acces denied for join channel
 }
