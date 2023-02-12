@@ -16,6 +16,7 @@ import { DataUserEntity } from './entity/data-user.entity';
 import { BlockedEntity } from './entity/blocked.entity';
 import { BlockedController } from './blocked/blocked.controller';
 import { ChatModule } from './chat/chat.module';
+import { Channel } from './entity/channel.entity';
 
 @Module({
   imports: [AuthModule, UserModule, ChatModule, ConfigModule, ConfigModule.forRoot(),
@@ -26,7 +27,7 @@ import { ChatModule } from './chat/chat.module';
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    entities: [UserEntity, FriendEntity, DataUserEntity, Avatar, BlockedEntity],
+    entities: [UserEntity, FriendEntity, DataUserEntity, Avatar, BlockedEntity, Channel],
     synchronize: true,
   }),
   ],
