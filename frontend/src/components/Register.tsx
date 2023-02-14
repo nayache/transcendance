@@ -8,7 +8,7 @@ const Register: React.FC = () => {
 	
 	const [isOkay, setIsOkay] = useState<boolean | undefined>();
 	const domain: string = 'http://localhost:3042'
-	const api42Url: string = 'https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-21591b92686c701d5d9baf9f9d3e877072ef6d82b19483499cf3b942ed6cd5d8&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fregister&response_type=code'
+	const api42Url: string = 'https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-e109b6049885b09b137238ab72a9b3e8fd7420444069ee7a2365419f153c1624&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fregister&response_type=code'
 	const rawUrlParameters: string = window.location.search;
 	const cleanUrlParameters: URLSearchParams = new URLSearchParams(rawUrlParameters);
 
@@ -29,8 +29,12 @@ const Register: React.FC = () => {
 				
 				setIsOkay(true);
 				try {
+					console.log("code = ", code);
 					if (code)
+					{
+						console.log("code apres = ", code);
 						ClientApi.register(code, new URL(BASE_URL));
+					}
 				} catch (err) {
 					console.log("err = ", err);
 				}

@@ -40,7 +40,7 @@ class ClientApi {
 		
 		if (ClientApi.redirect.href == redirect.href
 		|| (redirect.pathname.includes(ClientApi.registerEndpoint) && cleanUrlParameters.has('code')))
-			return ;
+			return;
 		console.log("redirect.href = ", redirect.href)
 		window.location.href = redirect.href;
 	}
@@ -112,17 +112,6 @@ class ClientApi {
 		{
 			const err = data.error
 			console.log("data.error = ", data.error)
-			/*
-			if (EXPIRED)
-			{
-				try {
-					const token = await GET /auth/token/ header bearer token
-				} catch (err) {
-					if (err == TIMEOUT)
-						il se mange un relog
-				}
-			}
-			*/
 			if ((err.about == AboutErr.TOKEN && err.type == TypeErr.TIMEOUT)
 			|| (err.about == AboutErr.HEADER && err.type == TypeErr.INVALID))
 			{
@@ -140,6 +129,15 @@ class ClientApi {
 					console.log("res dans expired = ", res);
 					const data: any = await res.json();
 					console.log("data dans expired = ", data);
+					if (data.error)
+					{
+						if (data.error.about == AboutErr.TOKEN && data.error.type == TypeErr.TIMEOUT)
+						{
+							console.log("dans le 2nd if de l'autre")
+							ClientApi.redirect = new URL(ClientApi.registerRoute)
+						}
+						throw data.error;
+					}
 					ClientApi.token = data.token
 					if (!init)
 						init = {}
@@ -187,6 +185,7 @@ class ClientApi {
 		{
 			const paramEndpoint: string = '?code=' + code;
 
+			console.log("ClientApi.registerApiRoute + paramEndpoint = ", ClientApi.registerApiRoute + paramEndpoint);
 			const res: Response = await fetch(ClientApi.registerApiRoute + paramEndpoint);
 			const data = await res.json();
 			if (!data.token)

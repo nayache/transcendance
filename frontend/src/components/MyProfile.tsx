@@ -108,7 +108,6 @@ const MyProfile = (props: Props) => {
 	]
 
 	useEffect(() => {
-		
 		(async () => {
 			try {
 				await ClientApi.verifyToken();

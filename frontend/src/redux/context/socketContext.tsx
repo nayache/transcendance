@@ -15,5 +15,8 @@ export type TSocketContextActions = 'update_socket' | 'update_uid' | 'update_use
 export type TSocketContextPayload = string | string[] | Socket;
 
 export interface ISocketContextActions {
-	type: TSocketContextActions
+	type: TSocketContextActions,
+	payload: TSocketContextPayload
 }
+
+// export 

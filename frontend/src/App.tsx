@@ -14,6 +14,7 @@ import userEvent from '@testing-library/user-event';
 import ClientApi from './components/ClientApi.class';
 import { API_BASE_USER } from './constants/RoutesApi';
 import MyProfile from './components/MyProfile';
+import Chats from './components/Chats';
 
 
 const router = createBrowserRouter([
@@ -34,12 +35,12 @@ const router = createBrowserRouter([
 		element: <GamePage />
 	},
 	{
-		path: '/profile/:pseudo',
-		element: <Profile />
-	},
-	{
 		path: '/me/profile',
 		element: <MyProfile />
+	},
+	{
+		path: '/profile/:pseudo',
+		element: <Profile />
 	},
 	{
 		path: '/me/friends',
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
 	{
 		path: '/:pseudo/friends',
 		element: <Friends />
+	},
+	{
+		path: '/chats',
+		element: <Chats />
 	},
 	{
 		path: '/settings',

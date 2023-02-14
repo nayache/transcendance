@@ -74,7 +74,7 @@
 .crown {
 	position: relative;
 	width: 15%;
-	height: fit-content;
+	height: auto;
 }
 
 .match-username1 {

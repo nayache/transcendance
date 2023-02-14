@@ -10,7 +10,7 @@ import Paysage from "../img/paysage3.jpg"
 import { useState } from "react"
 import ProgressBar from "./ProgressBar"
 import { IUser } from "../interface/User"
-import Crown from "../img/crown.png"
+import Crown from '../img/crown.png'
 import ClientApi from "./ClientApi.class"
 import { AboutErr, IError, TypeErr } from "../constants/error_constants"
 import { API_BASE_USER } from "../constants/RoutesApi"
@@ -107,7 +107,7 @@ const Profile = () => {
 	]
 
 
-	useEffect(() => {		
+	useEffect(() => {
 		(async () => {
 			try {
 				console.log("ytrfygjvhbk")

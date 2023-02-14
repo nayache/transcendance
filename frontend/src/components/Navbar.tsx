@@ -25,6 +25,10 @@ const Navbar = () => {
 			name: "Settings",
 			href: '/settings',
 		},
+		{
+			name: "Chats",
+			href: '/chats',
+		},
 	]
 
 

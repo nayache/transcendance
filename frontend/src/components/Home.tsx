@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react"
 import { API_PSEUDO_ROUTE, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
 import ClientApi from "./ClientApi.class";
 import '../styles/Home.css'
+import Crown from "../img/crown.png"
 import Navbar from "./Navbar";
+import ServerDownPage from "./ServerDownPage";
 
 const Home = () => {
 
@@ -19,10 +21,10 @@ const Home = () => {
 				if (pseudo)
 					setIsOkay(true);
 			} catch (err) {
-				console.log('error')
-				console.log('err = ', err)
-				setIsOkay(false);
-				if (!pseudo)
+				const _typeError: TypeError = err as TypeError;
+				if (_typeError.name == "TypeError")
+					setIsOkay(false)
+				else if (!pseudo)
 					ClientApi.redirect = new URL(SIGNIN_ROUTE)
 			}
 		})()
@@ -69,6 +71,7 @@ const Home = () => {
 	return (
 		<React.Fragment>
 			{isOkay && getPage()}
+			{isOkay == false && <ServerDownPage />}
 		</React.Fragment>
 	)
 }
