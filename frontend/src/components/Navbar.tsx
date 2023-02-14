@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import '../styles/Navbar.styles.css'
+import '../styles/Navbar.css'
 import {useState} from "react"
 import Logo from '../img/pong.png'
 
@@ -14,16 +14,20 @@ const Navbar = () => {
 	const [showLinks, setShowLinks] = useState(false);
 	const barItems: BarItem[] = [
 		{
-			name: "Profil",
-			href: '/profil',
+			name: "Profile",
+			href: '/me/profile',
 		},
 		{
 			name: "Friends",
-			href: '/friends',
+			href: '/me/friends',
 		},
 		{
 			name: "Settings",
 			href: '/settings',
+		},
+		{
+			name: "Chats",
+			href: '/chats',
 		},
 	]
 
@@ -46,9 +50,9 @@ const Navbar = () => {
 
 	return (
 		<nav className={`navbar ${showLinks ? "show-nav" : "hide-nav"}`}>
-		<div className='navbar_logo'>
+		<a className='navbar_logo' href='/'>
 			<img src={Logo} alt="Logo"/>
-		</div>
+		</a>
 		<ul className='navbar_links'>
 			{ printBarItems() }
 		</ul>

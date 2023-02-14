@@ -1,19 +1,15 @@
-import { useDispatch, useSelector } from "react-redux";
-import { UserProps, enableRedirectToRegister } from '../redux/user/userSlice';
-import { AppDispatch, RootState } from '../redux/store';
 import FileResizer from 'react-image-file-resizer'
-import axios from "axios";
+import { AboutErr, TypeErr } from "../constants/error_constants";
+import { BASE_URL, API_BASE_AUTH, REGISTER_ROUTE, SIGNIN_ROUTE, API_VERIFY_TOKEN_ROUTE, API_TOKEN_ROUTE } from "../constants/RoutesApi";
 
-export const REGISTERAPIROUTE: string = 'http://localhost:3042/auth'
-export const REGISTERROUTE: string = '/register'
-export const SIGNINROUTE: string = '/signin'
 
 class ClientApi {
 
 	private static readonly keyTokenLocalStorage: string = 'token';
-	public static readonly registerApiRoute: string = REGISTERAPIROUTE;
-	public static readonly registerRoute: string = REGISTERROUTE;
-	public static readonly signinRoute: string = SIGNINROUTE;
+	public static readonly registerApiRoute: string = API_BASE_AUTH;
+	public static readonly registerRoute: string = REGISTER_ROUTE;
+	public static readonly registerEndpoint: string = '/register';
+	public static readonly signinRoute: string = SIGNIN_ROUTE;
 	/*
 	private static _dispatch?: AppDispatch;
 
@@ -38,12 +34,19 @@ class ClientApi {
 		localStorage.setItem(ClientApi.keyTokenLocalStorage, token);
 	}
 
-	public static set redirect(redirect: string) {
-		window.location.href = redirect;
+	public static set redirect(redirect: URL) {
+		const rawUrlParameters: string = window.location.search;
+		const cleanUrlParameters: URLSearchParams = new URLSearchParams(rawUrlParameters);
+		
+		if (ClientApi.redirect.href == redirect.href
+		|| (redirect.pathname.includes(ClientApi.registerEndpoint) && cleanUrlParameters.has('code')))
+			return;
+		console.log("redirect.href = ", redirect.href)
+		window.location.href = redirect.href;
 	}
 
-	public static get redirect(): string {
-		return window.location.href;
+	public static get redirect(): URL {
+		return new URL(window.location.href);
 	}
 
 	public static async getBlobFromImgSrc(filename: string, imgSrc: string) {
@@ -100,32 +103,66 @@ class ClientApi {
 	// }
 	
 	private static async fetchEndpoint(url: string, init?: RequestInit | undefined): Promise<any> {
+		console.log("------- Bienvenue dans fetchEndPoint -------");
 		const res = await fetch(url, init);
 		console.log("res = ", res);
 		const data: any = await res.json();
 		console.log("data = ", data);
 		if (!res.ok)
 		{
-			if (data.statusCode == 401 || "token" in data && !data.token)
+			const err = data.error
+			console.log("data.error = ", data.error)
+			if ((err.about == AboutErr.TOKEN && err.type == TypeErr.TIMEOUT)
+			|| (err.about == AboutErr.HEADER && err.type == TypeErr.INVALID))
 			{
 				console.log("dans le 2nd if")
-				ClientApi.redirect = ClientApi.registerRoute
+				ClientApi.redirect = new URL(ClientApi.registerRoute)
 			}
-			else if ("token" in data && data.token)
+			else if (err.about == AboutErr.TOKEN && err.type == TypeErr.EXPIRED)
 			{
-				ClientApi.token = data.token;
-				ClientApi.redirect = '/'
+				try {
+					const res = await fetch(API_TOKEN_ROUTE, {
+						headers: {
+							Authorization: `Refresh ${ClientApi.token}`,
+						}
+					})
+					console.log("res dans expired = ", res);
+					const data: any = await res.json();
+					console.log("data dans expired = ", data);
+					if (data.error)
+					{
+						if (data.error.about == AboutErr.TOKEN && data.error.type == TypeErr.TIMEOUT)
+						{
+							console.log("dans le 2nd if de l'autre")
+							ClientApi.redirect = new URL(ClientApi.registerRoute)
+						}
+						throw data.error;
+					}
+					ClientApi.token = data.token
+					if (!init)
+						init = {}
+					if (!init?.headers)
+						init.headers = {}
+					const data2ndChance = await ClientApi.fetchEndpoint(url, {...init,
+						headers: {...init.headers,
+							Authorization: `Bearer ${ClientApi.token}`,
+						}
+					});
+					console.log("apres le fetchendpoint")
+					return data2ndChance;
+				} catch (err) {
+					console.log("err ici = ", err);
+					console.log("avant de throw ici")
+					throw err;
+				}
 			}
 			console.log("avant de throw")
-			const error = new Error(data.message);
-			error.name = data.statusCode;
-			error.message = error.message
-			throw error;
+			throw data.error;
 		}
 		return data
 	}
 
-	public static async verifyToken(): Promise<any> {
+	public static async verifyToken(): Promise<true> {
 		const endOfEndpoint: string = '/verify';
 		const url: string = ClientApi.registerApiRoute + endOfEndpoint;
 		let headers: HeadersInit | undefined;
@@ -135,10 +172,10 @@ class ClientApi {
 				Authorization: `Bearer ${ClientApi.token}`,
 			}
 		const data: any = await ClientApi.fetchEndpoint(url, { headers });
-		return (data);
+		return (true);
 	}
 
-	public static async register(code: string | null, location: string = '/') {
+	public static async register(code: string | null, location: URL = new URL(BASE_URL)) {
 
 		if (!code)
 			throw new Error('The code does not exist');
@@ -148,6 +185,7 @@ class ClientApi {
 		{
 			const paramEndpoint: string = '?code=' + code;
 
+			console.log("ClientApi.registerApiRoute + paramEndpoint = ", ClientApi.registerApiRoute + paramEndpoint);
 			const res: Response = await fetch(ClientApi.registerApiRoute + paramEndpoint);
 			const data = await res.json();
 			if (!data.token)

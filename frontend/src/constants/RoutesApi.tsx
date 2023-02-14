@@ -5,6 +5,7 @@ export const API_BASE_AUTH = API_BASE_URL + '/auth'
 export const API_BASE_USER = API_BASE_URL + '/user'
 
 
+export const API_TOKEN_ROUTE = API_BASE_AUTH + '/token'
 export const API_VERIFY_TOKEN_ROUTE = API_BASE_AUTH + '/verify'
 export const API_PSEUDO_ROUTE = API_BASE_USER + '/pseudo'
 export const API_AVATAR_ROUTE = API_BASE_USER + '/avatar'

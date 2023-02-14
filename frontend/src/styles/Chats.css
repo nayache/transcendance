@@ -1,0 +1,23 @@
+.messages-container {
+	position: relative;
+	background-color: white;
+	border: 1px solid;
+	margin: 2% 2% 0;
+	width: 1000px;
+	height: 500px;
+}
+
+.buttons-container {
+	margin: 0 2% 2%;
+}
+
+@media screen and (max-width: 767px) {
+	.messages-container {
+		position: relative;
+		background-color: white;
+		border: 1px solid;
+		margin: 2%;
+		width: 700px;
+		height: 500px;
+	}
+}
