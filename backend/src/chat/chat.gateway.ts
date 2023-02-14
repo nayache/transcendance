@@ -10,6 +10,7 @@ import { HttpExceptionFilter } from './http-exception.filter';
 import { WsExceptionFilter } from './ws-exception.filter';
 import { JwtGuard } from './jwt.guard';
 import { userDto } from './user.dto';
+import { RoleGuard } from './role.guard';
 
 @UseGuards(JwtGuard)
 @UseFilters(HttpExceptionFilter, WsExceptionFilter)
@@ -29,7 +30,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       const id: string = await this.authService.jwtVerif(socket.handshake.auth.token);
       const pseudo: string = await this.userService.getPseudoById(id);
-      return {id, pseudo};
+      return {id, pseudo, socket};
     } catch (err) {
       return null;
     }
@@ -42,56 +43,81 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.logger.log(`CONNECTED: ${socket.id} (${user.pseudo})`);
       const channels: Chann[] = this.chatService.getChannels();
       if (!this.chatService.insideChannel(channels[0], user.id)) // rejoins chat general seulement a sa first connection
-        this.chatService.joinChannel('General', user);
+        this.chatService.joinChannel(user, 'General');
+      if (!this.chatService.insideChannel(channels[1], user.id)) // rejoins chat general seulement a sa first connection
+        this.chatService.joinChannel(user, 'Help');
+      
+      socket.join(['General', 'Help']);
       socket.emit('getRooms', channels);
+      //console.log(this.server.of('/').adapter.sids)
+      this.chatService.addUser(user); //ajoute socket au serveur
     } else {
       this.logger.error(`reject connection: ${socket.id}`);
     }
   }
   
   async handleDisconnect(socket: Socket) {
-   // const userId = await this.authService.jwtVerif(socket.handshake.auth.token)
-   // const pseudo = await this.userService.getPseudoById(userId)
-    //console.log(`disconnected: ${socket.id} (${pseudo})`);
+    const user: userDto = await this.authentication(socket);
+    //CAS DERREUR POSSIBLE ????
+    if (user)
+      this.chatService.removeSocket(user);
     this.logger.log(`DISCONNECTED: ${socket.id}`);
     this.server.emit('DISCONNECTED', socket.id);
   }
 
   @SubscribeMessage('message')
-  async handleEvent(@MessageBody() data: string, @ConnectedSocket() socket: Socket, @User() user: userDto) {
-   // await this.authService.jwtVerif('bolognaise')
-      //this.disconnect(socket, `(${socket.id}) is unauthorized in handleEvent()`);
+  sendMessage(@MessageBody() data: {target: string, msg: string}, @ConnectedSocket() socket: Socket, @User() user: userDto) {
+    user.socket = socket;
+    this.chatService.sendMessage(data.target, data.msg, user);
     this.logger.log(`message event: ${user.pseudo}`);
-    this.server.emit('message', user.pseudo, data);
+  }
+  
+  @SubscribeMessage('messageRoom')
+  async sendRoomMessage(@MessageBody() data: {target: string, msg: string}, @ConnectedSocket() socket: Socket, @User() user: userDto) {
+    user.socket = socket;
+    this.chatService.sendRoomMessage(data.target, data.msg, user);
+    this.logger.log(`messageRoom event: ${user.pseudo}`);
   }
   
   @SubscribeMessage('getRooms')
-  getRooms(@ConnectedSocket() socket: Socket) {
+  getRooms() {
     const channels: Chann[] = this.chatService.getChannels();
-    socket.emit('getRooms', channels);
+    this.server.emit('getRooms', channels);
   }
   
   @SubscribeMessage('createRoom')
-  async createRoom(@MessageBody() name: string, @ConnectedSocket() socket: Socket, @User() user: userDto) {
-    console.log(name, user);
-    this.chatService.createChann(name, user);
-    this.logger.log(`[${name}] channel has been created by ${user.pseudo}`);
-    socket.emit('createRoom', user.pseudo, name);
+  async createRoom(@MessageBody() data: {name: string, pass?: string}, @ConnectedSocket() socket: Socket, @User() user: userDto) {
+    user.socket = socket;
+    this.chatService.createChann(user, data.name, data.pass);
+    this.logger.log(`[${data.name}] channel has been created by ${user.pseudo}`);
+    socket.emit('createRoom', user.pseudo, data.name);
   }
   
+  //@UseGuards(RoleGuard)
   @SubscribeMessage('leaveRoom')
   async leaveRoom(@MessageBody() name: string, @ConnectedSocket() socket: Socket, @User() user: userDto) {
+    user.socket = socket;
     this.chatService.leaveChannel(name, user);
     this.logger.log(`${user.pseudo} has leaved [${name}] channel`);
     socket.emit('leaveRoom', user.pseudo, name);
   }
   
   @SubscribeMessage('joinRoom')
-  joinRoom(@MessageBody() name: string, @ConnectedSocket() socket: Socket, @User() user: userDto) {
-    this.chatService.joinChannel(name, user);
-    this.logger.log(`(${user.pseudo}) has joined [${name}] channel`);
-    socket.emit('joinRoom', user.pseudo, name);
+  joinRoom(@MessageBody() data:{name: string, pass?: string}, @ConnectedSocket() socket: Socket, @User() user: userDto) {
+    user.socket = socket;
+    this.chatService.joinChannel(user, data.name, data.pass);
+    this.logger.log(`(${user.pseudo}) has joined [${data.name}] channel`);
+    socket.emit('joinRoom', user.pseudo, data.name);
   }
+
+  @UseGuards(RoleGuard)
+  @SubscribeMessage('setRoomPassword')
+  modifyAccessRoom(@MessageBody() data: {name: string, newPass?: string, pass?: string}, @ConnectedSocket() socket: Socket, @User() user: userDto) {
+    user.socket = socket;
+    this.chatService.modifyAccessChannel(user, data.name, data.newPass, data.pass);
+    socket.emit('setRoomPassword', user.pseudo, data.name);
+  }
+
 
   disconnect(socket: Socket, error: Error = null) {
     socket.emit('error', error);

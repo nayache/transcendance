@@ -18,7 +18,7 @@ export class AuthService {
         }
         const uri = "https://api.intra.42.fr/oauth/token";
           
-        console.log('before fetch')
+        console.log('before fetch: ', code)
         const response = await fetch(uri, {
             method: 'POST', headers: {
             'Content-Type': 'application/json'}, body: JSON.stringify({

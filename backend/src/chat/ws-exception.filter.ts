@@ -6,11 +6,11 @@ import { AboutErr } from 'src/enums/error_constants';
 import { Error } from 'src/exceptions/error.interface';
 import { WsChatError } from 'src/exceptions/ws-chat-error.exception';
 
-@Catch()
+@Catch(WsChatError)
 export class WsExceptionFilter implements WsExceptionFilter {
   private logger: Logger = new Logger('ChatGateway');
 
-  public catch(exception: WsException, host: ArgumentsHost) {
+  public catch(exception: WsChatError, host: ArgumentsHost) {
     console.log('----Auth ChatGateway WSException Filter ----')
     const err : Error = (exception.getError() as ErrorDto).error;
     this.logger.error(`${err.message}`);

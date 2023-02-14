@@ -39,6 +39,8 @@ constructor(private readonly authService: AuthService,
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.HEADER, TypeErr.INVALID, 'authorization header (refresh) incorrect')
         
         let decoded: JwtDecodedDto = this.authService.decodeJwt(data.split(' ')[1], true);
+        if (!decoded)
+            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.TOKEN, TypeErr.INVALID, 'invalid token provides');
         if (this.authService.tokenFtIsExpire(decoded.expire)) {
             decoded = await this.authService.refreshPayload(decoded);
             if (!decoded)
