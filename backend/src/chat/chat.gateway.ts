@@ -1,22 +1,27 @@
-import { Logger, UseFilters, UseGuards } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger, UseFilters, UseGuards } from '@nestjs/common';
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { Error } from 'src/exceptions/error.interface';
 import { UserService } from 'src/user/user.service';
 import { HttpExceptionFilter } from './http-exception.filter';
-import { WsExceptionFilter } from './ws-exception.filter';
 import { JwtGuard } from './jwt.guard';
-import { userDto } from './user.dto';
 import { ChatService } from './chat.service';
-import { ChannelRole } from './channel-role.enum';
+import { ChannelRole } from './enums/channel-role.enum';
+import { Status } from './enums/status.enum';
 
-@UseGuards(JwtGuard)
-@UseFilters(HttpExceptionFilter, WsExceptionFilter)
+class userDto {
+  id: string;
+  pseudo: string;
+  socket: Socket;
+}
+
+//@UseGuards(JwtGuard)
+@UseFilters(HttpExceptionFilter)
 @WebSocketGateway({ cors: {origin: '*'} })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   constructor(private authService: AuthService, private userService: UserService,
-    private chatService: ChatService) {}
+    @Inject(forwardRef(() => ChatService)) private chatService: ChatService) {}
 
   @WebSocketServer() server: Server;
   private readonly logger = new Logger(ChatGateway.name);
@@ -51,11 +56,16 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       console.log(this.server.of('/').adapter.sids);
     } else {
       this.logger.error(`reject connection: ${socket.id}`);
+      this.disconnect(socket);
     }
   }
   
+  getStatus(userId: string): Status {
+    return (this.users.get(userId).size) ? Status.ONLINE : Status.OFFLINE;
+  }
+
   joinSocketToRooms(userId: string, socket: Socket) {
-    const channels: string[] = this.chatService.getChannelsByUserId(userId);
+    const channels: string[] = this.chatService.getChannelNamesByUserId(userId);
     socket.join(channels);
   }
 
@@ -101,6 +111,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   //??????
   disconnect(socket: Socket, error: Error = null) {
     socket.emit('error', error);
-    socket.disconnect()
+    socket.disconnect();
   }
 }

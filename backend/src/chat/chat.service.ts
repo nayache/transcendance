@@ -1,8 +1,11 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { ErrorException } from 'src/exceptions/error.exception';
 import { UserService } from 'src/user/user.service';
-import { ChannelRole } from './channel-role.enum';
+import { ChannelRole } from './enums/channel-role.enum';
+import { ChannelDto, ChannelUserDto } from './chat.controller';
+import { ChatGateway } from './chat.gateway';
+import { Status } from './enums/status.enum';
 
 export class Message {
     constructor(author: User, data: string) {
@@ -37,13 +40,14 @@ export class Channel {
     private: boolean = false;
     password: string = null;
     users: User[];
-    banneds: User[];
+    banneds: string[];
     messages: Message[];
 }
 
 @Injectable()
 export class ChatService {
-    constructor(private userService: UserService) {
+    constructor(private userService: UserService,
+        @Inject(forwardRef(() => ChatGateway)) private readonly chatGateway: ChatGateway) {
         this.channels = new Map<string, Channel>();
         this.channels.set('General', new Channel('General'));
     }
@@ -62,8 +66,8 @@ export class ChatService {
         return !!this.channels.get(channelName).users.find((user) => user.id === userId);
     }
 
-    isBanned(channel: Channel, userId: string): boolean {
-        return !!channel.banneds.find((user) => user.id === userId);
+    isBanned(channel: string, userId: string): boolean {
+        return !!this.channels.get(channel).banneds.find((user) => user === userId);
     }
 
     isBlocked(userId: string, targetPseudo: string): boolean {
@@ -82,7 +86,11 @@ export class ChatService {
 
     channelAccess(userId: string, channelName: string, password?: string) {
         const channel: Channel = this.channels.get(channelName);
-        return !(this.isBanned(channel, userId) || channel.private && channel.password != password);
+        return !(this.isBanned(channelName, userId) || channel.private && channel.password != password);
+    }
+
+    banUser(channelName: string, userId: string) {
+        this.channels.get(channelName).banneds.push(userId);
     }
 
     setRole(channelName: string, userId: string, role: ChannelRole) {
@@ -92,28 +100,32 @@ export class ChatService {
         console.log(user, role)
     }
 
-    getChannels(): string[] {
+    //TEST
+    getChannelDto(channelNames: string[]): ChannelDto[] {
+        const channels: ChannelDto[] = channelNames.map((name) => {
+            const users: ChannelUserDto[] = this.channels.get(name).users.map((user) => {
+                const status: Status = this.chatGateway.getStatus(user.id);
+                return {pseudo: user.pseudo, role: user.role, status};
+            })
+            return {name, users};
+        });
+        return channels;
+    }
+    ////////////////////
+    
+    getChannelNames(): string[] {
         const channels: string[] = [];
         this.channels.forEach((channel) => channels.push(channel.name));
         return channels;
     }
 
-    getChannelsByUserId(userId: string): string[] {
-        const channels: string[] = [];
+    getChannelNamesByUserId(userId: string): string[] {
+        const channelNames: string[] = [];
         this.channels.forEach((channel) => {
             if (channel.users.find((user) => user.id === userId))
-                channels.push(channel.name);
+                channelNames.push(channel.name);
         })
-        return channels;
-    }
-
-    getChannelsByPseudo(pseudo: string): string[] {
-        const channels: string[] = [];
-        this.channels.forEach((channel) => {
-            if (channel.users.find((user) => user.pseudo === pseudo))
-                channels.push(channel.name);
-        })
-        return channels;
+        return channelNames;
     }
 
     createChannel(nameChannel: string, password?: string) {
