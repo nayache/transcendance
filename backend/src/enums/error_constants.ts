@@ -4,7 +4,8 @@ export enum AboutErr {
 	USER,
 	PSEUDO,
 	AVATAR,
-	CHANNEL
+	CHANNEL,
+	MESSAGE
 }
 
 export enum TypeErr {
