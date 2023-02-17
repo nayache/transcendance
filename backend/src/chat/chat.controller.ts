@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Patch, Post, Put, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
 import { UserEntity } from 'src/entity/user.entity';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
@@ -8,6 +8,8 @@ import { ChannelRole } from './enums/channel-role.enum';
 import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
 import { Status } from './enums/status.enum';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { ValidationFilter } from './validation-filter';
 
 export class ChannelUserDto {
     pseudo: string;
@@ -18,6 +20,16 @@ export class ChannelUserDto {
 export class ChannelDto {
     name: string;
     users: ChannelUserDto[];
+}
+
+export class ChannelTargetDto {
+    @IsString()
+    @IsNotEmpty()
+    channel: string;
+
+    @IsString()
+    @IsNotEmpty()
+    target: string;
 }
 
 @Controller('chat')
@@ -64,6 +76,8 @@ export class ChatController {
         this.chatService.createChannel(channelName, password);
         this.chatService.joinChannel(userId, ChannelRole.OWNER, channelName, password);
         await this.chatGateway.joinRoom(userId, channelName);
+        this.chatGateway.event();
+
     }
 
     @Patch('channel/join')
@@ -104,7 +118,13 @@ export class ChatController {
         this.chatService.setRole(channelName, userId, ChannelRole.ADMIN);
         this.chatGateway.channelEvent(channelName, `${user.pseudo} become an admin`);
     }
-
+    /*@UsePipes(ValidationPipe)
+    @UseFilters(ValidationFilter)
+    @Patch('channel/setAdmin')
+    async setAdmin(@User() userId: string, @Body() args: ChannelTargetDto) {
+        console.log(args);
+    }*/
+    
     @Patch('channel/kick')
     async kickUser(@User() userId: string, @Body('channel') channelName: string, @Body('target') target: string) {
         if (!channelName || !this.chatService.channelExist(channelName))

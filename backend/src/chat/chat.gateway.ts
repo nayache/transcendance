@@ -4,7 +4,6 @@ import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { Error } from 'src/exceptions/error.interface';
 import { UserService } from 'src/user/user.service';
-import { HttpExceptionFilter } from './http-exception.filter';
 import { JwtGuard } from './jwt.guard';
 import { ChatService } from './chat.service';
 import { ChannelRole } from './enums/channel-role.enum';
@@ -17,7 +16,6 @@ class userDto {
 }
 
 //@UseGuards(JwtGuard)
-@UseFilters(HttpExceptionFilter)
 @WebSocketGateway({ cors: {origin: '*'} })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   constructor(private authService: AuthService, private userService: UserService,
@@ -80,6 +78,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const pseudo: string = await this.userService.getPseudoById(userId);
     this.users.get(userId).forEach((socket) => socket.leave(channelName));
     this.server.to(channelName).emit('leaveRoom', `${pseudo} has leaved [${channelName}] channel`);
+  }
+
+  event() {
+    this.server.emit('updateRooms');
   }
 
   channelEvent(channelName: string, info: string) {

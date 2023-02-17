@@ -5,7 +5,9 @@ export enum AboutErr {
 	PSEUDO,
 	AVATAR,
 	CHANNEL,
-	MESSAGE
+	MESSAGE,
+	REQUEST,
+	TWOFA
 }
 
 export enum TypeErr {

@@ -7,6 +7,7 @@ import { UserService } from 'src/user/user.service';
 import { ErrorException } from 'src/exceptions/error.exception';
 import { AboutErr, TypeErr } from '../enums/error_constants';
 import { JwtDecodedDto } from 'src/dto/jwtdecoded.dto';
+import { authenticator } from 'otplib'
 
 @Injectable()
 export class AuthService {
@@ -18,7 +19,7 @@ export class AuthService {
         }
         const uri = "https://api.intra.42.fr/oauth/token";
           
-        console.log('before fetch: ', code)
+        console.log('before fetch code:', code);
         const response = await fetch(uri, {
             method: 'POST', headers: {
             'Content-Type': 'application/json'}, body: JSON.stringify({
@@ -146,5 +147,34 @@ export class AuthService {
             throw new ErrorException(HttpStatus.FORBIDDEN, AboutErr.USER, TypeErr.NOT_FOUND, 'token not associated with an user');
         }
         return user.id;
+    }
+    
+    async generateSecret(userId: string) {
+        console.log('APP_NAME =', process.env.APP_NAME);
+        const pseudo = await this.userService.getPseudoById(userId);
+        const secret = authenticator.generateSecret();
+        const otpAuthUrl = authenticator.keyuri(
+            pseudo,
+            process.env.APP_NAME,
+            secret
+        );
+
+        await this.userService.updateTwoFaSecret(userId, secret);
+        return {
+            secret,
+            otpAuthUrl
+        };
+    }
+    
+    async twoFaAccess(enabled: boolean, userId: string, digit?: string): Promise<boolean> {
+        if (enabled)
+            return this.verifDigit(userId, digit);
+        else
+            return true;
+    }
+
+    async verifDigit(userId: string, digit: string) : Promise<boolean> {
+        const secret = await this.userService.getTwoFaSecret(userId);
+        return authenticator.verify({ token: digit, secret: secret });
     }
 }

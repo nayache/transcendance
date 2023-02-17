@@ -7,8 +7,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { UserEntity } from './entity/user.entity';
 import { JwtDecoding } from './middlewares/jwt.middleware';
-import { TwoFactorAuthController } from './two-factor-auth/two-factor-auth.controller';
-import { TwoFactorAuthService } from './two-factor-auth/two-factor-auth.service';
 import { FriendEntity } from './entity/friend.entity';
 import { FriendController } from './friend/friend.controller';
 import { Avatar } from './entity/avatar.entity';
@@ -31,8 +29,8 @@ import { Channel } from './entity/channel.entity';
     synchronize: true,
   }),
   ],
-  controllers: [AppController, TwoFactorAuthController, TwoFactorAuthController, FriendController, BlockedController],
-  providers: [AppService, TwoFactorAuthService],
+  controllers: [AppController, FriendController, BlockedController],
+  providers: [AppService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
