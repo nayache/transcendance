@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, Patch, Post, Put, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Patch, Post, Put, UseFilters, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
 import { UserEntity } from 'src/entity/user.entity';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
@@ -9,7 +9,8 @@ import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
 import { Status } from './enums/status.enum';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { ValidationFilter } from './validation-filter';
+import { ValidationFilter } from './filter/validation-filter';
+import { isAdmin } from './guards/is-admin.guard';
 
 export class ChannelUserDto {
     pseudo: string;
@@ -22,7 +23,7 @@ export class ChannelDto {
     users: ChannelUserDto[];
 }
 
-export class ChannelTargetDto {
+export class adminActionDto {
     @IsString()
     @IsNotEmpty()
     channel: string;
@@ -32,6 +33,18 @@ export class ChannelTargetDto {
     target: string;
 }
 
+export class messageDto {
+    @IsString()
+    @IsNotEmpty()
+    target: string;
+
+    @IsString()
+    @IsNotEmpty()
+    msg: string
+}
+
+@UsePipes(ValidationPipe)
+@UseFilters(ValidationFilter)
 @Controller('chat')
 export class ChatController {
     constructor(private chatGateway: ChatGateway, private readonly chatService: ChatService,
@@ -102,95 +115,60 @@ export class ChatController {
         await this.chatGateway.leaveRoom(userId, channelName);
     }
 
+    @UseGuards(isAdmin)
     @Patch('channel/setAdmin')
-    async setAdmin(@User() userId: string, @Body('channel') channelName: string, @Body('target') target: string) {
-        if (!channelName || !this.chatService.channelExist(channelName))
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'invalid channelName');
-        if (!this.chatService.isAdmin(userId, channelName))
-            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'user is not Admin of this channel');
-        const user: UserEntity = await this.userService.findByPseudo(target);
-        if (!user)
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'target not found');
+    async setAdmin(@User() userId: string, @Body() payload: adminActionDto) {
+        const user: UserEntity = await this.userService.findByPseudo(payload.target);
         if (user.id === userId)
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant set himself privileges');
-        if (!this.chatService.insideChannel(user.id, channelName))
-            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'target is not in channel');
-        this.chatService.setRole(channelName, userId, ChannelRole.ADMIN);
-        this.chatGateway.channelEvent(channelName, `${user.pseudo} become an admin`);
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant set/unset admin himself');
+        this.chatService.setRole(payload.channel, user.id, ChannelRole.ADMIN);
+        this.chatGateway.channelEvent(payload.channel, `${user.pseudo} become an admin`);
     }
-    /*@UsePipes(ValidationPipe)
-    @UseFilters(ValidationFilter)
-    @Patch('channel/setAdmin')
-    async setAdmin(@User() userId: string, @Body() args: ChannelTargetDto) {
-        console.log(args);
-    }*/
     
+    @UseGuards(isAdmin)
     @Patch('channel/kick')
-    async kickUser(@User() userId: string, @Body('channel') channelName: string, @Body('target') target: string) {
-        if (!channelName || !this.chatService.channelExist(channelName))
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'invalid channelName');
-        if (!this.chatService.isAdmin(userId, channelName))
-            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'user is not Admin of this channel');
-        const user: UserEntity = await this.userService.findByPseudo(target);
-        if (!user)
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'target not found');
+    async kickUser(@User() userId: string, @Body() payload: adminActionDto) {
+        const user: UserEntity = await this.userService.findByPseudo(payload.target);
         if (user.id === userId)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant kick himself');
-        if (!this.chatService.insideChannel(user.id, channelName))
-            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'target is not in channel');
-        this.chatService.leaveChannel(user.id, channelName);
-        this.chatGateway.leaveRoom(user.id, channelName);
-        this.chatGateway.channelEvent(channelName, `${user.pseudo} has been kicked!`);
+        this.chatService.leaveChannel(user.id, payload.channel);
+        this.chatGateway.leaveRoom(user.id, payload.channel);
+        this.chatGateway.channelEvent(payload.channel, `${user.pseudo} has been kicked!`);
     }
 
+    @UseGuards(isAdmin)
     @Patch('channel/ban')
-    async banUser(@User() userId: string, @Body('channel') channelName: string, @Body('target') target: string) {
-        if (!channelName || !this.chatService.channelExist(channelName))
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'invalid channelName');
-        if (!this.chatService.isAdmin(userId, channelName))
-            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'user is not Admin of this channel');
-        const user: UserEntity = await this.userService.findByPseudo(target);
-        if (!user)
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'target not found');
+    async banUser(@User() userId: string, @Body() payload: adminActionDto) {
+        const user: UserEntity = await this.userService.findByPseudo(payload.target);
         if (user.id === userId)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant ban himself');
-        if (!this.chatService.insideChannel(user.id, channelName))
-            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'target is not in channel');
-        if (this.chatService.isBanned(channelName, user.id))
+        if (this.chatService.isBanned(payload.channel, user.id))
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'target is already banned');
-        this.chatService.banUser(channelName, user.id);
-        this.chatGateway.leaveRoom(user.id, channelName);
-        this.chatGateway.channelEvent(channelName, `${user.pseudo} has been banned!`);
+        this.chatService.banUser(payload.channel, user.id);
+        this.chatGateway.leaveRoom(user.id, payload.channel);
+        this.chatGateway.channelEvent(payload.channel, `${user.pseudo} has been banned!`);
     }
 
     @Post('message')
-    async sendMessage(@User() userId: string, @Body('target') target: string, @Body('msg') message: string) {
-        if (!target)
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.MESSAGE, TypeErr.INVALID, 'invalid target');
-        if (!message || !message.length)
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.MESSAGE, TypeErr.EMPTY, 'empty message');
-        const user: UserEntity = await this.userService.findByPseudo(target);
+    async sendMessage(@User() userId: string, @Body() payload: messageDto) {
+        const user: UserEntity = await this.userService.findByPseudo(payload.target);
         if (!user)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'target not found');
         if (user.id === userId)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.MESSAGE, TypeErr.INVALID, 'cant send himself message');
         if (this.chatService.isBlocked(user.id, userId))
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.MESSAGE, TypeErr.INVALID, 'user is blocked by target');
-        this.chatService.messageToUser(userId, user.id, message);
-        await this.chatGateway.sendMessageToUser(userId, user.id, message);
+        this.chatService.messageToUser(userId, user.id, payload.msg);
+        await this.chatGateway.sendMessageToUser(userId, user.id, payload.msg);
     }
 
     @Post('channel/message')
-    async sendChannelMessage(@User() userId: string, @Body('target') channelName: string, @Body('msg') message: string) {
-        if (!channelName)
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.MESSAGE, TypeErr.INVALID, 'invalid target');
-        if (!message || !message.length)
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.MESSAGE, TypeErr.EMPTY, 'empty message');
-        if (!this.chatService.channelExist(channelName))
+    async sendChannelMessage(@User() userId: string, @Body() payload: messageDto) {
+        if (!this.chatService.channelExist(payload.target))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'channel not exist');
-        if (!this.chatService.insideChannel(userId, channelName))
+        if (!this.chatService.insideChannel(userId, payload.target))
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'user is not in channel');
-        this.chatService.messageToChannel(userId, channelName, message);
-        await this.chatGateway.sendMessageToChannel(userId, channelName, message);
+        this.chatService.messageToChannel(userId, payload.target, payload.msg);
+        await this.chatGateway.sendMessageToChannel(userId, payload.target, payload.msg);
     }
 }

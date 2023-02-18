@@ -95,9 +95,8 @@ export class ChatService {
 
     setRole(channelName: string, userId: string, role: ChannelRole) {
         const channel: Channel = this.channels.get(channelName);
-        console.log(channel);
         const user: User = channel.users.find((user) => user.id == userId);
-        console.log(user, role)
+        user.role = role;
     }
 
     //TEST

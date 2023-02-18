@@ -4,7 +4,7 @@ import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { Error } from 'src/exceptions/error.interface';
 import { UserService } from 'src/user/user.service';
-import { JwtGuard } from './jwt.guard';
+import { JwtGuard } from './guards/jwt.guard';
 import { ChatService } from './chat.service';
 import { ChannelRole } from './enums/channel-role.enum';
 import { Status } from './enums/status.enum';

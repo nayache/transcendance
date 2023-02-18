@@ -1,4 +1,5 @@
 export enum AboutErr {
+	AUTH,
 	TOKEN,
 	HEADER,
 	USER,

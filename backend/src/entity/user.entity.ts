@@ -2,7 +2,6 @@
 import { Column, Entity, PrimaryGeneratedColumn, OneToOne, JoinColumn, OneToMany, ManyToOne, ManyToMany } from "typeorm";
 import { Avatar } from "./avatar.entity";
 import { DataUserEntity } from "./data-user.entity";
-import { FriendEntity } from "./friend.entity";
 
 @Entity()
 export class UserEntity {
