@@ -13,7 +13,7 @@ import { authenticator } from 'otplib'
 export class AuthService {
     constructor(private readonly jwtService: JwtService, private readonly userService: UserService) {}
 
-    async generateToken(code: string): Promise<TokenFtEntity> | null {
+    async generateToken(code: string, path?: string): Promise<TokenFtEntity> | null {
        if (!code) {
             return null;
         }
@@ -26,7 +26,7 @@ export class AuthService {
             grant_type: "authorization_code", 
             client_id: process.env.CLIENT_ID, 
             client_secret: process.env.CLIENT_SECRET,
-            code: code, redirect_uri: "http://localhost:3000/register"
+            code: code, redirect_uri: "http://localhost:3000/" + (path) ? path : 'register'
             })})
         console.log('generate 42token response: ', response.status, response.statusText);
         if (response.status != 200)
@@ -168,7 +168,7 @@ export class AuthService {
     
     async twoFaAccess(enabled: boolean, userId: string, digit?: string): Promise<boolean> {
         if (enabled)
-            return this.verifDigit(userId, digit);
+            return (digit) ? this.verifDigit(userId, digit) : false;
         else
             return true;
     }

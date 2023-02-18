@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, HttpException, HttpStatus, Post, Query, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpStatus, Post, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/decorators/user.decorator';
@@ -7,21 +7,26 @@ import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { JwtDecodedDto } from 'src/dto/jwtdecoded.dto';
 import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
 import { UserEntity } from 'src/entity/user.entity';
-import { IsNotEmpty, IsOptional, isString, IsString, MaxLength, MinLength } from 'class-validator';
-import { ValidationFilter } from 'src/chat/validation-filter';
+import { IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { toDataURL } from 'qrcode'
+import { ValidationFilter } from 'src/chat/filter/validation-filter';
 
 export class AuthDto {
     @IsString()
     @IsNotEmpty()
     code: string;
 
+    @IsString()
+    @IsNotEmpty()
+    @IsOptional()
+    path?: string;
+
     @IsNotEmpty()
     @IsString()
     @MinLength(6)
     @MaxLength(6)
     @IsOptional()
-    digit?: string
+    digit?: string;
 }
 
 @Controller('auth')
@@ -33,19 +38,19 @@ constructor(private readonly authService: AuthService,
     @UseFilters(ValidationFilter)
     @Post()
     async auth(@Body() payload: AuthDto) {
-        const tokenft = await this.authService.generateToken(payload.code);
+        const tokenft = await this.authService.generateToken(payload.code, payload.path);
         if (!tokenft) {
-            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.TOKEN, TypeErr.INVALID, 'auth code is invalid');
+            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.AUTH, TypeErr.INVALID, 'auth code is invalid');
         }
         const login = await this.authService.getLoginFrom42(tokenft.access_token);
         if (!login) {
-            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.TOKEN, TypeErr.REJECTED, 'cannot acces login user');
+            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.AUTH, TypeErr.REJECTED, 'cannot acces login user');
         }
         let user: UserEntity = await this.userService.findByLogin(login);
         if (!user)
             user = await this.userService.saveUser(login);
         if (!await this.authService.twoFaAccess(user.twoFaEnabled, user.id, payload.digit))
-            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.TWOFA, TypeErr.REJECTED, '2fa digit is invalid');
+              throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.TWOFA, TypeErr.REJECTED, '2fa digit is invalid');
         const refresh : string = this.authService.generateJwtRefresh();
         const token : string = this.authService.generateJwt(this.authService.jwtDataToDto(user.id, tokenft, refresh));
         
