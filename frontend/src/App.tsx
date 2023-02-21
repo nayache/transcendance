@@ -12,51 +12,61 @@ import Settings from './components/Settings';
 import { IUser } from './interface/User';
 import userEvent from '@testing-library/user-event';
 import ClientApi from './components/ClientApi.class';
-import { API_BASE_USER } from './constants/RoutesApi';
+import { CHAT_EP, FRIENDS_EP, GAMEPAGE_EP, HOME_EP, MYFRIENDS_EP, MYPROFILE_EP, PROFILE_EP, REGISTER_EP, SETTINGS_EP, SETTINGS_TWOFA_EP, SIGNIN_EP, TWOFA_EP } from './constants/RoutesApi';
 import MyProfile from './components/MyProfile';
-import Chats from './components/Chats';
+import Chat from './components/Chat';
+import TwoFA from './components/TwoFA';
+import TwoFASettings from './components/TwoFASettings';
 
 
 const router = createBrowserRouter([
 	{
-		path: '/',
+		path: HOME_EP,
 		element: <Home />
 	},
 	{
-		path: '/register',
+		path: REGISTER_EP,
 		element: <Register />
 	},
 	{
-		path: '/signin',
+		path: TWOFA_EP,
+		element: <TwoFA />
+	},
+	{
+		path: SIGNIN_EP,
 		element: <Signin />
 	},
 	{
-		path: '/gamepage',
+		path: GAMEPAGE_EP,
 		element: <GamePage />
 	},
 	{
-		path: '/me/profile',
+		path: MYPROFILE_EP,
 		element: <MyProfile />
 	},
 	{
-		path: '/profile/:pseudo',
+		path: PROFILE_EP,
 		element: <Profile />
 	},
 	{
-		path: '/me/friends',
+		path: MYFRIENDS_EP,
 		element: <Friends />
 	},
 	{
-		path: '/:pseudo/friends',
+		path: FRIENDS_EP,
 		element: <Friends />
 	},
 	{
-		path: '/chats',
-		element: <Chats />
+		path: CHAT_EP,
+		element: <Chat />
 	},
 	{
-		path: '/settings',
+		path: SETTINGS_EP,
 		element: <Settings />
+	},
+	{
+		path: SETTINGS_TWOFA_EP,
+		element: <TwoFASettings />
 	},
 	{
 		path: '*',

@@ -1,22 +1,34 @@
+import { createSlice } from "@reduxjs/toolkit";
 import { Socket } from "socket.io-client";
 
-export interface ISocketContextState {
+interface SocketState {
 	socket?: Socket,
 	uid?: string,
 	usersid?: string[]
 }
 
-export const defaultSocketContextState: ISocketContextState = {
+const initialState: SocketState = {
 
 }
 
-export type TSocketContextActions = 'update_socket' | 'update_uid' | 'update_usersid' | 'remove_user'
+const SocketSlice = createSlice({
+	name: "socket",
+	initialState,
+	reducers: {
+		updateSocket: (state, action) => {
 
-export type TSocketContextPayload = string | string[] | Socket;
+		},
+		updateUid: (state, action) => {
 
-export interface ISocketContextActions {
-	type: TSocketContextActions,
-	payload: TSocketContextPayload
-}
+		},
+		updateUsers: (state, action) => {
 
-// export 
+		},
+		removeUser: (state, action) => {
+
+		},
+	}
+})
+
+const SocketReducer = SocketSlice.reducer
+export default SocketReducer;

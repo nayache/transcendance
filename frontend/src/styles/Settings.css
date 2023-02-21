@@ -6,6 +6,10 @@
 	margin: 1rem 1em 3rem 10rem;
 }
 
+.settings-container h2 {
+	font-size: 2rem;
+}
+
 .form-search {
 	position: relative;
 	width: 60%;

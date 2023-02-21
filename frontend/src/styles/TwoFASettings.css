@@ -1,0 +1,65 @@
+
+.two-factor-containers {
+	position: relative;
+	margin: 3%;
+}
+
+.two-factor-containers * {
+	z-index: 1;
+}
+
+.two-factor-containers h2 {
+	width: fit-content;
+	margin: 20px;
+}
+
+.two-factor-content-container {
+	position: relative;
+	background-color: rgb(145, 211, 252);
+	border-radius: 5px;
+	padding: 5px;
+}
+
+.two-factor-clickable {
+	position: relative;
+	cursor: pointer;
+	margin: 0;
+	padding: 5px;
+	border-radius: 5px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background-color: rgba(79, 188, 255, 0.289);
+}
+
+.two-factor-action {
+	position: relative;
+	width: fit-content;
+	margin: 4px 0;
+	z-index: 2;
+	margin-left: 4px;
+}
+
+.two-factor-content {
+	position: relative;
+	display: block;
+	z-index: 1;
+	transition: margin 0.7s, opacity 0.3s 0.5s;
+}
+
+.unrolled {
+	z-index: 1;
+	opacity: 100%;
+	transition: margin 0.7s, opacity 0.8s 0.4s;
+}
+
+.rolled {
+	z-index: 0;
+	opacity: 0%;
+	transition: margin 0.7s, opacity 0.3s;
+}
+
+.svg {
+	pointer-events: none;
+	margin: 0 12px;
+}

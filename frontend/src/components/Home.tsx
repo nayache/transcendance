@@ -5,6 +5,7 @@ import '../styles/Home.css'
 import Crown from "../img/crown.png"
 import Navbar from "./Navbar";
 import ServerDownPage from "./ServerDownPage";
+import { AboutErr, IError, TypeErr } from "../constants/error_constants";
 
 const Home = () => {
 
@@ -22,9 +23,10 @@ const Home = () => {
 					setIsOkay(true);
 			} catch (err) {
 				const _typeError: TypeError = err as TypeError;
+				const _error: IError = err as IError;
 				if (_typeError.name == "TypeError")
 					setIsOkay(false)
-				else if (!pseudo)
+				else if (_error.about == AboutErr.PSEUDO && _error.type == TypeErr.NOT_FOUND )
 					ClientApi.redirect = new URL(SIGNIN_ROUTE)
 			}
 		})()

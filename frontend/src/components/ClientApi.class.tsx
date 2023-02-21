@@ -1,5 +1,5 @@
 import FileResizer from 'react-image-file-resizer'
-import { AboutErr, TypeErr } from "../constants/error_constants";
+import { AboutErr, IError, TypeErr } from "../constants/error_constants";
 import { BASE_URL, API_BASE_AUTH, REGISTER_ROUTE, SIGNIN_ROUTE, API_VERIFY_TOKEN_ROUTE, API_TOKEN_ROUTE } from "../constants/RoutesApi";
 
 
@@ -10,19 +10,7 @@ class ClientApi {
 	public static readonly registerRoute: string = REGISTER_ROUTE;
 	public static readonly registerEndpoint: string = '/register';
 	public static readonly signinRoute: string = SIGNIN_ROUTE;
-	/*
-	private static _dispatch?: AppDispatch;
 
-	public static set dispatch(dispatch: AppDispatch) {
-		ClientApi._dispatch = dispatch;
-	}
-
-	public static get dispatch() {
-		if (!ClientApi._dispatch)
-			throw new Error('The dispatch in ClientApi have not been set up')
-		return ClientApi._dispatch;
-	}
-	*/
 
 	public static get token(): string | null {
 		return localStorage.getItem(ClientApi.keyTokenLocalStorage);
@@ -39,7 +27,8 @@ class ClientApi {
 		const cleanUrlParameters: URLSearchParams = new URLSearchParams(rawUrlParameters);
 		
 		if (ClientApi.redirect.href == redirect.href
-		|| (redirect.pathname.includes(ClientApi.registerEndpoint) && cleanUrlParameters.has('code')))
+		|| (redirect.pathname.includes(ClientApi.registerEndpoint)
+		&& cleanUrlParameters.has('code')))
 			return;
 		console.log("redirect.href = ", redirect.href)
 		window.location.href = redirect.href;
@@ -117,6 +106,7 @@ class ClientApi {
 			{
 				console.log("dans le 2nd if")
 				ClientApi.redirect = new URL(ClientApi.registerRoute)
+				throw err;
 			}
 			else if (err.about == AboutErr.TOKEN && err.type == TypeErr.EXPIRED)
 			{
@@ -135,6 +125,7 @@ class ClientApi {
 						{
 							console.log("dans le 2nd if de l'autre")
 							ClientApi.redirect = new URL(ClientApi.registerRoute)
+							throw data.error;
 						}
 						throw data.error;
 					}
@@ -174,8 +165,20 @@ class ClientApi {
 		const data: any = await ClientApi.fetchEndpoint(url, { headers });
 		return (true);
 	}
+	
+	public static async verifyTwoFa(): Promise<true> {
+		await ClientApi.verifyToken();
+		// if (!ClientApi._isTwoFaGood)
+		// 	throw {
+		// 		about: AboutErr.TOKEN,
+		// 		type: TypeErr.
+		// 	} as IError
+		// return ClientApi._isTwoFaGood;
+		return true;
+	}
 
-	public static async register(code: string | null, location: URL = new URL(BASE_URL)) {
+	public static async register(callback: () => unknown, code: string | null, twofa: string | null = null) {
+		let path: string = 'register';
 
 		if (!code)
 			throw new Error('The code does not exist');
@@ -183,15 +186,18 @@ class ClientApi {
 			throw new Error('The endpoint to the register fetch api is not specified')
 		if (code)
 		{
-			const paramEndpoint: string = '?code=' + code;
-
-			console.log("ClientApi.registerApiRoute + paramEndpoint = ", ClientApi.registerApiRoute + paramEndpoint);
-			const res: Response = await fetch(ClientApi.registerApiRoute + paramEndpoint);
-			const data = await res.json();
+			if (twofa)
+				path = 'twofa';
+			const data = await ClientApi.post(
+				ClientApi.registerApiRoute, JSON.stringify({
+					code,
+					twofa,
+					path
+			}), 'application/json');
 			if (!data.token)
 				throw new Error('Did not receive the token from api');
 			ClientApi.token = data.token;
-			ClientApi.redirect = location;
+			return callback();
 		}
 	}
 	

@@ -1,8 +1,8 @@
 import React from "react";
 import Navbar from "./Navbar";
-import '../styles/Chats.css'
+import '../styles/Chat.css'
 
-const Chats = () => {
+const Chat = () => {
 
 	return (
 		<div>
@@ -25,4 +25,4 @@ const Chats = () => {
 	);
 }
 
-export default Chats;
+export default Chat;
