@@ -12,11 +12,12 @@ import Settings from './components/Settings';
 import { IUser } from './interface/User';
 import userEvent from '@testing-library/user-event';
 import ClientApi from './components/ClientApi.class';
-import { CHAT_EP, FRIENDS_EP, GAMEPAGE_EP, HOME_EP, MYFRIENDS_EP, MYPROFILE_EP, PROFILE_EP, REGISTER_EP, SETTINGS_EP, SETTINGS_TWOFA_EP, SIGNIN_EP, TWOFA_EP } from './constants/RoutesApi';
+import { CHAT_EP, FRIENDS_EP, GAMEPAGE_EP, HOME_EP, MYFRIENDS_EP, MYPROFILE_EP, PROFILE_EP, REGISTER_EP, SETTINGS_EP, SETTINGS_MYPROFILE_EP, SETTINGS_TWOFA_EP, SIGNIN_EP, TWOFA_EP } from './constants/RoutesApi';
 import MyProfile from './components/MyProfile';
 import Chat from './components/Chat';
 import TwoFA from './components/TwoFA';
 import TwoFASettings from './components/TwoFASettings';
+import MyProfileSettings from './components/MyProfileSettings';
 
 
 const router = createBrowserRouter([
@@ -63,6 +64,10 @@ const router = createBrowserRouter([
 	{
 		path: SETTINGS_EP,
 		element: <Settings />
+	},
+	{
+		path: SETTINGS_MYPROFILE_EP,
+		element: <MyProfileSettings />
 	},
 	{
 		path: SETTINGS_TWOFA_EP,

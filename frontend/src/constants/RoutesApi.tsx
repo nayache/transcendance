@@ -11,6 +11,8 @@ export const API_BASE_AUTH = API_BASE_URL + '/auth'
 export const API_BASE_USER = API_BASE_URL + '/user'
 
 
+export const API_TWOFA_ROUTE = API_BASE_AUTH + '/2fa'
+export const API_GENERATE_TWOFA_ROUTE = API_BASE_AUTH + '/2fa/generate'
 export const API_TOKEN_ROUTE = API_BASE_AUTH + '/token'
 export const API_VERIFY_TOKEN_ROUTE = API_BASE_AUTH + '/verify'
 export const API_PSEUDO_ROUTE = API_BASE_USER + '/pseudo'
@@ -56,8 +58,8 @@ export const FRIENDS_ROUTE = BASE_URL + FRIENDS_EP
 export const SETTINGS_EP = '/settings'
 export const SETTINGS_ROUTE = BASE_URL + SETTINGS_EP
 
-export const SETTINGS_PROFILE_EP = SETTINGS_EP + '/profile'
-export const SETTINGS_PROFILE_ROUTE = BASE_URL + SETTINGS_PROFILE_EP
+export const SETTINGS_MYPROFILE_EP = SETTINGS_EP + '/profile'
+export const SETTINGS_MYPROFILE_ROUTE = BASE_URL + SETTINGS_MYPROFILE_EP
 
 export const SETTINGS_TWOFA_EP = SETTINGS_EP + '/two-factor-authentication'
 export const SETTINGS_TWOFA_ROUTE = BASE_URL + SETTINGS_TWOFA_EP

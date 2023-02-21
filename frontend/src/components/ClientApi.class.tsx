@@ -191,7 +191,7 @@ class ClientApi {
 			const data = await ClientApi.post(
 				ClientApi.registerApiRoute, JSON.stringify({
 					code,
-					twofa,
+					digit: twofa,
 					path
 			}), 'application/json');
 			if (!data.token)

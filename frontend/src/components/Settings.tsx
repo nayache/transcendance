@@ -2,7 +2,7 @@ import React from "react";
 import Navbar from "../components/Navbar";
 import { useState } from "react";
 import "../styles/Settings.css";
-import { SETTINGS_BLOCKED_EP, SETTINGS_HELP_EP, SETTINGS_PROFILE_EP, SETTINGS_TWOFA_EP } from "../constants/RoutesApi";
+import { SETTINGS_BLOCKED_EP, SETTINGS_HELP_EP, SETTINGS_MYPROFILE_EP, SETTINGS_TWOFA_EP } from "../constants/RoutesApi";
 
 const Settings = () => {
 
@@ -20,7 +20,7 @@ const Settings = () => {
 						"username",
 						"avatar",
 					],
-					href: SETTINGS_PROFILE_EP,
+					href: SETTINGS_MYPROFILE_EP,
 				},
 				{
 					name: "Two-factor Authentication",
