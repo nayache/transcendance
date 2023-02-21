@@ -63,7 +63,12 @@ export class UserService {
         return this.userRepository.update(id, { TwoFaSecret: value });
     }
 
-    async getTwoFaSecret(id: string) {
+    async getTwoFa(id: string): Promise<boolean> {
+        const user = await this.findById(id);
+        return user.twoFaEnabled;
+    }
+    
+    async getTwoFaSecret(id: string): Promise<string> {
         const user = await this.findById(id);
         return user.TwoFaSecret;
     }

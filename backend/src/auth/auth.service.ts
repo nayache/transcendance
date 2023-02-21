@@ -7,18 +7,19 @@ import { UserService } from 'src/user/user.service';
 import { ErrorException } from 'src/exceptions/error.exception';
 import { AboutErr, TypeErr } from '../enums/error_constants';
 import { JwtDecodedDto } from 'src/dto/jwtdecoded.dto';
-import { authenticator } from 'otplib'
+import { authenticator } from 'otplib';
+import { toDataURL } from 'qrcode';
 
 @Injectable()
 export class AuthService {
     constructor(private readonly jwtService: JwtService, private readonly userService: UserService) {}
 
-    async generateToken(code: string, path?: string): Promise<TokenFtEntity> | null {
+    async generateToken(code: string, path: string): Promise<TokenFtEntity> | null {
        if (!code) {
             return null;
         }
-        const uri = "https://api.intra.42.fr/oauth/token";
-          
+        const uri: string = "https://api.intra.42.fr/oauth/token";
+        const redirect_uri: string = 'http://localhost:3000/' + path; 
         console.log('before fetch code:', code);
         const response = await fetch(uri, {
             method: 'POST', headers: {
@@ -26,7 +27,7 @@ export class AuthService {
             grant_type: "authorization_code", 
             client_id: process.env.CLIENT_ID, 
             client_secret: process.env.CLIENT_SECRET,
-            code: code, redirect_uri: "http://localhost:3000/" + (path) ? path : 'register'
+            code: code, redirect_uri: redirect_uri
             })})
         console.log('generate 42token response: ', response.status, response.statusText);
         if (response.status != 200)
@@ -149,7 +150,8 @@ export class AuthService {
         return user.id;
     }
     
-    async generateSecret(userId: string) {
+    
+    /*async generateSecret(userId: string) {
         console.log('APP_NAME =', process.env.APP_NAME);
         const pseudo = await this.userService.getPseudoById(userId);
         const secret = authenticator.generateSecret();
@@ -164,6 +166,33 @@ export class AuthService {
             secret,
             otpAuthUrl
         };
+    }*/
+    
+    async generateOtpUrl(userId: string, secret: string): Promise<string> {
+        console.log('APP_NAME =', process.env.APP_NAME);
+        const pseudo = await this.userService.getPseudoById(userId);
+        const otpAuthUrl = authenticator.keyuri(
+            pseudo,
+            process.env.APP_NAME,
+            secret
+        );
+        return otpAuthUrl
+    }
+
+    async generateQrCode(userId: string): Promise<string> {
+        const secret: string = await this.userService.getTwoFaSecret(userId);
+        if (!secret)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TWOFA, TypeErr.NOT_FOUND, 'twofa datas not found');
+        const otpAuthUrl: string = await this.generateOtpUrl(userId, secret);
+        return toDataURL(otpAuthUrl);
+    }
+
+    generateSecret(): string {
+        return authenticator.generateSecret();
+    }
+
+    async saveTwoFaSecret(userId: string, secret: string) {
+        await this.userService.updateTwoFaSecret(userId, secret);
     }
     
     async twoFaAccess(enabled: boolean, userId: string, digit?: string): Promise<boolean> {
