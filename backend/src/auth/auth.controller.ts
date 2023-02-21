@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, HttpStatus, Post, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpStatus, Post, StreamableFile, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/decorators/user.decorator';
@@ -9,7 +9,11 @@ import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
 import { UserEntity } from 'src/entity/user.entity';
 import { IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { toDataURL } from 'qrcode'
+import { toFileStream } from 'qrcode'
+import { toString } from 'qrcode'
+import { toFile } from 'qrcode'
 import { ValidationFilter } from 'src/chat/filter/validation-filter';
+import { createWriteStream } from 'fs';
 
 export class AuthDto {
     @IsString()
@@ -18,8 +22,7 @@ export class AuthDto {
 
     @IsString()
     @IsNotEmpty()
-    @IsOptional()
-    path?: string;
+    path: string;
 
     @IsNotEmpty()
     @IsString()
@@ -86,7 +89,25 @@ constructor(private readonly authService: AuthService,
         return {};
     }
 
+    @Post('2fa')
+    async enableOrDisableTwoFa(@User() userId: string, @Body('toggle') enabled: boolean) {
+        if (typeof(enabled) != 'boolean')
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.REQUEST, TypeErr.INVALID, 'invalid argument');
+        await this.userService.updateTwoFa(userId, enabled);
+        const secret : string = (enabled) ? this.authService.generateSecret() : null;
+        await this.userService.updateTwoFaSecret(userId, secret);
+        const qrcode: string = (enabled) ? await this.authService.generateQrCode(userId) : null;
+        return {enabled, qrcode};
+    }
+    
     @Get('2fa')
+    async generate(@User() userId: string) : Promise<any> {
+        const enabled: boolean = await this.userService.getTwoFa(userId);
+        const qrcode: string = (enabled) ? await this.authService.generateQrCode(userId) : null;
+        return {enabled, qrcode};
+    }
+    
+    @Get('2fa/isActive')
     async isTwoFaActivated(@User() userId: string) {
         const user: UserEntity = await this.userService.findById(userId);
         if (!user)
@@ -94,20 +115,7 @@ constructor(private readonly authService: AuthService,
         return {enabled: user.twoFaEnabled};
     }
 
-    @Post('2fa')
-    async enableOrDisableTwoFa(@User() userId: string, @Body('toggle') value: boolean) {
-        if (value === undefined || typeof(value) != 'boolean')
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.REQUEST, TypeErr.INVALID);
-        await this.userService.updateTwoFa(userId, value);
-    }
-    
-    @Get('2fa/generate')
-    async generate(@User() userId: string) : Promise<string> {
-        const { otpAuthUrl } = await this.authService.generateSecret(userId);
-        return toDataURL(otpAuthUrl);
-    }
-
-    @Post('auth')
+  /*  @Post('auth')
     async authentification(@User() userId: string, @Body('code') code: string) {
         if (!code)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.REQUEST, TypeErr.EMPTY);
@@ -116,5 +124,5 @@ constructor(private readonly authService: AuthService,
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.TWOFA, TypeErr.REJECTED, '2fa code invalid');
         else
             return "2FA AUTH ACCESS VALIDATED"
-    }
+    }*/
 }
