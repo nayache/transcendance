@@ -2,7 +2,10 @@ import React, { useEffect, useRef } from 'react'
 import { CanvasStyled } from '../styles/Canvas.style'
 
 type MyProps = {
-	display: (context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, canvas: HTMLCanvasElement) => void;
+	display: (context: CanvasRenderingContext2D,
+		canvasWidth: number,
+		canvasHeight: number,
+		canvas: HTMLCanvasElement) => void;
 }
 type Props = React.ComponentPropsWithoutRef<'canvas'> & MyProps
 

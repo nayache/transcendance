@@ -2,6 +2,7 @@ import React from "react";
 import Navbar from "../components/Navbar";
 import { useState } from "react";
 import "../styles/Settings.css";
+import { SETTINGS_BLOCKED_EP, SETTINGS_HELP_EP, SETTINGS_MYPROFILE_EP, SETTINGS_TWOFA_EP } from "../constants/RoutesApi";
 
 const Settings = () => {
 
@@ -18,13 +19,15 @@ const Settings = () => {
 					tags: [
 						"username",
 						"avatar",
-					]
+					],
+					href: SETTINGS_MYPROFILE_EP,
 				},
 				{
 					name: "Two-factor Authentication",
 					description: 
 						"Enable to give your Truly Expenses account an extra layer of security.",
 					tags: [],
+					href: SETTINGS_TWOFA_EP,
 				},
 				
 			]
@@ -38,8 +41,8 @@ const Settings = () => {
 					name: "Help",
 					description: "Having trouble",
 					tags: [],
+					href: SETTINGS_HELP_EP
 				},
-				
 			]
 		},
 		{
@@ -52,6 +55,7 @@ const Settings = () => {
 					description: 
 						"Accounts you have blocked",
 					tags: [],
+					href: SETTINGS_BLOCKED_EP
 				},
 			]
 		}
@@ -88,11 +92,11 @@ const Settings = () => {
 		<div>
 			<Navbar/>
 			<div className="settings-container">
-				<h1>
+				<h2>
 					<span className="name-settings">
 						Settings
 					</span>
-				</h1>
+				</h2>
 				<input type="text" 
 				className="form-search" 
 				placeholder="Search..."
@@ -105,10 +109,12 @@ const Settings = () => {
 							<div>
 								{ options.values.map((values) => ( 
 									<div className="items-value" key={values.name}>
-										<button className="button-value">
-											<h4 className="value-name">{values.name}</h4>
-											<p className="value-description">{values.description}</p>
-										</button>
+										<a href={values.href}>
+											<button className="button-value">
+												<h4 className="value-name">{values.name}</h4>
+												<p className="value-description">{values.description}</p>
+											</button>
+										</a>
 									</div>
 								))}
 							</div>

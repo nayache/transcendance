@@ -33,6 +33,7 @@ class Ball extends CanvasObject {
 	}
 
 
+	// 
 	public isInsideX(solidObject: CanvasObject): boolean {
 		if (
 			(this.pos.x - this.radius <= solidObject.pos.x + solidObject.dimensions.width &&

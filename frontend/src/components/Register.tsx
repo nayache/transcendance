@@ -2,68 +2,83 @@ import React, { useEffect, useState } from 'react'
 import ClientApi from './ClientApi.class';
 import "../styles/Register.css"
 import logo42 from "../img/42.jpg"
-import { BASE_URL } from '../constants/RoutesApi';
+import { BASE_URL, FTAPI_CODE_ROUTE_TO_REGISTER, FTAPI_CODE_ROUTE_TO_TWOFA } from '../constants/RoutesApi';
+import ServerDownPage from './ServerDownPage';
+import TwoFA from './TwoFA';
+import { AboutErr, IError, TypeErr } from '../constants/error_constants';
+import { PageCase, useRegister } from '../hooks/useRegister';
+import { useSocket } from '../hooks/useSocket';
 
 const Register: React.FC = () => {
 	
-	const [isOkay, setIsOkay] = useState<boolean | undefined>();
-	const domain: string = 'http://localhost:3042'
-	const api42Url: string = 'https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-e109b6049885b09b137238ab72a9b3e8fd7420444069ee7a2365419f153c1624&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fregister&response_type=code'
-	const rawUrlParameters: string = window.location.search;
-	const cleanUrlParameters: URLSearchParams = new URLSearchParams(rawUrlParameters);
+	const [page, setPage] = useState<JSX.Element>(<></>);
+	const [errorDom, setErrorDom] = useState<JSX.Element>(<React.Fragment />);
+	const [pageCase] = useRegister();
 
-	
-	useEffect(() => {
-		/**
-		 * code vaut null au debut mais au second appel de <Register />
-		 * avec "code" en parametre de l'url ("/register?code=ssfejjg") (cf window.location.href),
-		 * "code" va valoir la valeur en parametre (en l'occurence 'ssfejjg')
-		 */
-		(async () => {
-			try{
-				await ClientApi.verifyToken()
-				setIsOkay(false) // si le token existe on a rien a faire sur cette page
-				ClientApi.redirect = new URL(BASE_URL)
-			} catch (err) {
-				const code: string | null = cleanUrlParameters.get('code');
-				
-				setIsOkay(true);
-				try {
-					console.log("code = ", code);
-					if (code)
-					{
-						console.log("code apres = ", code);
-						ClientApi.register(code, new URL(BASE_URL));
-					}
-				} catch (err) {
-					console.log("err = ", err);
-				}
-			}
-		})()
-	}, [])
 
-	const onClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
-		event.preventDefault();
-		window.location.href = api42Url;
+	const triggerCode = (path: string) => {
+		if (path == 'register')
+			window.location.href = FTAPI_CODE_ROUTE_TO_REGISTER;
+		else if (path == 'twofa')
+			window.location.href = FTAPI_CODE_ROUTE_TO_TWOFA;
 	}
-	
-	const getPage = () => (
-		<div className='Register'>
-			<button onClick={onClick}> 
-				<img src={logo42} alt="42"/>
-			</button>
-			<div className ="field">
-			<div className ="net"></div>
-			<div className="ping"></div>
-			<div className="pong"></div>
-			<div className="ball"></div>
+
+
+	useEffect(() => {
+		switch (pageCase) {
+			case PageCase.TOKEN_ALREADY_EXIST:
+				// si le token existe on a rien a faire sur cette page a part si twofa
+				ClientApi.redirect = new URL(BASE_URL)
+				break;
+			case PageCase.NORMAL:
+				setPage(
+					<div className='Register'>
+						<button onClick={() => triggerCode('register')}> 
+							<img src={logo42} alt="42"/>
+						</button>
+						<div className ="field">
+						<div className ="net"></div>
+						<div className="ping"></div>
+						<div className="pong"></div>
+						<div className="ball"></div>
+						</div>
+					</div>
+				)
+				break;
+			case PageCase.TOKEN_CREATED:
+				ClientApi.redirect = new URL(BASE_URL);
+				break;
+			case PageCase.ERROR_CODE:
+				setErrorDom(
+					<p className='error_text'>Sorry, please try to connect again...</p>
+				)
+				break;
+			case PageCase.ERROR_TWOFA:
+				triggerCode('twofa');
+				break;
+		}
+	}, [pageCase])
+
+	useEffect(() => {
+		setPage(
+			<div className='Register'>
+				<button onClick={() => triggerCode('register')}> 
+					<img src={logo42} alt="42"/>
+				</button>
+				{ errorDom }
+				<div className ="field">
+				<div className ="net"></div>
+				<div className="ping"></div>
+				<div className="pong"></div>
+				<div className="ball"></div>
+				</div>
 			</div>
-		</div>
-	)
+		)
+	}, [errorDom])
 
 	return (
 		<React.Fragment>
-			{isOkay && getPage()}
+			{ page }
 		</React.Fragment>
 	)
 }
