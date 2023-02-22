@@ -9,14 +9,15 @@ export const API_BASE_URL = 'http://localhost:3042'
 
 export const API_BASE_AUTH = API_BASE_URL + '/auth'
 export const API_BASE_USER = API_BASE_URL + '/user'
+export const API_BASE_CHAT = API_BASE_URL + '/chat'
 
 
 export const API_TWOFA_ROUTE = API_BASE_AUTH + '/2fa'
-export const API_GENERATE_TWOFA_ROUTE = API_BASE_AUTH + '/2fa/generate'
 export const API_TOKEN_ROUTE = API_BASE_AUTH + '/token'
 export const API_VERIFY_TOKEN_ROUTE = API_BASE_AUTH + '/verify'
 export const API_PSEUDO_ROUTE = API_BASE_USER + '/pseudo'
 export const API_AVATAR_ROUTE = API_BASE_USER + '/avatar'
+export const API_CHAT_MESSAGES_ROUTE = API_BASE_CHAT + '/message'
 
 
 

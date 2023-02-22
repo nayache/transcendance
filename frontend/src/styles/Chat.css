@@ -11,6 +11,10 @@
 	margin: 0 2% 2%;
 }
 
+.other_pseudo {
+	color: orange;
+}
+
 @media screen and (max-width: 767px) {
 	.messages-container {
 		position: relative;

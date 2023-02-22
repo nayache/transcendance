@@ -37,22 +37,32 @@
 	position: relative;
 	display: block;
 	z-index: 0;
-	transition: margin 0.7s, opacity 0.3s 0.5s;
+	transition: all 0.7s, opacity 0.3s 0.5s;
 }
 
 .unrolled {
 	z-index: 1;
 	opacity: 100%;
-	transition: margin 0.7s, opacity 0.8s 0.4s;
+	display: block;
+	transition: all 0.7s, opacity 0.8s 0.4s;
 }
 
 .rolled {
 	z-index: 0;
 	opacity: 0%;
-	transition: margin 0.7s, opacity 0.3s;
+	display: none;
+	transition: all 0.7s, display 0s 0.7s, opacity 0.3s;
 }
 
 .svg {
 	pointer-events: none;
 	margin: 0 12px;
+}
+
+.qrcode {
+	position: relative;
+	display: block;
+	width: 20%;
+	margin: 2px 3% 10px;
+	cursor: pointer;
 }

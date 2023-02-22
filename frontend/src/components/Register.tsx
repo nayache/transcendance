@@ -7,6 +7,7 @@ import ServerDownPage from './ServerDownPage';
 import TwoFA from './TwoFA';
 import { AboutErr, IError, TypeErr } from '../constants/error_constants';
 import { PageCase, useRegister } from '../hooks/useRegister';
+import { useSocket } from '../hooks/useSocket';
 
 const Register: React.FC = () => {
 	

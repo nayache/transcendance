@@ -1,10 +1,10 @@
-import { useRef } from 'react'
+import React, { useRef } from 'react'
 import '../styles/Modal.css'
 
 interface Props {
 	active: boolean,
-	title: string,
-	content: string,
+	title: JSX.Element,
+	content: JSX.Element,
 	callback?: () => any,
 	callbackFail?: () => any,
 }
@@ -12,6 +12,14 @@ interface Props {
 const Modal = ({ active, title, content, callback, callbackFail }: Props) => {
 
 	const modalRef = useRef<HTMLDivElement>(null);
+
+
+	const handleClick = (e: React.MouseEvent, visible: boolean, callback?: () => any | undefined) => {
+		if (modalRef.current)
+			modalRef.current.style.display = visible ? "block" : "none";
+		if (callback)
+			callback();
+	}
 
 	{
 		if (active) {
@@ -21,33 +29,16 @@ const Modal = ({ active, title, content, callback, callbackFail }: Props) => {
 	}
 
 	return (
-		<div id="myModal" onClick={(event) => {
-			if (modalRef.current && event.target == modalRef.current)
-			{
-				modalRef.current.style.display = "none";
-				if (callbackFail)
-					callbackFail();
-			}
-		}} ref={modalRef} className="modal">
+		<div id="myModal" onClick={(e) => {
+			if (e.target == modalRef.current)
+				handleClick(e, false, callbackFail)
+		}}
+		ref={modalRef} className="modal">
 			<div className="modal-content">
-				<span onClick={() => {
-					if (modalRef.current)
-					{
-						modalRef.current.style.display = 'none';
-						if (callbackFail)
-							callbackFail();
-					}
-				}} className="close">&times;</span>
-				<h3>{title}</h3>				
-				<p>{content}</p>				
-        		<button type="button" onClick={() => {
-					if (modalRef.current)
-					{
-						modalRef.current.style.display = 'none';
-						if (callback)
-							callback();
-					}
-				}} className="continuebtn">Continue</button>
+				<span onClick={(e) => handleClick(e, false, callbackFail)} className="close">&times;</span>
+				<div>{title}</div>				
+				<div>{content}</div>				
+        		<button type="button" onClick={(e) => handleClick(e, false, callback)} className="continuebtn">Continue</button>
 			</div>
 		</div>
 	)
