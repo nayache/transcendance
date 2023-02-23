@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, HttpStatus, Post, StreamableFile, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpStatus, Param, Post, StreamableFile, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/decorators/user.decorator';
@@ -60,6 +60,18 @@ constructor(private readonly authService: AuthService,
         console.log(`jwt generate ----> [ ${token} ]`);
 
         return { token };
+    }
+
+    @Post('/fake/:login')
+    async fake(@Param('login') login: string) {
+        let user: UserEntity = await this.userService.findByLogin(login);
+        if (!user)
+            user = await this.userService.saveUser(login);
+        const refresh : string = this.authService.generateJwtRefresh();
+        const token : string = this.authService.generateJwt(this.authService.jwtDataToDto(user.id, null, refresh));
+        
+        console.log(`jwt(fake) generate ----> [ ${token} ]`);
+        return {token} ;
     }
 
     @Get('token')
