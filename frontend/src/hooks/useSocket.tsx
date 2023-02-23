@@ -4,15 +4,18 @@ import { io, ManagerOptions, Socket, SocketOptions } from "socket.io-client"
 export const useSocket = (
 	uri: string | Partial<ManagerOptions & SocketOptions>,
 	opts?: Partial<ManagerOptions & SocketOptions> | undefined
-): Socket => {
-	const { current: socket } = useRef(io(uri, opts))
+) => {
+	const socketRef = useRef<Socket>();
+	socketRef.current = io(uri, opts)
 
 	useEffect(() => {
 		return () => {
-			if (socket) // if it's opened
-				socket.close()
+			// check before the socketRef.current changes (not the 1st render)
+			// and when the component will unmount, if the socketRef.current is opened and close it if it is
+			if (socketRef.current)
+				socketRef.current.close()
 		}
-	}, [socket])
+	}, [socketRef.current])
 
-	return socket;
+	return socketRef.current;
 }

@@ -25,3 +25,15 @@ export enum TypeErr {
 	DUPLICATED,
 	REJECTED //exemple: acces denied for join channel
 }
+
+export enum Status {
+	OFFLINE,
+	ONLINE,
+	INGAME
+}
+
+export enum ChannelRole {
+	OWNER,
+	ADMIN,
+	USER
+}

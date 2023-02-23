@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react"
 import { API_PSEUDO_ROUTE, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
 import ClientApi from "./ClientApi.class";
 import '../styles/Home.css'
-import Crown from "../img/crown.png"
 import Navbar from "./Navbar";
 import ServerDownPage from "./ServerDownPage";
 import { AboutErr, IError, TypeErr } from "../constants/error_constants";

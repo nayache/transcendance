@@ -62,7 +62,7 @@
 .qrcode {
 	position: relative;
 	display: block;
-	width: 20%;
+	width: 12%;
 	margin: 2px 3% 10px;
 	cursor: pointer;
 }

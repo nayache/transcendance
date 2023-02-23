@@ -3,70 +3,177 @@ import Navbar from "./Navbar";
 import '../styles/Chat.css'
 import { useSocket } from "../hooks/useSocket";
 import ClientApi from "./ClientApi.class";
-import { API_CHAT_MESSAGES_ROUTE } from "../constants/RoutesApi";
+import { API_CHAT_MESSAGES_CHANNEL_ROUTE, API_CHAT_USER_CHANNELS_ROUTE, API_PSEUDO_ROUTE, API_SOCKET_URL, SIGNIN_ROUTE } from "../constants/RoutesApi";
+import { IChannel } from "../interface/IChannelUser";
+import { AboutErr, IError, TypeErr } from "../constants/error_constants";
+import ServerDownPage from "./ServerDownPage";
+
+const MAX_CARAC: number = 300
 
 const Chat = () => {
 
-	const socket = useSocket('ws://localhost:3042', { auth: {token: `Bearer ${ClientApi.token}`}})
+	const socket = useSocket(API_SOCKET_URL,
+		{ auth: {token: `Bearer ${ClientApi.token}`} })
 	const [messages, setMessages] = useState<JSX.Element[]>([]);
 	const msg = useRef<string>('');
+	const textAreaRef = useRef<HTMLTextAreaElement>(null);
+	const [ roomNames, setRoomNames ] = useState<string[]>([ 'General' ]);
+	const [currentRoomName, setCurrentRoomName] = useState<string>('General');
+	const [isOkay, setIsOkay] = useState<boolean>();
+	const [pseudo, setPseudo] = useState<string>();
 
-	
-	//creer des hook pour les socket.on (je crois)
-	socket.on("message", (pseudoSender, message) => {
+
+	const updateMessagesBlock = (pseudoSender: string, message: string) => {
 		setMessages(oldmessages => [...oldmessages,
-			<p><b className="other_pseudo">{pseudoSender}</b>: {message}</p>
+			<div className="message-container">
+				<p className="message-text"><b className="other_pseudo">{pseudoSender}</b>: {message}</p>
+			</div>
 		])
-	})
-
-
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		msg.current = e.target.value;
 	}
 
-	const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
-		let receiver: string;
-		let msgData: string;
-
-		[receiver, msgData] = msg.current.split('/');
-		console.log("receiver = ", receiver)
-		console.log("msgData = ", msgData)
-		// stocker pseudo dans redux
-		setMessages(oldmessages => [...oldmessages,
-			<p>Me: {msgData}    <i>/silent to {receiver}</i></p>
-		])
+	const updateRooms = async () => {
 		try {
-			ClientApi.post(API_CHAT_MESSAGES_ROUTE, JSON.stringify({
-				target: receiver,
-				msg: msgData
-			}), 'application/json')
+			const data = await ClientApi.get(API_CHAT_USER_CHANNELS_ROUTE)
+			const { channels } = data;
+			console.log("channels = ", channels)
+			const newRoomNames: string[] = [ 'General' ];
+			channels.map((channel: IChannel) => {
+				newRoomNames.push(channel.name);
+			})
+			setRoomNames(newRoomNames);
 		} catch (err) {
 			console.log("err = ", err);
 		}
 	}
+	
+	const isAlphaNumeric = (str: string): boolean => {
+		let code: number;
+	
+		for (let i = 0, len = str.length; i < len; i++) {
+			code = str.charCodeAt(i);
+			if (!(code > 47 && code < 58) && // numeric (0-9)
+				!(code > 64 && code < 91) && // upper alpha (A-Z)
+				!(code > 96 && code < 123)) { // lower alpha (a-z)
+				return false;
+			}
+		}
+		return true;
+	};
+
+	const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		msg.current = e.target.value;
+		if (textAreaRef.current) // ca a pas trop de sens mais bon..
+		{
+  			textAreaRef.current.style.height = "";
+			textAreaRef.current.style.height = textAreaRef.current.scrollHeight + "px"
+		}
+		if (textAreaRef.current &&
+			textAreaRef.current.value.length >= MAX_CARAC)
+			console.log("max length reached")
+		else
+			console.log("okay good")
+	}
+
+	const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		if (e.key === 'Enter' && !e.shiftKey)
+		{
+			e.preventDefault()
+			try {
+				await handleClick();
+				msg.current = '';
+			} catch (err) {
+				console.log("err = ", err);
+			}
+			if (textAreaRef.current)
+			{
+				textAreaRef.current.value = ""
+				textAreaRef.current.style.height = "";
+				textAreaRef.current.style.height = textAreaRef.current.scrollHeight + "px"
+			}
+		}
+	}
+
+	const handleClick = async () => {
+		if (pseudo)
+		{
+			console.log("currentRoomName = ", currentRoomName)
+			console.log("msg.current = ", msg.current)
+			try {
+				ClientApi.post(API_CHAT_MESSAGES_CHANNEL_ROUTE, JSON.stringify({
+					target: currentRoomName,
+					msg: msg.current
+				}), 'application/json')
+			} catch (err) {
+				console.log("err = ", err);
+			}
+		}
+	}
 
 
-	return (
+
+	//creer des hook pour les socket.on (je crois)
+	socket?.on("messageRoom", (pseudoSender, message) => {
+		updateMessagesBlock(pseudoSender, message);
+	})
+
+	
+    useEffect(() => {
+		(async () => {
+			try {
+				const data = await ClientApi.get(API_PSEUDO_ROUTE)
+				console.log("data.pseudo = ", data.pseudo)
+				setPseudo(data.pseudo)
+				console.log("pseudo = ", pseudo)
+				if (pseudo)
+					setIsOkay(true);
+			} catch (err) {
+				const _typeError: TypeError = err as TypeError;
+				const _error: IError = err as IError;
+				if (_typeError.name == "TypeError")
+					setIsOkay(false)
+				else if (_error.about == AboutErr.PSEUDO && _error.type == TypeErr.NOT_FOUND )
+					ClientApi.redirect = new URL(SIGNIN_ROUTE)
+			}
+		})()
+    }, [pseudo])
+
+	useEffect(() => {
+		if (textAreaRef.current) // ca a pas trop de sens mais bon..
+		{
+  			textAreaRef.current.style.height = "";
+			textAreaRef.current.style.height = textAreaRef.current.scrollHeight + "px"
+		}
+	}, [])
+
+	const getPage = () => (
 		<div>
 			<Navbar />
-			<div className="messages-container">
-				{ messages }
-			</div>
-			<div className="buttons-container">
-				<div>
-					<input type={"text"} onChange={handleChange} />
-					<button onClick={handleClick}>Send</button>
+			<div className="chat-container">
+				<div className="messages-container">
+					{ messages }
 				</div>
-				<div>
-					<button>General</button>
-					<button>Humour</button>
-					<button>Ranked</button>
-					<button>Searching team</button>
-					<button>Quick game</button>
+				<div className="input-text-container">
+					<textarea ref={textAreaRef} className="input-text"
+					spellCheck={false} maxLength={MAX_CARAC}
+					onChange={handleChange} onKeyDown={handleKeyDown} />
+				</div>
+				<div className="buttons-container">
+					<div>
+						{ roomNames.map((roomName: string) => (
+							<button>{ roomName }</button>
+						)) }
+					</div>
 				</div>
 			</div>
 		</div>
-	);
+	)
+
+	return (
+		<React.Fragment>
+			{isOkay && getPage()}
+			{isOkay == false && <ServerDownPage />}
+		</React.Fragment>
+	)
 }
 
 export default Chat;
