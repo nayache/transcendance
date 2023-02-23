@@ -8,12 +8,7 @@ import { JwtGuard } from './guards/jwt.guard';
 import { ChatService } from './chat.service';
 import { ChannelRole } from './enums/channel-role.enum';
 import { Status } from './enums/status.enum';
-
-class userDto {
-  id: string;
-  pseudo: string;
-  socket: Socket;
-}
+import { eventMessageDto, userDto } from './dto/chat-gateway.dto';
 
 //@UseGuards(JwtGuard)
 @WebSocketGateway({ cors: {origin: '*'} })
@@ -95,9 +90,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     });
   }
 
-  async sendMessageToChannel(userId: string, channel: string, message: string) {
-    const pseudo: string = await this.userService.getPseudoById(userId);
-    this.server.to(channel).emit('message', pseudo, message);
+  async sendMessageToChannel(userId: string, channel: string, message: string, color: string) {
+    const author: string = await this.userService.getPseudoById(userId);
+    //this.server.to(channel).emit('message', pseudo, message);
+    const messageData: eventMessageDto = {author, message, color};
+    this.server.to(channel).emit('messageRoom', messageData);
   }
 
   async handleDisconnect(socket: Socket) {

@@ -34,6 +34,6 @@ import { Channel } from './entity/channel.entity';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtDecoding).exclude('/auth', '/auth/token', '/user/add/', '/user/rm', '/user/all').forRoutes('/')
+    consumer.apply(JwtDecoding).exclude('/auth', '/auth/fake/:login', '/auth/token', '/user/add/', '/user/rm', '/user/all').forRoutes('/')
   }  
 }
