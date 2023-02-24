@@ -6,62 +6,23 @@ import { ChannelRole } from './enums/channel-role.enum';
 import { ChannelDto, ChannelUserDto } from './chat.controller';
 import { ChatGateway } from './chat.gateway';
 import { Status } from './enums/status.enum';
-
-export class Message {
-    constructor(author: User, data: string) {
-        this.author = author;
-        this.data = data;
-    }
-    author: User;
-    data: string;
-}
-
-
-export class User {
-    constructor(id: string, pseudo: string, color: string, role?: ChannelRole) {
-        this.id = id;
-        this.pseudo = pseudo;
-        this.color = color;
-        this.role = (role);
-    }
-    id: string;
-    pseudo: string;
-    role: ChannelRole;
-    color: string;
-}
-
-export class Channel {
-    constructor(name: string, password?: string) {
-        this.name = name;
-        this.private = (password) ? true : false;
-        this.password = (password) ? password : null;
-        this.users = [];
-        this.banneds = [];
-        this.messages = [];
-        this.visited = 0;
-    }
-    name: string;
-    private: boolean = false;
-    password: string = null;
-    users: User[];
-    banneds: string[];
-    messages: Message[];
-    visited: number;
-}
+import { InjectRepository } from '@nestjs/typeorm';
+import { ChannelEntity } from './entity/channel.entity';
+import { Repository } from 'typeorm';
+import { Member } from './entity/member.entity';
 
 @Injectable()
 export class ChatService {
     constructor(private userService: UserService,
+        @InjectRepository(ChannelEntity) private channelRepository: Repository<ChannelEntity>,
+        @InjectRepository(Member) private memberRepository: Repository<Member>,
         @Inject(forwardRef(() => ChatGateway)) private readonly chatGateway: ChatGateway) {
-        this.channels = new Map<string, Channel>();
-        this.channels.set('General', new Channel('General'));
     }
 
-    private channels: Map<string, Channel>;
     private color: string[] = ["brown", "red", "blue", "black", "blueviolet",
      "DarkGoldenRod", "Crimson", "DarkBlue", "DarkCyan", "DarkGreen", "DarkSeaGreen", "Green"];
 
-    generateColor(channel: Channel): string {
+    generateColorr(channel: ChannelEntity): string {
         return this.color[channel.visited - 1 % this.color.length];
     }
 
@@ -69,16 +30,24 @@ export class ChatService {
         return (name.length >= 3 && name.length <= 25);
     }
 
-    channelExist(name: string): boolean {
-        return !!this.channels.get(name);
+    async channelExistt(name: string): Promise<boolean> {
+        return this.channelRepository.exist({where: {name: name}});
     }
 
-    insideChannel(userId: string, channelName: string): boolean {
-        return !!this.channels.get(channelName).users.find((user) => user.id === userId);
+    async getChannelByName(channelName: string): Promise<ChannelEntity> {
+        return this.channelRepository.findOneBy({name: channelName})
     }
 
-    isBanned(channel: string, userId: string): boolean {
-        return !!this.channels.get(channel).banneds.find((user) => user === userId);
+    async insideChannel(userId: string, channelName: string): Promise<boolean> {
+        const channelId: string = (await this.getChannelByName(channelName)).id; 
+        return this.memberRepository.exist({where: {
+            userId: userId, channelId: channelId
+        }});
+    }
+
+    async isBanned(channelName: string, userId: string): Promise<boolean> {
+        const channel: ChannelEntity = await this.getChannelByName(channelName);
+        return !!channel.banneds.find((user) => user === userId);
     }
 
     isBlocked(userId: string, targetPseudo: string): boolean {
@@ -86,90 +55,109 @@ export class ChatService {
         return false;
     }
 
-    isAdmin(userId: string, channelName: string): boolean {
-        const user: User = this.channels.get(channelName).users.find((user) => (user.id) === userId);
-        return !(user.role === ChannelRole.USER);
+    async isAdmin(userId: string, channelName: string): Promise<boolean> {
+        return this.memberRepository.exist({ relations: ['channel'],
+            where: { channel: { name: channelName },
+                userId: userId, role: ChannelRole.ADMIN,
+            }
+        });
     }
 
-    isPrivateChannel(channelName: string): boolean {
-        return this.channels.get(channelName).private;
+    async isPrivateChannel(channelName: string): Promise<boolean> {
+        return (await this.getChannelByName(channelName)).private;
     }
 
-    channelAccess(userId: string, channelName: string, password?: string) {
-        const channel: Channel = this.channels.get(channelName);
+    async channelAccess(userId: string, channelName: string, password?: string): Promise<boolean> {
+        const channel: ChannelEntity = await this.getChannelByName(channelName);
         return !(this.isBanned(channelName, userId) || channel.private && channel.password != password);
     }
 
-    banUser(channelName: string, userId: string) {
-        this.channels.get(channelName).banneds.push(userId);
+    async banUser(channelName: string, userId: string) {
+        const channel: ChannelEntity = await this.getChannelByName(channelName);
+        channel.banneds.push(userId);
     }
 
-    setRole(channelName: string, userId: string, role: ChannelRole) {
-        const channel: Channel = this.channels.get(channelName);
-        const user: User = channel.users.find((user) => user.id == userId);
-        user.role = role;
+    async setRole(channelName: string, userId: string, role: ChannelRole) {
+        const channel: ChannelEntity = await this.getChannelByName(channelName);
+        const member: Member = await this.getMemberByUserId(userId, channel.id);
+        await this.memberRepository.update(member.id, {role: role});
     }
 
-    //TEST
-    getChannelDto(channelNames: string[]): ChannelDto[] {
-        const channels: ChannelDto[] = channelNames.map((name) => {
-            const users: ChannelUserDto[] = this.channels.get(name).users.map((user) => {
-                const status: Status = this.chatGateway.getStatus(user.id);
-                return {pseudo: user.pseudo, role: user.role, status};
-            })
-            return {name, users};
+    async getMembersByChannel(channelId: string): Promise<Member[]> {
+        return this.memberRepository.find({relations: ['channel'],
+            where: { channelId: channelId }
         });
-        return channels;
     }
-    ////////////////////
+
+    async getChannelDto(channels: ChannelEntity[]): Promise<ChannelDto[]> {
+        const channs: ChannelDto[] = await Promise.all(channels.map(async (channel) => {
+            const members: Member[] = await this.getMembersByChannel(channel.id);
+            const users: ChannelUserDto[] = members.map((member) => {
+                const status: Status = this.chatGateway.getStatus(member.userId);
+                console.log('=-=-=-> ', member.user.pseudo, ' ', member.role, member.userId, status);
+                return {pseudo: member.user.pseudo, role: member.role, status};
+            })
+            return {name: channel.name, users};
+        }))
+        return channs;
+    }
+
+    async getChannelsByUserId(userId: string): Promise<ChannelEntity[]> {
+        return await this.channelRepository.find({ relations:
+                ['members'],
+            where: {
+                members: { userId: userId },
+            }
+        });
+    }
+
+    async getChannels(): Promise<ChannelEntity[]>{
+        return this.channelRepository.find();        
+    }
     
-    getChannelNames(): string[] {
-        const channels: string[] = [];
-        this.channels.forEach((channel) => channels.push(channel.name));
-        return channels;
+    async getChannelNamesByUserId(userId: string): Promise<string[]> {
+        const channels: ChannelEntity[] = await this.getChannelsByUserId(userId);
+        return channels.map((channel) => channel.name);
     }
 
-    getChannelNamesByUserId(userId: string): string[] {
-        const channelNames: string[] = [];
-        this.channels.forEach((channel) => {
-            if (channel.users.find((user) => user.id === userId))
-                channelNames.push(channel.name);
-        })
-        return channelNames;
+    async createChannel(nameChannel: string, password?: string) {
+        await this.channelRepository.save(new ChannelEntity(nameChannel, password));
     }
 
-    createChannel(nameChannel: string, password?: string) {
-        this.channels.set(nameChannel, new Channel(nameChannel, password));
+    async joinChannel(userId: string, role: ChannelRole, channelName: string) {
+        const chann: ChannelEntity = await this.channelRepository.findOneBy({name: channelName});
+        chann.visited += 1;
+        const colorr: string = this.generateColorr(chann);
+        const member = new Member(await this.userService.findById(userId), chann, colorr, role);
+        if (!chann.members)
+            chann.members = [member];
+        else
+            chann.members = [...chann.members, ...[member]];
+        await this.channelRepository.save(chann);
+    }   
+
+    async getMemberByUserId(userId: string, channelId: string): Promise<Member> {
+        return this.memberRepository.findOne({ where: {
+            userId: userId,
+            channelId: channelId
+        }});
     }
 
-    async joinChannel(userId: string, role: ChannelRole, channelName: string, password?: string) {
-        const channel: Channel = this.channels.get(channelName);
-        if (channel.private && channel.password != password)
-            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'access denied');
-        const color: string = this.generateColor(channel);
-        const user: User = new User(userId, await this.userService.getPseudoById(userId), color, role);
-        channel.users.push(user);
-        channel.visited += 1;
-        console.log('JOIN', this.channels, channel.users)
-    }
-
-    leaveChannel(userId: string, channelName: string) {
-        const channel: Channel = this.channels.get(channelName);
-        const user: User = channel.users.find((e) => (e.id === userId));
-        const index: number = channel.users.indexOf(user);
-        channel.users.splice(index, 1);
+    async leaveChannel(userId: string, channelName: string) {
+        const channel: ChannelEntity = await this.getChannelByName(channelName);
+        const member: Member = await this.getMemberByUserId(userId, channel.id);
+        await this.memberRepository.delete({id: member.id});
     }
 
     messageToUser(userId: string, target: string, text: string) {
         //must create message entitie ??
     }
     
-    messageToChannel(userId: string, channelName: string, text: string): string {
-        //must create message entitie ??
-        const channel: Channel = this.channels.get(channelName);
-        const author: User = channel.users.find((user) => (user.id) === userId);
-        channel.messages.push(new Message(author, text));
-        return author.color;
+    async messageToChannel(userId: string, channelName: string, text: string): Promise<string> {
+        const channel: ChannelEntity = await this.getChannelByName(channelName);
+        //need push message entity
+        const member: Member = await this.getMemberByUserId(userId, channel.id);
+        return member.color;
     }
 }
 
