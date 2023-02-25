@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Navbar from "./Navbar";
 import '../styles/Chat.css'
 import { useSocket } from "../hooks/useSocket";
@@ -13,25 +13,39 @@ const MAX_CARAC: number = 300
 const Chat = () => {
 
 	const socket = useSocket(API_SOCKET_URL,
-		{ auth: {token: `Bearer ${ClientApi.token}`} })
+		{ auth: {token: `Bearer ${ClientApi.token}`} });
+	const rpseudoSender = useRef<string>('');
+	const messagesContainerRef = useRef<HTMLDivElement>(null);
+	const noMessages = useRef<number>(0);
 	const [messages, setMessages] = useState<JSX.Element[]>([]);
 	const msg = useRef<string>('');
 	const textAreaRef = useRef<HTMLTextAreaElement>(null);
-	const [ roomNames, setRoomNames ] = useState<string[]>([ 'General' ]);
+	const [roomNames, setRoomNames] = useState<string[]>([ 'General' ]);
 	const [currentRoomName, setCurrentRoomName] = useState<string>('General');
 	const [isOkay, setIsOkay] = useState<boolean>();
 	const [pseudo, setPseudo] = useState<string>();
 
 
-	const updateMessagesBlock = (pseudoSender: string, message: string) => {
+	const printPreviewProfile = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+
+	}, [])
+
+	const updateMessagesBlock = useCallback((pseudoSender: string, message: string) => {
 		setMessages(oldmessages => [...oldmessages,
 			<div className="message-container">
-				<p className="message-text"><b className="other_pseudo">{pseudoSender}</b>: {message}</p>
+				<p className="message-text">
+					<b className="other_pseudo">
+						<button className="pseudo-button" onClick={printPreviewProfile} >
+							{pseudoSender}
+						</button>
+					</b>
+					: {message}
+				</p>
 			</div>
 		])
-	}
+	}, [])
 
-	const updateRooms = async () => {
+	const updateRooms = useCallback(async () => {
 		try {
 			const data = await ClientApi.get(API_CHAT_USER_CHANNELS_ROUTE)
 			const { channels } = data;
@@ -44,9 +58,9 @@ const Chat = () => {
 		} catch (err) {
 			console.log("err = ", err);
 		}
-	}
+	}, [])
 	
-	const isAlphaNumeric = (str: string): boolean => {
+	const isAlphaNumeric = useCallback((str: string): boolean => {
 		let code: number;
 	
 		for (let i = 0, len = str.length; i < len; i++) {
@@ -58,7 +72,7 @@ const Chat = () => {
 			}
 		}
 		return true;
-	};
+	}, [])
 
 	const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		msg.current = e.target.value;
@@ -79,7 +93,7 @@ const Chat = () => {
 		{
 			e.preventDefault()
 			try {
-				await handleClick();
+				await click();
 				msg.current = '';
 			} catch (err) {
 				console.log("err = ", err);
@@ -93,30 +107,41 @@ const Chat = () => {
 		}
 	}
 
-	const handleClick = async () => {
+	const click = useCallback(async () => {
 		if (pseudo)
 		{
+
 			console.log("currentRoomName = ", currentRoomName)
 			console.log("msg.current = ", msg.current)
 			try {
-				ClientApi.post(API_CHAT_MESSAGES_CHANNEL_ROUTE, JSON.stringify({
+				await ClientApi.post(API_CHAT_MESSAGES_CHANNEL_ROUTE, JSON.stringify({
 					target: currentRoomName,
-					msg: msg.current
+					msg: msg.current.trim()
 				}), 'application/json')
 			} catch (err) {
 				console.log("err = ", err);
 			}
 		}
-	}
+	}, [pseudo, currentRoomName])
 
 
 
 	//creer des hook pour les socket.on (je crois)
 	socket?.on("messageRoom", (pseudoSender, message) => {
+		rpseudoSender.current = pseudoSender;
 		updateMessagesBlock(pseudoSender, message);
 	})
 
-	
+
+
+	useEffect(() => {
+		if (textAreaRef.current) // ca a pas trop de sens mais bon..
+		{
+  			textAreaRef.current.style.height = "";
+			textAreaRef.current.style.height = textAreaRef.current.scrollHeight + "px"
+		}
+	}, [])
+
     useEffect(() => {
 		(async () => {
 			try {
@@ -138,22 +163,40 @@ const Chat = () => {
     }, [pseudo])
 
 	useEffect(() => {
-		if (textAreaRef.current) // ca a pas trop de sens mais bon..
-		{
-  			textAreaRef.current.style.height = "";
-			textAreaRef.current.style.height = textAreaRef.current.scrollHeight + "px"
+		const lastChild: HTMLDivElement | undefined | null = messagesContainerRef.current?.lastChild as HTMLDivElement
+		
+		if (messagesContainerRef.current && lastChild?.previousElementSibling) {
+			const previousElementSibling: HTMLDivElement = lastChild.previousElementSibling as HTMLDivElement
+			const lowerBottomPoint: number = messagesContainerRef.current.scrollTop + messagesContainerRef.current.scrollHeight
+			const lowerTopPoint: number = messagesContainerRef.current?.offsetTop + previousElementSibling.offsetTop
+			const scrollBottom: number = messagesContainerRef.current.scrollTop
+			+ messagesContainerRef.current.getBoundingClientRect().height;
+
+			if (messages.length > noMessages.current)
+			{
+				console.log("scrollBottom = ", scrollBottom)
+				if (scrollBottom >= lowerTopPoint || pseudo === rpseudoSender.current)
+					messagesContainerRef.current?.scrollTo(0, lowerBottomPoint);
+				console.log("lowerTopPoint = ", lowerTopPoint)
+				console.log("lowerBottomPoint = ", lowerBottomPoint);
+			}
+			noMessages.current = messages.length;
 		}
-	}, [])
+	}, [messages])
+
 
 	const getPage = () => (
 		<div>
 			<Navbar />
 			<div className="chat-container">
-				<div className="messages-container">
-					{ messages }
+				<div className="messages-container-container">
+					<div className="messages-container-bg" />
+					<div ref={messagesContainerRef} className="messages-container">
+						{ messages }
+					</div>
 				</div>
-				<div className="input-text-container">
-					<textarea ref={textAreaRef} className="input-text"
+				<div className="textarea-text-container">
+					<textarea placeholder="Write something..." ref={textAreaRef} className="textarea-text"
 					spellCheck={false} maxLength={MAX_CARAC}
 					onChange={handleChange} onKeyDown={handleKeyDown} />
 				</div>

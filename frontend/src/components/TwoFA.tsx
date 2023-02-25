@@ -77,7 +77,7 @@ const TwoFA = () => {
 										<input 
 										className="input-containers"
 										ref={index === activeOTPIndex ? inputRef : null}
-										type="number"
+										
 										onMouseDown={() => handleOnMouseDown(index)}
 										onKeyDown={(e) => handleOnKeyDown(e, index)}
 										onChange={(e) => handleOnChange(e, index)}
@@ -137,7 +137,7 @@ const TwoFA = () => {
 							<input 
 							className="input-containers"
 							ref={index === activeOTPIndex ? inputRef : null}
-							type="number"
+							
 							onMouseDown={() => handleOnMouseDown(index)}
 							onKeyDown={(e) => handleOnKeyDown(e, index)}
 							onChange={(e) => handleOnChange(e, index)}
