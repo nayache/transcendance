@@ -157,6 +157,7 @@ export class ChatService {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
         //need push message entity
         const member: Member = await this.getMemberByUserId(userId, channel.id);
+        console.log(`msg send: (${text})`);
         return member.color;
     }
 }

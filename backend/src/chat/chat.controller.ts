@@ -8,10 +8,11 @@ import { ChannelRole } from './enums/channel-role.enum';
 import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
 import { Status } from './enums/status.enum';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength, NotContains } from 'class-validator';
 import { ValidationFilter } from './filter/validation-filter';
 import { isAdmin } from './guards/is-admin.guard';
 import { ChannelEntity } from './entity/channel.entity';
+import { Transform } from 'class-transformer';
 
 export class ChannelUserDto {
     pseudo: string;
@@ -40,6 +41,8 @@ export class messageDto {
     target: string;
 
     @IsString()
+    @MaxLength(300)
+    @Transform(({value}) => (value as string).trim())
     @IsNotEmpty()
     msg: string
 }
