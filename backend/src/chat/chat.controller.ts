@@ -50,13 +50,20 @@ export class ChatController {
     constructor(private chatGateway: ChatGateway, private readonly chatService: ChatService,
         private readonly userService: UserService) {}
     
-    @Get('channel')
+    @Get('channels')
     getChannelList(@User() userId: string) {
         const names: string[] = this.chatService.getChannelNamesByUserId(userId);
         return {channels: this.chatService.getChannelDto(names)};
     }
 
-    @Get('channel/:pseudo')
+    @Get('channel/:name')
+    async getChannel(@Param('name') channelName: string) {
+       if (!channelName || !this.chatService.channelExist(channelName))
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.NOT_FOUND, 'channel not exist');
+        return {channel: this.chatService.getChannelDto([channelName])[0]};
+    }
+
+    @Get('channelonverraplustard')
     async getChannelsByUser(@Param('pseudo') pseudo: string) {
         const user: UserEntity = await this.userService.findByPseudo(pseudo);
         if (!user)
@@ -65,7 +72,7 @@ export class ChatController {
         return {channels: this.chatService.getChannelDto(names)};
     }
     
-    @Get('channels')
+    @Get('channels/all')
     async allChannel() {
         const names: string[] = this.chatService.getChannelNames();
         return {channels: this.chatService.getChannelDto(names)};
@@ -99,6 +106,8 @@ export class ChatController {
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'invalid channelName');
         if (!this.chatService.channelExist(channelName))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'channel not exist');
+        if (this.chatService.insideChannel(userId, channelName))
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'user is already inside channel');
         if (!this.chatService.channelAccess(userId, channelName, password))
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'channel access denied');
         this.chatService.joinChannel(userId, ChannelRole.USER, channelName, password);
@@ -111,6 +120,8 @@ export class ChatController {
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'invalid channelName');
         if (!this.chatService.channelExist(channelName))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'channel not exist');
+        if (!this.chatService.insideChannel(userId, channelName))
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'user is not inside channel');
         this.chatService.leaveChannel(userId, channelName);
         await this.chatGateway.leaveRoom(userId, channelName);
     }
@@ -168,7 +179,7 @@ export class ChatController {
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'channel not exist');
         if (!this.chatService.insideChannel(userId, payload.target))
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'user is not in channel');
-        this.chatService.messageToChannel(userId, payload.target, payload.msg);
-        await this.chatGateway.sendMessageToChannel(userId, payload.target, payload.msg);
+        const color: string = this.chatService.messageToChannel(userId, payload.target, payload.msg);
+        await this.chatGateway.sendMessageToChannel(userId, payload.target, payload.msg, color);
     }
 }

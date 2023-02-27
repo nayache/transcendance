@@ -16,15 +16,18 @@ export class Message {
     data: string;
 }
 
+
 export class User {
-    constructor(id: string, pseudo: string, role?: ChannelRole) {
+    constructor(id: string, pseudo: string, color: string, role?: ChannelRole) {
         this.id = id;
         this.pseudo = pseudo;
+        this.color = color;
         this.role = (role);
     }
     id: string;
     pseudo: string;
     role: ChannelRole;
+    color: string;
 }
 
 export class Channel {
@@ -35,6 +38,7 @@ export class Channel {
         this.users = [];
         this.banneds = [];
         this.messages = [];
+        this.visited = 0;
     }
     name: string;
     private: boolean = false;
@@ -42,6 +46,7 @@ export class Channel {
     users: User[];
     banneds: string[];
     messages: Message[];
+    visited: number;
 }
 
 @Injectable()
@@ -53,6 +58,12 @@ export class ChatService {
     }
 
     private channels: Map<string, Channel>;
+    private color: string[] = ["brown", "red", "blue", "black", "blueviolet",
+     "DarkGoldenRod", "Crimson", "DarkBlue", "DarkCyan", "DarkGreen", "DarkSeaGreen", "Green"];
+
+    generateColor(channel: Channel): string {
+        return this.color[channel.visited - 1 % this.color.length];
+    }
 
     isValidChannelName(name: string): boolean {
         return (name.length >= 3 && name.length <= 25);
@@ -135,8 +146,10 @@ export class ChatService {
         const channel: Channel = this.channels.get(channelName);
         if (channel.private && channel.password != password)
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'access denied');
-        const user: User = new User(userId, await this.userService.getPseudoById(userId), role);
+        const color: string = this.generateColor(channel);
+        const user: User = new User(userId, await this.userService.getPseudoById(userId), color, role);
         channel.users.push(user);
+        channel.visited += 1;
         console.log('JOIN', this.channels, channel.users)
     }
 
@@ -151,11 +164,12 @@ export class ChatService {
         //must create message entitie ??
     }
     
-    messageToChannel(userId: string, channelName: string, text: string) {
+    messageToChannel(userId: string, channelName: string, text: string): string {
         //must create message entitie ??
         const channel: Channel = this.channels.get(channelName);
         const author: User = channel.users.find((user) => (user.id) === userId);
         channel.messages.push(new Message(author, text));
+        return author.color;
     }
 }
 
