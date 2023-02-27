@@ -112,6 +112,8 @@ export class AuthService {
         } catch (err) {
             if (err.message == 'jwt expired')
                 console.log('decodeJwt(): expired');
+            else 
+                throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.TOKEN, TypeErr.INVALID, 'invalid token provides');
             return null
         }
     }

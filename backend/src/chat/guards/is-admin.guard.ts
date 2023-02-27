@@ -16,14 +16,14 @@ export class isAdmin implements CanActivate {
     const args: string[] = Object.values(request.body);
     const authorId: string = request.user as string;
     
-    if (!this.chatService.channelExist(args[0]))
+    if (!await this.chatService.channelExistt(args[0]))
         throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'channel not exist');
-    if (!this.chatService.isAdmin(authorId, args[0]))
+    if (!await this.chatService.isAdmin(authorId, args[0]))
         throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'user is not Admin of this channel');
     const target: UserEntity = await this.userService.findByPseudo(args[1]);
     if (!target)
         throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'target not found');
-    if (!this.chatService.insideChannel(target.id, args[0]))
+    if (!await this.chatService.insideChannel(target.id, args[0]))
         throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'target is not in channel');
     
     return true;

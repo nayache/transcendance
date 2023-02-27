@@ -9,6 +9,7 @@ import { ChatService } from './chat.service';
 import { ChannelRole } from './enums/channel-role.enum';
 import { Status } from './enums/status.enum';
 import { eventMessageDto, userDto } from './dto/chat-gateway.dto';
+import { Member } from './entity/member.entity';
 
 //@UseGuards(JwtGuard)
 @WebSocketGateway({ cors: {origin: '*'} })
@@ -20,7 +21,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   private readonly logger = new Logger(ChatGateway.name);
   private readonly users = new Map<string, Set<Socket>>();
   
-  afterInit() {
+  async afterInit() {
+    if (!await this.chatService.channelExistt('General')) {
+      console.log('BUILD GENERAL')
+      await this.chatService.createChannel('General');
+    }
     this.logger.log('success initialized');
   }
 
@@ -42,9 +47,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         this.users.get(user.id).add(user.socket);
       else {
         this.users.set(user.id, new Set<Socket>().add(user.socket));
-        await this.chatService.joinChannel(user.id, ChannelRole.USER, 'General');
+        if (!await this.chatService.insideChannel(user.id, 'General'))
+          await this.chatService.joinChannel(user.id, ChannelRole.USER, 'General');
       }
-      this.joinSocketToRooms(user.id, user.socket);
+      await this.joinSocketToRooms(user.id, user.socket);
       this.logger.log(`CONNECTED: ${socket.id} (${user.pseudo})`);
       console.log(this.server.of('/').adapter.sids);
     } else {
@@ -57,8 +63,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return (this.users.get(userId).size) ? Status.ONLINE : Status.OFFLINE;
   }
 
-  joinSocketToRooms(userId: string, socket: Socket) {
-    const channels: string[] = this.chatService.getChannelNamesByUserId(userId);
+  async joinSocketToRooms(userId: string, socket: Socket) {
+    let channels: string[] = await this.chatService.getChannelNamesByUserId(userId);
+    console.log('=> channels rejoined', channels)
     socket.join(channels);
   }
 
@@ -66,7 +73,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const pseudo: string = await this.userService.getPseudoById(userId);
     this.users.get(userId).forEach((socket) => socket.join(channelName));
     this.server.to(channelName).emit('joinRoom', `${pseudo} has joined [${channelName}] channel`);
-    //const channels
   }
 
   async leaveRoom(userId: string, channelName: string) {
@@ -92,8 +98,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   async sendMessageToChannel(userId: string, channel: string, message: string, color: string) {
     const author: string = await this.userService.getPseudoById(userId);
-    //this.server.to(channel).emit('message', pseudo, message);
-    const messageData: eventMessageDto = {author, message, color};
+    const messageData: eventMessageDto = {author, message, color: color};
     this.server.to(channel).emit('messageRoom', messageData);
   }
 
@@ -104,7 +109,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.users.get(user.id).delete(user.socket);
     this.logger.log(`DISCONNECTED: ${socket.id}`);
     this.server.emit('DISCONNECTED', socket.id);
-    console.log(this.users)
+    //console.log(this.users)
   }
 
   //??????

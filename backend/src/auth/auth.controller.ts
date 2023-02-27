@@ -8,12 +8,7 @@ import { JwtDecodedDto } from 'src/dto/jwtdecoded.dto';
 import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
 import { UserEntity } from 'src/entity/user.entity';
 import { IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
-import { toDataURL } from 'qrcode'
-import { toFileStream } from 'qrcode'
-import { toString } from 'qrcode'
-import { toFile } from 'qrcode'
 import { ValidationFilter } from 'src/chat/filter/validation-filter';
-import { createWriteStream } from 'fs';
 
 export class AuthDto {
     @IsString()
