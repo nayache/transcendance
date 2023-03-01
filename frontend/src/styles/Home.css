@@ -1,0 +1,202 @@
+@import url('https://fonts.googleapis.com/css2?family=Mukta&display=swap');
+
+.home-container {
+	position: relative;
+	display: flex;
+	align-items: center;
+	width: fit-content;
+	margin: auto;
+}
+
+
+
+.title-container {
+	position: relative;
+	margin-top: 7rem;
+	margin-left: 7rem;
+	font-size: 1.5rem;
+	font-family: 'Mukta', sans-serif;
+	width: fit-content;
+}
+
+.writepong {
+	position: relative;
+	margin-left: 2rem;
+}
+
+.game {
+	position: relative;
+	margin-left: 2rem;
+}
+
+
+.reglejeu-container {
+	position: relative;
+	width: 40%;
+	margin-top: 10%;
+	margin-left: 10rem;
+}
+
+.reglejeu {
+	position: relative;
+	font-family: 'Mukta', sans-serif;
+	font-size: 1.5rem;
+}
+
+
+.button-container {
+	position: relative;
+	margin:auto;
+	display: flex;
+	left: 2rem;
+	flex-direction: column;
+}
+
+.classic-game {
+	position: relative;
+	font-family: 'Mukta', sans-serif;
+	margin: 0 0 1rem -2rem;
+	background-color: #74ff67;
+	border: 0 solid #E5E7EB;
+	box-sizing: border-box;
+	border-radius: 50%;
+	color: #000000;
+	display: flex;
+	font-size: 1rem;
+	font-weight: 700;
+	justify-content: center;
+	align-self: flex-start;
+	line-height: 1.75rem;
+	text-align: center;
+	text-decoration: none #000000 solid;
+	width: 120px;
+	height: 150px;
+	max-width: 460px;
+	cursor: pointer;
+	transform: rotate(-2deg);
+	user-select: none;
+	/* -webkit-user-select: none; */
+	touch-action: manipulation;
+}
+
+.classic-game:focus {
+	outline: 0;
+}
+
+.classic-game:after {
+	content: '';
+	position: absolute;
+	border: 1px solid #000000;
+	border-radius: 50%;
+	bottom: 4px;
+	left: 4px;
+	width: calc(100% - 1px);
+	height: calc(100% - 1px);
+}
+
+.classic-game:hover:after {
+	bottom: 2px;
+	left: 2px;
+}
+
+.medium-game {
+	position: relative;
+	font-family: 'Mukta', sans-serif;
+	margin: 0 0 1rem 9rem;
+	background-color: #58fff7;
+	border: 0 solid #E5E7EB;
+	box-sizing: border-box;
+	border-radius: 50%;
+	color: #000000;
+	display: flex;
+	font-size: 1rem;
+	font-weight: 700;
+	justify-content: center;
+	align-self: flex-end;
+	line-height: 1.75rem;
+	text-align: center;
+	text-decoration: none #000000 solid;
+	width: 140px;
+	height: 180px;
+	max-width: 460px;
+	cursor: pointer;
+	transform: rotate(-2deg);
+	user-select: none;
+	/* -webkit-user-select: none; */
+	touch-action: manipulation;
+}
+
+.medium-game:focus {
+	outline: 0;
+}
+  
+.medium-game:after {
+	content: '';
+	position: absolute;
+	border: 1px solid #000000;
+	border-radius: 50%;
+	bottom: 4px;
+	left: 4px;
+	width: calc(100% - 1px);
+	height: calc(100% - 1px);
+}
+
+.medium-game:hover:after {
+	bottom: 2px;
+	left: 2px;
+}
+
+.hard-game {
+	position: relative;
+	font-family: 'Mukta', sans-serif;
+	margin: 0 1rem 0 0;
+	background-color: #ff4949;
+	border: 0 solid #000000;
+	box-sizing: border-box;
+	border-radius: 50%;;
+	color: #000000;
+	display: flex;
+	font-size: 1rem;
+	font-weight: 700;
+	justify-content: center;
+	align-self: flex-start;
+	line-height: 1.75rem;
+	text-align: center;
+	text-decoration: none #000000 solid;
+	text-decoration-thickness: auto;
+	width: 140px;
+	height: 200px;
+	max-width: 460px;
+	cursor: pointer;
+	transform: rotate(-2deg);
+	user-select: none;
+	/* -webkit-user-select: none; */
+	touch-action: manipulation;
+}
+
+.hard-game:focus {
+	outline: 0;
+}
+
+.hard-game:after {
+	content: '';
+	position: absolute;
+	border: 1px solid #000000;
+	border-radius: 50%;;
+	bottom: 4px;
+	left: 4px;
+	width: calc(100% - 1px);
+	height: calc(100% - 1px);
+}
+
+.hard-game:hover:after {
+	bottom: 2px;
+	left: 2px;
+}
+
+
+@media (min-width: 768px) {
+	.button-container {
+		font-size: 1.25rem;
+	}
+}

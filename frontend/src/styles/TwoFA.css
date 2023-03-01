@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Mukta&display=swap');
+
+.containers-authentication {
+	position: relative;
+	width: fit-content;
+	margin: 5% auto;
+	padding: 70px 50px;
+	border: 0px solid rgb(0, 0, 0);
+	box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+	background: #d4e9ff;
+	border-radius: 10%;
+}
+
+.twofac-title {
+	font-family: 'Mukta', sans-serif;
+}
+
+.twofac2-title {
+	font-family: 'Mukta', sans-serif;
+}
+
+.twofac-title, .twofac2-title {
+	width: fit-content;
+	margin: auto;
+}
+
+.full-line {
+	border-top: 3px solid #000; 
+	width : 50%; 
+	position: relative;
+	margin:auto;
+	padding-top: 20%;
+}
+
+.digit-text {
+	position: relative;
+	width: fit-content;
+	text-align: center;
+	margin: auto;
+	padding-bottom: 10%;
+	padding-top: 15%;
+}
+
+.containers-number {
+	display: flex;
+	width: fit-content;
+	margin: auto;
+}
+
+.input-containers {
+	outline: 2px solid transparent;
+	border-width: 2px;
+	border-radius: 10%;
+	border: 1px;
+	margin: 0 10px;
+	position: relative;
+	font-size: 2rem;
+	text-align: center;
+	background-color: #c5e0fd9f;
+	width: 3rem;
+	height: 3rem;
+	border-color: #babcbf;
+	box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+}
+
+
+/* @media screen and (max-width: 1078px) {
+	.containers-authentication {
+		width: 40%;
+	}
+}
+
+@media screen and (max-width: 824px) {
+	.containers-authentication {
+		width: 60%;
+	}
+} */
