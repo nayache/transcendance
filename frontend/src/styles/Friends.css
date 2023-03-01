@@ -31,9 +31,8 @@
 	text-align: center;
 	text-decoration: none;
 	touch-action: manipulation;
-	transition: box-shadow .2s,-ms-transform .1s,-webkit-transform .1s,transform .1s;
+	transition: box-shadow .2s, transform .1s;
 	user-select: none;
-	-webkit-user-select: none;
 	width: 60%;
 	justify-content: space-between;
 

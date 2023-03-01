@@ -44,10 +44,10 @@
 		justify-content: center;
 		align-items: center;
 		position: fixed;
-		right: -100vw;
-		bottom:0;
-		width:0;
-		height: 100vh;
+		top: 0;
+		left: 0px;
+		right: 0px;
+		height: 100%;
 		padding: 2rem;
 		visibility: hidden;
 		background: linear-gradient(to right, black, transparent);

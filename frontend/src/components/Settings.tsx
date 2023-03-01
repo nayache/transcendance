@@ -1,11 +1,29 @@
 import React from "react";
+import '../styles/index.css'
 import Navbar from "../components/Navbar";
 import { useState } from "react";
 import "../styles/Settings.css";
+import { BASE_URL, SETTINGS_BLOCKED_EP, SETTINGS_HELP_EP, SETTINGS_MYPROFILE_EP, SETTINGS_TWOFA_EP } from "../constants/RoutesApi";
+import ClientApi from "./ClientApi.class";
 
+interface IOptionValue {
+	name: string;
+	description: string;
+	tags: string[];
+	href: string;
+}
+
+interface IOption {
+	header: {
+		name: string;
+	}
+	values: IOptionValue[]
+}
+
+// changer le theme du site (background devient black lightblack ou bien red lightred, etc..)
 const Settings = () => {
 
-	const options= [
+	const options: IOption[] = [
 		{
 			header: {
 				name: "Account"
@@ -18,15 +36,16 @@ const Settings = () => {
 					tags: [
 						"username",
 						"avatar",
-					]
+					],
+					href: SETTINGS_MYPROFILE_EP,
 				},
 				{
 					name: "Two-factor Authentication",
 					description: 
 						"Enable to give your Truly Expenses account an extra layer of security.",
 					tags: [],
+					href: SETTINGS_TWOFA_EP,
 				},
-				
 			]
 		},
 		{
@@ -38,8 +57,8 @@ const Settings = () => {
 					name: "Help",
 					description: "Having trouble",
 					tags: [],
+					href: SETTINGS_HELP_EP
 				},
-				
 			]
 		},
 		{
@@ -52,6 +71,7 @@ const Settings = () => {
 					description: 
 						"Accounts you have blocked",
 					tags: [],
+					href: SETTINGS_BLOCKED_EP
 				},
 			]
 		}
@@ -84,15 +104,16 @@ const Settings = () => {
 		setVisibleOptions(returnedItems);
 	}
 
+
 	return (
 		<div>
 			<Navbar/>
 			<div className="settings-container">
-				<h1>
+				<h2>
 					<span className="name-settings">
 						Settings
 					</span>
-				</h1>
+				</h2>
 				<input type="text" 
 				className="form-search" 
 				placeholder="Search..."
@@ -105,15 +126,24 @@ const Settings = () => {
 							<div>
 								{ options.values.map((values) => ( 
 									<div className="items-value" key={values.name}>
-										<button className="button-value">
-											<h4 className="value-name">{values.name}</h4>
-											<p className="value-description">{values.description}</p>
-										</button>
+										<a href={values.href}>
+											<button className="button-value">
+												<h4 className="value-name">{values.name}</h4>
+												<p className="value-description">{values.description}</p>
+											</button>
+										</a>
 									</div>
 								))}
 							</div>
 						</div>
 					))}
+				</div>
+				<div className="connection">
+					<h3>Connection</h3>
+					<button onClick={() => {
+						ClientApi.disconnect();
+						ClientApi.redirect = new URL(BASE_URL)
+					}} className="button_without_style"><h4 className="title-connection">Logout</h4></button>
 				</div>
 			</div>
 		</div>

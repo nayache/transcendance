@@ -6,6 +6,10 @@
 	margin: 1rem 1em 3rem 10rem;
 }
 
+.settings-container h2 {
+	font-size: 2rem;
+}
+
 .form-search {
 	position: relative;
 	width: 60%;
@@ -56,6 +60,25 @@
 	font-size: 12px;
 	width: fit-content;
 }
+
+.connection {
+	position: relative;
+	margin: 4% 1%;
+	font-size: 14px;
+}
+
+.title-connection {
+	position: relative;
+	margin-top: 1%;
+	margin-left: 10px;
+	color: red;
+    text-shadow: 0.01px 0px 0px black, -0.01px 0px 0px black, 0px 0.01px 0px black, 0px -0.01px 0px black;
+}
+
+.title-connection:hover {
+	color: rgb(234, 0, 0);
+}
+
 
 @media screen and (max-width: 967px) {
 	.button-value {

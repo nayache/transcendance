@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import '../styles/Navbar.css'
-import {useState} from "react"
+import { useState } from "react"
 import Logo from '../img/pong.png'
+import { CHAT_EP, MYFRIENDS_EP, MYPROFILE_EP, SETTINGS_EP } from '../constants/RoutesApi';
 
 
 interface BarItem {
@@ -15,19 +16,19 @@ const Navbar = () => {
 	const barItems: BarItem[] = [
 		{
 			name: "Profile",
-			href: '/me/profile',
+			href: MYPROFILE_EP,
 		},
 		{
 			name: "Friends",
-			href: '/me/friends',
+			href: MYFRIENDS_EP,
 		},
 		{
 			name: "Settings",
-			href: '/settings',
+			href: SETTINGS_EP,
 		},
 		{
-			name: "Chats",
-			href: '/chats',
+			name: "Chat",
+			href: CHAT_EP,
 		},
 	]
 

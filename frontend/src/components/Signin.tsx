@@ -3,7 +3,8 @@ import AvatarDefault from '../img/avatar2.jpeg'
 import React, { useEffect, useState } from "react"
 import ClientApi from './ClientApi.class'
 import { API_BASE_USER, API_PSEUDO_ROUTE, BASE_URL } from '../constants/RoutesApi'
-import { AboutErr, IError, TypeErr } from '../constants/error_constants'
+import { AboutErr, IError, TypeErr } from '../constants/EError'
+import ServerDownPage from './ServerDownPage'
 
 const Signin = () => {
 
@@ -98,13 +99,13 @@ const Signin = () => {
 		return (
 			<div className="signIn">
 				<form onSubmit={(e) => handleSubmit(e)} encType="multipart/form-data"> 
-					<h3>Choose your pseudo</h3>
+					<p>Choose your pseudo</p>
 					<input value={pseudo} type="text" 
 					id="input1"
 					placeholder="Enter your pseudo..."
 					onChange={(e) => handleChangeName(e)}/>
 					{pseudoErrorText && <p className='error-text'>{pseudoErrorText}</p>}
-					<h3>Choose your avatar</h3>
+					<p>Choose your avatar</p>
 					<label htmlFor="fileChange">
 						<input type="file" accept="image/png, image/jpeg" id="fileChange" hidden 
 						onChange={(e) => handleChangeAvatar(e)}/>
@@ -125,6 +126,7 @@ const Signin = () => {
 	return (
 		<React.Fragment>
 			{isOkay && getPage()}
+			{isOkay == false && <ServerDownPage />}
 		</React.Fragment>
 	)
 }

@@ -9,10 +9,10 @@ import Navbar from "./Navbar"
 import Paysage from "../img/paysage3.jpg"
 import { useState } from "react"
 import ProgressBar from "./ProgressBar"
-import { IUser } from "../interface/User"
+import { IUser } from "../interface/IUser"
 import Crown from '../img/crown.png'
 import ClientApi from "./ClientApi.class"
-import { AboutErr, IError, TypeErr } from "../constants/error_constants"
+import { AboutErr, IError, TypeErr } from "../constants/EError"
 import { API_BASE_USER } from "../constants/RoutesApi"
 import { useParams, useSearchParams } from "react-router-dom"
 
