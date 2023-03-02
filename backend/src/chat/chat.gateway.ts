@@ -1,15 +1,15 @@
-import { forwardRef, Inject, Injectable, Logger, UseFilters, UseGuards } from '@nestjs/common';
-import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer} from '@nestjs/websockets';
+import { forwardRef, Inject, Logger } from '@nestjs/common';
+import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, WebSocketGateway, WebSocketServer} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { Error } from 'src/exceptions/error.interface';
 import { UserService } from 'src/user/user.service';
-import { JwtGuard } from './guards/jwt.guard';
 import { ChatService } from './chat.service';
 import { ChannelRole } from './enums/channel-role.enum';
 import { Status } from './enums/status.enum';
-import { eventMessageDto, userDto } from './dto/chat-gateway.dto';
-import { Member } from './entity/member.entity';
+import { eventMessageDto, joinRoomDto, leaveRoomDto, userDto } from './dto/chat-gateway.dto';
+import { AboutErr, TypeErr } from 'src/enums/error_constants';
+import { ChannelUserDto } from './chat.controller';
 
 //@UseGuards(JwtGuard)
 @WebSocketGateway({ cors: {origin: '*'} })
@@ -60,6 +60,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
   
   getStatus(userId: string): Status {
+    if (!this.users.get(userId))
+      return Status.OFFLINE;
     return (this.users.get(userId).size) ? Status.ONLINE : Status.OFFLINE;
   }
 
@@ -69,16 +71,20 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     socket.join(channels);
   }
 
-  async joinRoom(userId: string, channelName: string) {
-    const pseudo: string = await this.userService.getPseudoById(userId);
-    this.users.get(userId).forEach((socket) => socket.join(channelName));
-    this.server.to(channelName).emit('joinRoom', `${pseudo} has joined [${channelName}] channel`);
+  async joinRoom(userId: string, channel: string) {
+    const user: ChannelUserDto = await this.chatService.getChannelUserDto(userId, channel);
+    const payload: joinRoomDto = {channel, user};
+    if (this.users.get(userId))
+      this.users.get(userId).forEach((socket) => socket.join(channel));
+    this.server.to(channel).emit('joinRoom', payload);
   }
 
-  async leaveRoom(userId: string, channelName: string) {
+  async leaveRoom(userId: string, channel: string) {
     const pseudo: string = await this.userService.getPseudoById(userId);
-    this.users.get(userId).forEach((socket) => socket.leave(channelName));
-    this.server.to(channelName).emit('leaveRoom', `${pseudo} has leaved [${channelName}] channel`);
+    const payload: leaveRoomDto = {channel, pseudo};
+    this.server.to(channel).emit('leaveRoom', payload);
+    if (this.users.get(userId))
+      this.users.get(userId).forEach((socket) => socket.leave(channel));
   }
 
   event() {
@@ -98,7 +104,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   async sendMessageToChannel(userId: string, channel: string, message: string, color: string) {
     const author: string = await this.userService.getPseudoById(userId);
-    const messageData: eventMessageDto = {author, message, color: color};
+    const messageData: eventMessageDto = {author, message, channel, color: color};
     this.server.to(channel).emit('messageRoom', messageData);
   }
 
@@ -114,7 +120,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   //??????
   disconnect(socket: Socket, error: Error = null) {
-    socket.emit('error', error);
+    socket.emit('error', new Error(AboutErr.TOKEN, TypeErr.REJECTED, 'Reject connection chat socket'));
     socket.disconnect();
   }
 }

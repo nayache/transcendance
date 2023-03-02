@@ -8,14 +8,22 @@ import { ChannelRole } from './enums/channel-role.enum';
 import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
 import { Status } from './enums/status.enum';
-import { IsNotEmpty, IsString, MaxLength, NotContains } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { ValidationFilter } from './filter/validation-filter';
 import { isAdmin } from './guards/is-admin.guard';
 import { ChannelEntity } from './entity/channel.entity';
 import { Transform } from 'class-transformer';
 
+export class ChannelMessageDto {
+    author: string;
+    color: string;
+    content: string;
+    created_at: Date;
+}
+
 export class ChannelUserDto {
     pseudo: string;
+    color: string;
     role: ChannelRole;
     status?: Status;
 }
@@ -23,6 +31,7 @@ export class ChannelUserDto {
 export class ChannelDto {
     name: string;
     users: ChannelUserDto[];
+    messages: ChannelMessageDto[];
 }
 
 export class adminActionDto {
@@ -42,9 +51,9 @@ export class messageDto {
 
     @IsString()
     @MaxLength(300)
-    @Transform(({value}) => (value as string).trim())
+    @Transform(({value}) => (value as string).trimEnd())
     @IsNotEmpty()
-    msg: string
+    msg: string;
 }
 
 @UsePipes(ValidationPipe)
@@ -99,9 +108,9 @@ export class ChatController {
         if (await this.chatService.channelExistt(channelName))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'channel already exist');
         await this.chatService.createChannel(channelName, password);
-        await this.chatService.joinChannel(userId, ChannelRole.OWNER, channelName);
+        const chann: ChannelEntity = await this.chatService.joinChannel(userId, ChannelRole.OWNER, channelName);
         await this.chatGateway.joinRoom(userId, channelName);
-        this.chatGateway.event();
+        return {channel: (await this.chatService.getChannelDto([chann]))[0]};
     }
 
     @Patch('channel/join')
@@ -112,22 +121,27 @@ export class ChatController {
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'channel not exist');
         if (await this.chatService.insideChannel(userId, channelName))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'user is already inside channel');
-        if (!this.chatService.channelAccess(userId, channelName, password))
+        if (!await this.chatService.channelAccess(userId, channelName, password))
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'channel access denied');
-        await this.chatService.joinChannel(userId, ChannelRole.USER, channelName);
+        const chann: ChannelEntity = await this.chatService.joinChannel(userId, ChannelRole.USER, channelName);
         await this.chatGateway.joinRoom(userId, channelName);
+        return {channel: (await this.chatService.getChannelDto([chann]))[0]};
     }
 
     @Patch('channel/leave')
     async leaveChannel(@User() userId: string, @Body('name') channelName: string) {
         if (!channelName || !this.chatService.isValidChannelName(channelName))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'invalid channelName');
+        if (channelName === 'General')
+            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.INVALID, 'cant leave General channel');
         if (!await this.chatService.channelExistt(channelName))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'channel not exist');
         if (!await this.chatService.insideChannel(userId, channelName))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'user is not inside channel');
         await this.chatService.leaveChannel(userId, channelName);
         await this.chatGateway.leaveRoom(userId, channelName);
+        const chann: ChannelEntity = await this.chatService.getChannelByName('General');
+        return {channel: (await this.chatService.getChannelDto([chann]))[0]};
     }
 
     @UseGuards(isAdmin)
@@ -138,6 +152,7 @@ export class ChatController {
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant set/unset admin himself');
         await this.chatService.setRole(payload.channel, user.id, ChannelRole.ADMIN);
         this.chatGateway.channelEvent(payload.channel, `${user.pseudo} become an admin`);
+        return {}
     }
     
     @UseGuards(isAdmin)
@@ -149,6 +164,7 @@ export class ChatController {
         await this.chatService.leaveChannel(user.id, payload.channel);
         await this.chatGateway.leaveRoom(user.id, payload.channel);
         this.chatGateway.channelEvent(payload.channel, `${user.pseudo} has been kicked!`);
+        return {}
     }
 
     @UseGuards(isAdmin)
@@ -162,6 +178,7 @@ export class ChatController {
         await this.chatService.banUser(payload.channel, user.id);
         await this.chatGateway.leaveRoom(user.id, payload.channel);
         this.chatGateway.channelEvent(payload.channel, `${user.pseudo} has been banned!`);
+        return {}
     }
 
     @Post('message')
@@ -175,6 +192,7 @@ export class ChatController {
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.MESSAGE, TypeErr.INVALID, 'user is blocked by target');
         this.chatService.messageToUser(userId, user.id, payload.msg);
         await this.chatGateway.sendMessageToUser(userId, user.id, payload.msg);
+        return {}
     }
 
     @Post('channel/message')
@@ -185,5 +203,6 @@ export class ChatController {
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'user is not in channel');
         const color: string = await this.chatService.messageToChannel(userId, payload.target, payload.msg);
         await this.chatGateway.sendMessageToChannel(userId, payload.target, payload.msg, color);
+        return {}
     }
 }

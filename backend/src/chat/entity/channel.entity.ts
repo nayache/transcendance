@@ -10,7 +10,6 @@ export class ChannelEntity {
         this.password = (password) ? password : null;
         this.visited = 0;
         this.banneds = [];
-     //   this.messages = [];
     }
 
     @PrimaryGeneratedColumn('uuid')
@@ -34,6 +33,6 @@ export class ChannelEntity {
     @Column({type: 'text' ,array: true})
     banneds: string[];
     
-    //@Column()
-    //messages: Message[];
+    @OneToOne(() => MessageEntity, (messages) => messages.channel, { cascade: true })
+    messages: MessageEntity[];
 }
