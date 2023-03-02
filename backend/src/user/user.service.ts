@@ -40,7 +40,7 @@ export class UserService {
 
     isValidPseudo(pseudo: string) : boolean {
         console.log('in validpseudo()',pseudo)
-        if (pseudo.search('/\s/'))
+        if (pseudo.search(/\s/) != -1)
             return false
         return (pseudo.length > 3 && pseudo.length < 26);
     }

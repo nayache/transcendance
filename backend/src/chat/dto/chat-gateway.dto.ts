@@ -9,5 +9,12 @@ export class userDto {
 export class eventMessageDto {
   author: string;
   message: string;
+  channel: string;
+  color: string;
+}
+
+export class eventRoomDto {
+  pseudo: string;
+  channel: string;
   color: string;
 }
