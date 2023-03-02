@@ -8,7 +8,8 @@ import AddChannel from "./AddChannel"
 import { Socket } from "socket.io-client"
 import JoinChannel from "./JoinChannel"
 import { useDispatch } from "react-redux"
-import { addChannel, removeChannel } from "../redux/channelsSlice"
+import ClientApi from "./ClientApi.class"
+import { API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi"
 
 export const MAX_CARAC_NAME_CHANNEL: number = 25;
 export const MIN_CARAC_NAME_CHANNEL: number = 3;
@@ -37,17 +38,16 @@ const ChannelPart = ({ socket, pseudo }: Props) => {
 	useEffect(() => {
 		console.log("pseudo dans useEffect du ChannelPart = ", pseudo)
 		if (pseudo) {
-			socket?.on('joinRoom', (author: string, channelName: string) => {
-				if (author === pseudo)
-					dispatch(addChannel({
-						name: channelName
-					}))
-				console.log("channelName pour join = ", channelName);
+			socket?.on('joinRoom', (payload) => {
+				console.log("payload = ", payload)
+				// if (author !== pseudo) {
+				// }
+				// console.log("channelName pour join = ", channelName);
 				// setVisibleChannels( channelName)
 			})
 			socket?.on('leaveRoom', (author: string, channelName: string) => {
-				if (author === pseudo)
-					dispatch(removeChannel(channelName))
+				// if (author !== pseudo)
+				// 	dispatch(removeChannel(channelName))
 				console.log("channelName pour leave = ", channelName);
 			})
 		}

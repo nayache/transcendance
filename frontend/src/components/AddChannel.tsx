@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useRef } from 'react';
+import { useDispatch } from 'react-redux';
 import { API_CHAT_CHANNEL_ROUTE } from '../constants/RoutesApi';
+import { addChannel, setCurrentChannel, updateChannel } from '../redux/channelsSlice';
 import '../styles/AddChannel.css'
 import { MAX_CARAC_NAME_CHANNEL } from './ChannelPart';
 import ClientApi from './ClientApi.class';
@@ -13,7 +15,7 @@ const AddChannel = ({pseudo}: Props) => {
 
 	const channelWritten = useRef<string>('');
 	const inputRef = useRef<HTMLInputElement>(null);
-
+	const dispatch = useDispatch()
 
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,14 +44,16 @@ const AddChannel = ({pseudo}: Props) => {
 	const click = useCallback(async () => {
 		try {
 			const [name, password] = channelWritten.current.split('/');
-			await ClientApi.post(API_CHAT_CHANNEL_ROUTE, JSON.stringify({
+			const { channel } = await ClientApi.post(API_CHAT_CHANNEL_ROUTE, JSON.stringify({
 				name,
 				password
 			}), 'application/json')
+			dispatch(addChannel(channel))
+			dispatch(setCurrentChannel(channel.name))
 		} catch (err) {
 			console.log("err = ", err);
 		}
-	}, [pseudo])
+	}, [pseudo, dispatch])
 
 
 

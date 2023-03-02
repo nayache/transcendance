@@ -24,6 +24,10 @@ const channelsSlice = createSlice({
 		addChannel: (state, action) => {
 			state.channels.push(action.payload)
 		},
+		updateChannel: (state, action) => {
+			const index: number = state.channels.findIndex(channel => channel.name === action.payload.name)
+			state.channels[index] = action.payload
+		},
 		resetAllChannels: (state, action) => {
 			state.channels = action.payload
 		},
@@ -41,6 +45,7 @@ const channelsSlice = createSlice({
 
 export const {
 	addChannel,
+	updateChannel,
 	resetAllChannels,
 	removeChannel,
 	setCurrentChannel,

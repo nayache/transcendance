@@ -1,5 +1,8 @@
 import React, { useCallback, useRef } from "react"
+import { useDispatch } from "react-redux";
 import { API_CHAT_CHANNEL_LEAVE_ROUTE } from "../constants/RoutesApi";
+import { IChannel } from "../interface/IChannelUser";
+import { removeChannel, setCurrentChannel, updateChannel } from "../redux/channelsSlice";
 import '../styles/RemoveChannel.css'
 import { MAX_CARAC_NAME_CHANNEL } from "./ChannelPart";
 import ClientApi from "./ClientApi.class";
@@ -8,6 +11,7 @@ const RemoveChannel = () => {
 
 	const channelWritten = useRef<string>('');
 	const inputRef = useRef<HTMLInputElement>(null);
+	const dispatch = useDispatch();
 
 
 
@@ -36,9 +40,13 @@ const RemoveChannel = () => {
 
 	const click = useCallback(async () => {
 		try {
-			await ClientApi.patch(API_CHAT_CHANNEL_LEAVE_ROUTE, JSON.stringify({
+			// return the General channel
+			const { channel }: { channel: IChannel } = await ClientApi.patch(API_CHAT_CHANNEL_LEAVE_ROUTE, JSON.stringify({
 				name: channelWritten.current
 			}), 'application/json')
+			dispatch(removeChannel(channelWritten.current))
+			dispatch(updateChannel(channel))
+			dispatch(setCurrentChannel('General'))
 		} catch (err) {
 			console.log("err = ", err);
 		}

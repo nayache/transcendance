@@ -73,6 +73,14 @@ class ClientApi {
 		})
 	}
 
+	private static doRedirectToRegister(err: IError) {
+		return (
+			(err.about == AboutErr.TOKEN && err.type == TypeErr.TIMEOUT)
+			|| (err.about == AboutErr.HEADER && err.type == TypeErr.INVALID)
+			|| (err.about == AboutErr.USER && err.type == TypeErr.NOT_FOUND)
+		)
+	}
+
 	private static async fetchEndpoint(url: string, init?: RequestInit | undefined): Promise<any> {
 		console.log("------- Bienvenue dans fetchEndPoint -------");
 		const res = await fetch(url, init);
@@ -83,8 +91,7 @@ class ClientApi {
 		{
 			const err = data.error
 			console.log("data.error = ", data.error)
-			if ((err.about == AboutErr.TOKEN && err.type == TypeErr.TIMEOUT)
-			|| (err.about == AboutErr.HEADER && err.type == TypeErr.INVALID))
+			if (this.doRedirectToRegister(data.error))
 			{
 				console.log("dans le 2nd if")
 				ClientApi.redirect = new URL(ClientApi.registerRoute)
@@ -103,7 +110,7 @@ class ClientApi {
 					console.log("data dans expired = ", data);
 					if (data.error)
 					{
-						if (data.error.about == AboutErr.TOKEN && data.error.type == TypeErr.TIMEOUT)
+						if (this.doRedirectToRegister(data.error))
 						{
 							console.log("dans le 2nd if de l'autre")
 							ClientApi.redirect = new URL(ClientApi.registerRoute)
