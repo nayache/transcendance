@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+import { ChannelUserDto } from "../chat.controller";
 
 export class userDto {
   id: string;
@@ -13,8 +14,12 @@ export class eventMessageDto {
   color: string;
 }
 
-export class eventRoomDto {
-  pseudo: string;
+export class joinRoomDto {
   channel: string;
-  color: string;
+  user: ChannelUserDto;
+}
+
+export class leaveRoomDto {
+  channel: string;
+  pseudo: string;
 }

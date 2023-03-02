@@ -7,8 +7,9 @@ import { UserService } from 'src/user/user.service';
 import { ChatService } from './chat.service';
 import { ChannelRole } from './enums/channel-role.enum';
 import { Status } from './enums/status.enum';
-import { eventMessageDto, eventRoomDto, userDto } from './dto/chat-gateway.dto';
+import { eventMessageDto, joinRoomDto, leaveRoomDto, userDto } from './dto/chat-gateway.dto';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
+import { ChannelUserDto } from './chat.controller';
 
 //@UseGuards(JwtGuard)
 @WebSocketGateway({ cors: {origin: '*'} })
@@ -71,9 +72,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   async joinRoom(userId: string, channel: string) {
-    const pseudo: string = await this.userService.getPseudoById(userId);
-    const color: string = await this.chatService.getMemberColor(channel, userId);
-    const payload: eventRoomDto = {pseudo, channel, color}
+    const user: ChannelUserDto = await this.chatService.getChannelUserDto(userId, channel);
+    const payload: joinRoomDto = {channel, user};
     if (this.users.get(userId))
       this.users.get(userId).forEach((socket) => socket.join(channel));
     this.server.to(channel).emit('joinRoom', payload);
@@ -81,7 +81,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   async leaveRoom(userId: string, channel: string) {
     const pseudo: string = await this.userService.getPseudoById(userId);
-    const payload: eventRoomDto = {pseudo, channel, color: null};
+    const payload: leaveRoomDto = {channel, pseudo};
     this.server.to(channel).emit('leaveRoom', payload);
     if (this.users.get(userId))
       this.users.get(userId).forEach((socket) => socket.leave(channel));

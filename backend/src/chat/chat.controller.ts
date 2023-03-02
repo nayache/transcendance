@@ -8,7 +8,7 @@ import { ChannelRole } from './enums/channel-role.enum';
 import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
 import { Status } from './enums/status.enum';
-import { IsNotEmpty, IsString, MaxLength, NotContains } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { ValidationFilter } from './filter/validation-filter';
 import { isAdmin } from './guards/is-admin.guard';
 import { ChannelEntity } from './entity/channel.entity';
@@ -23,6 +23,7 @@ export class ChannelMessageDto {
 
 export class ChannelUserDto {
     pseudo: string;
+    color: string;
     role: ChannelRole;
     status?: Status;
 }
@@ -50,9 +51,9 @@ export class messageDto {
 
     @IsString()
     @MaxLength(300)
-    @Transform(({value}) => (value as string).trim())
+    @Transform(({value}) => (value as string).trimEnd())
     @IsNotEmpty()
-    msg: string
+    msg: string;
 }
 
 @UsePipes(ValidationPipe)
@@ -131,6 +132,8 @@ export class ChatController {
     async leaveChannel(@User() userId: string, @Body('name') channelName: string) {
         if (!channelName || !this.chatService.isValidChannelName(channelName))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'invalid channelName');
+        if (channelName === 'General')
+            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.INVALID, 'cant leave General channel');
         if (!await this.chatService.channelExistt(channelName))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'channel not exist');
         if (!await this.chatService.insideChannel(userId, channelName))
