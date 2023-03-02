@@ -35,30 +35,6 @@ const ChannelPart = ({ socket, pseudo }: Props) => {
 		setVisibleChannels(channels.map(channel => channel.name))
 	}, [channels])
 
-	useEffect(() => {
-		console.log("pseudo dans useEffect du ChannelPart = ", pseudo)
-		if (pseudo) {
-			socket?.on('joinRoom', (payload) => {
-				console.log("payload = ", payload)
-				// if (author !== pseudo) {
-				// }
-				// console.log("channelName pour join = ", channelName);
-				// setVisibleChannels( channelName)
-			})
-			socket?.on('leaveRoom', (author: string, channelName: string) => {
-				// if (author !== pseudo)
-				// 	dispatch(removeChannel(channelName))
-				console.log("channelName pour leave = ", channelName);
-			})
-		}
-		return () => {
-			socket?.removeAllListeners('joinRoom')
-			socket?.removeAllListeners('leaveRoom')
-		}
-	}, [socket, pseudo,])
-
-
-
 
 
 	return (

@@ -12,19 +12,22 @@ interface Props {
 
 const ChannelPlayers = () => {
 	
-	const { currentChannel } = useSelector((state: RootState) => state.room)
+	const { channels, currentChannelId } = useSelector((state: RootState) => state.room)
+	const users: IChannelUser[] | null = currentChannelId !== -1 ? channels[currentChannelId].users : null
 	const [visiblePlayers, setVisiblePlayers] = useState<IChannelUser[] | undefined>(
-		currentChannel?.users
+		currentChannelId !== -1 ? channels[currentChannelId].users: undefined
 	)
 	const dispatch = useDispatch();
 
 
 
 	useEffect(() => {
-		setVisiblePlayers(
-			currentChannel?.users
-		)
-	}, [currentChannel])
+		if (currentChannelId !== -1) {
+			setVisiblePlayers(
+				channels[currentChannelId].users
+			)
+		}
+	}, [currentChannelId, users])
 
 
 

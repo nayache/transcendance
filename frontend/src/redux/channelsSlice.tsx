@@ -8,12 +8,12 @@ interface DraftMessageProps {
 export type ChannelProps = IChannel & DraftMessageProps
 
 export interface ChannelsProps {
-	currentChannel: ChannelProps | null,
+	currentChannelId: number,
 	channels: ChannelProps[],
 }
 
 const initialState: ChannelsProps = {
-	currentChannel: null,
+	currentChannelId: -1,
 	channels: []
 }
 
@@ -37,8 +37,8 @@ const channelsSlice = createSlice({
 			console.log("removeChannel: state.channels (apres) = ", state.channels);
 		},
 		setCurrentChannel: (state, action) => {
-			state.currentChannel = (state.channels.filter((channel => channel.name === action.payload)).length > 0) ?
-			state.channels.filter((channel => channel.name === action.payload))[0] : null
+			state.currentChannelId = state.channels
+				.findIndex(channel => channel.name === action.payload)
 		},
 	},
 })
