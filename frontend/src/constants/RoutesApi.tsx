@@ -33,7 +33,7 @@ export const API_AVATAR_ROUTE = API_BASE_USER + '/avatar'
 export const API_CHAT_MESSAGES_CHANNEL_ROUTE = API_BASE_CHAT + '/channel/message'
 export const API_CHAT_USER_CHANNELS_ROUTE = API_BASE_CHAT + '/channels'
 export const API_CHAT_ALL_CHANNELS_ROUTE = API_BASE_CHAT + '/channels/all'
-export const API_CHAT_CHANNEL_ROUTE = API_BASE_CHAT + '/channel'
+export const API_CHAT_CHANNEL_ROUTE = API_BASE_CHAT + '/channel' /* + '/:channelName' */
 export const API_CHAT_CHANNEL_JOIN_ROUTE = API_BASE_CHAT + '/channel/join'
 export const API_CHAT_CHANNEL_LEAVE_ROUTE = API_BASE_CHAT + '/channel/leave'
 

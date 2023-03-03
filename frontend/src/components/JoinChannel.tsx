@@ -1,11 +1,15 @@
 import React, { useCallback, useRef } from "react"
+import { useDispatch } from "react-redux";
 import { API_CHAT_CHANNEL_JOIN_ROUTE } from "../constants/RoutesApi";
+import { IChannel } from "../interface/IChannelUser";
+import { addChannel, setCurrentChannel, updateChannel } from "../redux/channelsSlice";
 import { MAX_CARAC_NAME_CHANNEL } from "./ChannelPart";
 import ClientApi from "./ClientApi.class";
 
 const JoinChannel = () => {
 	const channelWritten = useRef<string>('');
 	const inputRef = useRef<HTMLInputElement>(null);
+	const dispatch = useDispatch()
 
 
 
@@ -35,14 +39,17 @@ const JoinChannel = () => {
 	const click = useCallback(async () => {
 		try {
 			const [name, password] = channelWritten.current.split('/');
-			await ClientApi.patch(API_CHAT_CHANNEL_JOIN_ROUTE, JSON.stringify({
+			const { channel }: { channel: IChannel } = await ClientApi.patch(API_CHAT_CHANNEL_JOIN_ROUTE, JSON.stringify({
 				name,
 				password
 			}), 'application/json')
+			//voir si je verifie
+			dispatch(addChannel(channel))
+			dispatch(setCurrentChannel(channel.name))
 		} catch (err) {
 			console.log("err = ", err);
 		}
-	}, [])
+	}, [dispatch])
 
 
 
