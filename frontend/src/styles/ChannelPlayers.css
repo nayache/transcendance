@@ -10,7 +10,7 @@
 	--whole-scrollbar-gap-height: 10px;
 	--animation-time: 1.8s;
 	flex: 0.5 1 0;
-	position: relative;
+	margin: 0 20px;
 	height: 100%;
 }
 
@@ -25,8 +25,8 @@
 }
 
 .channelPlayers-container {
-	flex: 0.5 1 0;
 	position: relative;
+	flex: 0.5 1 0;
 	height: 80%;
 	box-shadow: 0 0 10px 3px blue;
 	background-color: rgb(245, 245, 245);

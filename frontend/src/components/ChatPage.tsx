@@ -84,7 +84,8 @@ const ChatPage = () => {
 				pseudo={pseudo} />
 				<Chat socket={socket}
 				pseudo={pseudo} />
-				<ChannelPlayers />
+				<ChannelPlayers socket={socket}
+				pseudo={pseudo} />
 			</ChatContainer>
 		</React.Fragment>
 	)

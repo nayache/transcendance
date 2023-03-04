@@ -24,3 +24,21 @@ code {
 	cursor: pointer;
 	outline: inherit;
 }
+
+.circle {
+	border-radius: 50%;
+	width: 10px;
+	height: 10px;
+}
+
+.online {
+	background: green;
+}
+
+.offline {
+	background: grey;
+}
+
+.ingame {
+	background: orange;
+}

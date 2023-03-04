@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { Socket } from "socket.io-client";
 import { IChannelUser } from "../interface/IChannelUser";
 import { RootState } from "../redux/store";
 import '../styles/ChannelPlayers.css'
 import ChannelPlayer from "./ChannelPlayer";
 
 
-const ChannelPlayers = () => {
+interface Props {
+	pseudo?: string,
+	socket: Socket
+}
+
+const ChannelPlayers = ({ pseudo, socket }: Props) => {
 	
 	const { channels, currentChannelId } = useSelector((state: RootState) => state.room)
 	const users: IChannelUser[] | null = currentChannelId !== -1 ? channels[currentChannelId].users : null
@@ -53,7 +59,7 @@ const ChannelPlayers = () => {
 						visiblePlayers && visiblePlayers.map((player, index) => (
 							<ChannelPlayer key={index} doDisplayPreview={doDisplayPreviews[index]}
 							onClick={(e) => onClick(index, e)} onClosePreview={() => onClosePreview(index)}
-							playerName={player.pseudo} status={player.status}/>
+							pseudo={pseudo} player={player}/>
 						))
 					}
 				</div>
