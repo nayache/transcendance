@@ -23,7 +23,7 @@ import { MessageEntity } from './chat/entity/message.entity';
   TypeOrmModule.forRoot({
     type: 'postgres',
     host: process.env.DB_HOST,
-    port: parseInt(process.env.DV_PORT),
+    port: parseInt(process.env.DB_PORT),
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
