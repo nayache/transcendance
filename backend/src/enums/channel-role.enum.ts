@@ -1,5 +1,5 @@
 export enum ChannelRole {
-    OWNER,
+    USER,
     ADMIN,
-    USER
+    OWNER
 }

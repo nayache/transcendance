@@ -1,9 +1,9 @@
 import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
-import { ChannelRole } from './enums/channel-role.enum';
+import { ChannelRole } from '../enums/channel-role.enum';
 import { ChannelDto, ChannelMessageDto, ChannelUserDto } from './chat.controller';
 import { ChatGateway } from './chat.gateway';
-import { Status } from './enums/status.enum';
+import { Status } from '../enums/status.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChannelEntity } from './entity/channel.entity';
 import { Repository } from 'typeorm';
@@ -12,18 +12,19 @@ import { MessageEntity } from './entity/message.entity';
 
 @Injectable()
 export class ChatService {
-    constructor(private userService: UserService,
+    constructor(
+        @Inject(forwardRef(() => UserService)) private userService: UserService,
         @InjectRepository(ChannelEntity) private channelRepository: Repository<ChannelEntity>,
         @InjectRepository(Member) private memberRepository: Repository<Member>,
         @InjectRepository(MessageEntity) private messageRepository: Repository<MessageEntity>,
-        @Inject(forwardRef(() => ChatGateway)) private readonly chatGateway: ChatGateway) {
+        @Inject(forwardRef(() => ChatGateway))private readonly chatGateway: ChatGateway) {
     }
 
     private color: string[] = ["brown", "red", "blue", "black", "blueviolet",
      "DarkGoldenRod", "Crimson", "DarkBlue", "DarkCyan", "DarkGreen", "DarkSeaGreen", "Green"];
 
     generateColorr(channel: ChannelEntity): string {
-        return this.color[channel.visited - 1 % this.color.length];
+        return this.color[(channel.visited - 1) % this.color.length];
     }
 
     isValidChannelName(name: string): boolean {
@@ -117,6 +118,7 @@ export class ChatService {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
         const member: Member = await this.getMemberByUserId(userId, channel.id)
         const status: Status = this.chatGateway.getStatus(userId);
+        //const status: Status = Status.ONLINE;
         const user: ChannelUserDto = {pseudo: member.user.pseudo, color: member.color, role: member.role, status};
         return user;
     }
@@ -128,6 +130,7 @@ export class ChatService {
             const messages: ChannelMessageDto[] = messagesChannel.map((msg) => this.messageToDto(msg));
             const users: ChannelUserDto[] = members.map((member) => {
                 const status: Status = this.chatGateway.getStatus(member.userId);
+                //const status: Status = Status.ONLINE;
                 return {pseudo: member.user.pseudo, color: member.color, role: member.role, status};
             })
             return {name: channel.name, users, messages};
