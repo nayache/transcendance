@@ -24,6 +24,7 @@ import { delay } from "../functions/Debug_utils";
 const ChatContainer = styled.div`
 	position: relative;
 	display: flex;
+	justify-content: center;
 	margin: 0% 2% 0;
 	height: 80%;
 `
@@ -83,7 +84,8 @@ const ChatPage = () => {
 				pseudo={pseudo} />
 				<Chat socket={socket}
 				pseudo={pseudo} />
-				<ChannelPlayers />
+				<ChannelPlayers socket={socket}
+				pseudo={pseudo} />
 			</ChatContainer>
 		</React.Fragment>
 	)

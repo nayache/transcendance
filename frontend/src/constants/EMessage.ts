@@ -6,7 +6,7 @@ export enum Status {
 }
 
 export enum ChannelRole {
-	OWNER,
+	USER,
 	ADMIN,
-	USER
+	OWNER,
 }

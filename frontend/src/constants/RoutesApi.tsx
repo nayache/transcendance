@@ -62,6 +62,9 @@ export const TWOFA_ROUTE = BASE_URL + TWOFA_EP
 export const SIGNIN_EP = '/signin'
 export const SIGNIN_ROUTE = BASE_URL + SIGNIN_EP
 
+export const MESSAGES_EP = '/messages'
+export const MESSAGES_ROUTE = BASE_URL + MESSAGES_EP
+
 export const CHAT_EP = '/chat'
 export const CHAT_ROUTE = BASE_URL + CHAT_EP
 

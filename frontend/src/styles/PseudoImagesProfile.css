@@ -26,6 +26,7 @@
 	position: relative;
 	display: flex;
 	align-items: center;
+	justify-content: space-evenly;
 }
 
 .pseudo {
@@ -33,22 +34,4 @@
 	width: fit-content;
 	margin-left: 10px;
 	font-weight: 700;
-}
-
-.moncercle {
-	border-radius: 50%;
-	width: 10px;
-	height: 10px;
-}
-
-.online {
-	background: green;
-}
-
-.offline {
-	background: grey;
-}
-
-.ingame {
-	background: orange;
 }

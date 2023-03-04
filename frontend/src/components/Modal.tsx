@@ -36,8 +36,8 @@ const Modal = ({ active, title, content, callback, callbackFail }: Props) => {
 		ref={modalRef} className="modal">
 			<div className="modal-content">
 				<span onClick={(e) => handleClick(e, false, callbackFail)} className="close">&times;</span>
-				<div>{title}</div>				
-				<div>{content}</div>				
+				<div>{title}</div>
+				<div>{content}</div>
         		<button type="button" onClick={(e) => handleClick(e, false, callback)} className="continuebtn">Continue</button>
 			</div>
 		</div>

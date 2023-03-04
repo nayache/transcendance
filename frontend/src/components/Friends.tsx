@@ -41,11 +41,11 @@ const Friends = () => {
 		const res: JSX.Element[] = friends.map((friend: Friend) => {
 		let colorcircle;
 		if (friend.status == "En ligne")
-			colorcircle = "moncercle online"
+			colorcircle = "circle online"
 		else if (friend.status == "Hors ligne")
-			colorcircle = " moncercle offline"
+			colorcircle = " circle offline"
 		else if (friend.status == "En pleine partie")
-			colorcircle = "moncercle  ingame"
+			colorcircle = "circle  ingame"
 
 			return (
 				<div className="friendsTab">

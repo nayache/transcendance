@@ -1,4 +1,41 @@
 
 .channelPlayer-container {
-	
+	position: relative;
+	font-family: 'Tilt Neon', cursive;
+}
+
+.playerName {
+	display: flex;
+	position: relative;
+	width: calc(100% - var(--scrollbar-width) - 5px);
+	margin: 8px 2px 5px 10px;
+	padding: 3px 10px;
+	border-radius: 5px;
+	box-sizing: border-box;
+	transition: all 0.2s;
+	cursor: pointer;
+	text-align: start;
+	align-items:baseline;
+	justify-content: flex-start;
+}
+
+.playerName:hover {
+	background: rgb(215, 215, 215);
+}
+
+.playerName:active {
+	box-shadow: none
+}
+
+.logo-role {
+	width: 1em;
+	margin-right: 10px;
+}
+
+.playerName-text {
+	font-family: 'Tilt Neon', cursive;
+}
+
+.custom-on-circle {
+	margin-left: 8px;
 }

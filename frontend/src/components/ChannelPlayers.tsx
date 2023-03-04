@@ -1,23 +1,42 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
+import { Socket } from "socket.io-client";
 import { IChannelUser } from "../interface/IChannelUser";
 import { RootState } from "../redux/store";
 import '../styles/ChannelPlayers.css'
 import ChannelPlayer from "./ChannelPlayer";
 
+
 interface Props {
-	users: IChannelUser[]
+	pseudo?: string,
+	socket: Socket
 }
 
-const ChannelPlayers = () => {
+const ChannelPlayers = ({ pseudo, socket }: Props) => {
 	
 	const { channels, currentChannelId } = useSelector((state: RootState) => state.room)
 	const users: IChannelUser[] | null = currentChannelId !== -1 ? channels[currentChannelId].users : null
-	const [visiblePlayers, setVisiblePlayers] = useState<IChannelUser[] | undefined>(
+	const [ visiblePlayers, setVisiblePlayers ] = useState<IChannelUser[] | undefined>(
 		currentChannelId !== -1 ? channels[currentChannelId].users: undefined
 	)
-	const dispatch = useDispatch();
+	const [ doDisplayPreviews, setDoDisplayPreviews ] = useState<boolean[]>(
+		currentChannelId !== -1 ? channels[currentChannelId].users.map(user => false): []
+	)
+
+
+
+	const onClick = (index: number, e?: React.MouseEvent<HTMLButtonElement>) => {
+		const oldData: boolean[] = doDisplayPreviews.map(doDisplay => false)
+		oldData[index] = true;
+		setDoDisplayPreviews(oldData)
+	}
+
+	const onClosePreview = (index: number) => {
+		const oldData: boolean[] = [...doDisplayPreviews]
+		oldData[index] = false;
+		setDoDisplayPreviews(oldData)
+	}
+
 
 
 
@@ -32,12 +51,19 @@ const ChannelPlayers = () => {
 
 
 	return (
-		<div className="channelPlayers-container">
-			{
-				visiblePlayers && visiblePlayers.map((player) => (
-					<ChannelPlayer playerName={player.pseudo}/>
-				))
-			}
+		<div className="channelPlayers-container-container">
+			<h3 className="chat-title">Players</h3>
+			<div className="channelPlayers-container">
+				<div className="channelPlayers-child">
+					{
+						visiblePlayers && visiblePlayers.map((player, index) => (
+							<ChannelPlayer key={index} doDisplayPreview={doDisplayPreviews[index]}
+							onClick={(e) => onClick(index, e)} onClosePreview={() => onClosePreview(index)}
+							pseudo={pseudo} player={player}/>
+						))
+					}
+				</div>
+			</div>
 		</div>
 	)
 }

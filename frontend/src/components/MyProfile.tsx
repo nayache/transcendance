@@ -142,7 +142,7 @@ const MyProfile = (props: Props) => {
 
 		return (
 			<div className="pseudo-container">
-				<div className={"moncercle " + mapStatus.get(status) } />
+				<div className={"circle " + mapStatus.get(status) } />
 				<p className="pseudo">{pseudo}</p>
 			</div>
 		)

@@ -9,21 +9,20 @@ import { IOldMessageChannel } from "./IMessage";
  */
 
 export interface IChannelJoin {
-	pseudo: string,
 	channel: string,
-	color: string,
+	user: IChannelUser,
 }
 
 export interface IChannelLeave {
-	pseudo: string,
 	channel: string,
-	color: null,
+	pseudo: string,
 }
 
 export interface IChannelUser {
 	pseudo: string;
 	role: ChannelRole;
-	status: Status;
+	status: Status;	
+    color: string;
 }
 
 export interface IChannel {

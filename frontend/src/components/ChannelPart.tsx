@@ -1,6 +1,6 @@
 import RemoveChannel from "./RemoveChannel"
 import '../styles/ChannelPart.css'
-import { useEffect, useReducer, useState } from "react"
+import React, { useEffect, useReducer, useState } from "react"
 import { useSelector } from "react-redux"
 import { RootState } from "../redux/store"
 import Channel from "./Channel"
@@ -43,8 +43,10 @@ const ChannelPart = ({ socket, pseudo }: Props) => {
 			<JoinChannel />
 			<RemoveChannel />
 			<div>
-				{ visibleChannels?.map((visibleChannel) => (
-					<Channel channelName={visibleChannel}/>
+				{ visibleChannels?.map((visibleChannel, i) => (
+					<React.Fragment key={i}>
+						<Channel channelName={visibleChannel}/>
+					</React.Fragment>
 				)) }
 			</div>
 		</div>
