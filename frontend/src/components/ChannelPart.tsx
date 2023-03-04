@@ -10,6 +10,7 @@ import JoinChannel from "./JoinChannel"
 import { useDispatch } from "react-redux"
 import ClientApi from "./ClientApi.class"
 import { API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi"
+import { IChannelUser } from "../interface/IChannelUser"
 
 export const MAX_CARAC_NAME_CHANNEL: number = 25;
 export const MIN_CARAC_NAME_CHANNEL: number = 3;
@@ -17,10 +18,10 @@ export const MIN_CARAC_NAME_CHANNEL: number = 3;
 interface Props {
 	socket?: Socket,
 	channelNames?: string[],
-	pseudo: string | undefined,
+	chanUser: IChannelUser | undefined,
 }
 
-const ChannelPart = ({ socket, pseudo }: Props) => {
+const ChannelPart = ({ socket, chanUser }: Props) => {
 
 	const { channels } = useSelector((state: RootState) => state.room)
 	const [visibleChannels, setVisibleChannels] = useState<string[] | undefined>(
@@ -39,7 +40,7 @@ const ChannelPart = ({ socket, pseudo }: Props) => {
 
 	return (
 		<div className="channelPart-container">
-			<AddChannel pseudo={pseudo} />
+			<AddChannel pseudo={chanUser?.pseudo} />
 			<JoinChannel />
 			<RemoveChannel />
 			<div>

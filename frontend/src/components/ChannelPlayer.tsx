@@ -7,14 +7,14 @@ import ModoLogo from '../img/modo-logo.png'
 import { IChannelUser } from '../interface/IChannelUser'
 
 interface Props {
-	pseudo?: string,
+	chanUser: IChannelUser | undefined,
 	player: IChannelUser
 	doDisplayPreview: boolean,
 	onClick: (e?: React.MouseEvent<HTMLButtonElement>) => void,
 	onClosePreview: () => void,
 }
 
-const ChannelPlayer = ({ pseudo, player, doDisplayPreview, onClick, onClosePreview }: Props) => {
+const ChannelPlayer = ({ chanUser, player, doDisplayPreview, onClick, onClosePreview }: Props) => {
 
 
 	const channelPlayerRef = useRef<HTMLDivElement>(null)
@@ -25,7 +25,7 @@ const ChannelPlayer = ({ pseudo, player, doDisplayPreview, onClick, onClosePrevi
 		<React.Fragment>
 			<div ref={channelPlayerRef} className="channelPlayer-container-container">
 				{ doDisplayPreview &&
-				<UserPreview pseudo={pseudo} player={player}
+				<UserPreview chanUser={chanUser} player={player}
 				onClose={onClosePreview} /> }
 				<button onClick={onClick} className="playerName button_without_style">
 					{

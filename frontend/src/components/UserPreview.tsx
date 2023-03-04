@@ -5,7 +5,7 @@ import { PROFILE_EP } from "../constants/RoutesApi"
 import { IChannelUser } from "../interface/IChannelUser"
 
 interface Props {
-	pseudo?: string,
+	chanUser: IChannelUser | undefined,
 	player: IChannelUser,
 	onClose?: (e?: React.MouseEvent<HTMLSpanElement>) => void,
 }
@@ -17,7 +17,7 @@ interface ButtonProps {
 }
 
 /* to place juste before the element concerned */
-const UserPreview = ({ pseudo, player, onClose }: Props) => {
+const UserPreview = ({ chanUser, player, onClose }: Props) => {
 
 	const { pseudo: playerName, status, role } = player
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -30,6 +30,13 @@ const UserPreview = ({ pseudo, player, onClose }: Props) => {
 		},
 		{
 			content: "Invite",
+			action: () => {
+
+			},
+			role: ChannelRole.USER,
+		},
+		{
+			content: "Add to friends",
 			action: () => {
 
 			},
@@ -62,10 +69,10 @@ const UserPreview = ({ pseudo, player, onClose }: Props) => {
 
 
 
-	const printOtherFromRole = (pseudo: string, playerName: string, role: ChannelRole): JSX.Element[] => {
+	const printOtherFromRole = (chanUser: IChannelUser, playerName: string, role: ChannelRole): JSX.Element[] => {
 		const newButtons = buttons.filter(({role: _role}: ButtonProps) => (
-			(pseudo === playerName && _role === undefined) ||
-			(pseudo !== playerName && (_role === undefined || role >= _role))
+			(chanUser.pseudo === playerName && _role === undefined) ||
+			(chanUser.pseudo !== playerName && (_role === undefined || chanUser.role >= _role))
 		))
 
 		return (
@@ -104,7 +111,7 @@ const UserPreview = ({ pseudo, player, onClose }: Props) => {
 				<div className="userPreview_without_close">
 					<p className="pseudo">{playerName}</p>
 					{
-						pseudo && printOtherFromRole(pseudo, playerName, role)
+						chanUser && printOtherFromRole(chanUser, playerName, role)
 					}
 				</div>
 				<span onClick={onClose} className="close-preview">&times;</span>

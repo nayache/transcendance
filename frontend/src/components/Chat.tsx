@@ -16,7 +16,8 @@ import UserPreview from "./UserPreview";
 
 interface Props {
 	socket?: Socket,
-	pseudo: string | undefined
+	pseudo: string | undefined,
+	// chanUser: IChannelUser | undefined,
 }
 
 const MAX_CARAC: number = 300

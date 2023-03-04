@@ -8,11 +8,11 @@ import ChannelPlayer from "./ChannelPlayer";
 
 
 interface Props {
-	pseudo?: string,
+	chanUser: IChannelUser | undefined,
 	socket: Socket
 }
 
-const ChannelPlayers = ({ pseudo, socket }: Props) => {
+const ChannelPlayers = ({ chanUser, socket }: Props) => {
 	
 	const { channels, currentChannelId } = useSelector((state: RootState) => state.room)
 	const users: IChannelUser[] | null = currentChannelId !== -1 ? channels[currentChannelId].users : null
@@ -59,7 +59,7 @@ const ChannelPlayers = ({ pseudo, socket }: Props) => {
 						visiblePlayers && visiblePlayers.map((player, index) => (
 							<ChannelPlayer key={index} doDisplayPreview={doDisplayPreviews[index]}
 							onClick={(e) => onClick(index, e)} onClosePreview={() => onClosePreview(index)}
-							pseudo={pseudo} player={player}/>
+							chanUser={chanUser} player={player}/>
 						))
 					}
 				</div>
