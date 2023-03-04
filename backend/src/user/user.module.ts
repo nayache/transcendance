@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { ConfigModule } from '@nestjs/config';
@@ -10,9 +10,11 @@ import { AvatarService } from './avatar.service';
 import { DataUserEntity } from 'src/entity/data-user.entity';
 import { BlockedEntity } from 'src/entity/blocked.entity';
 import { BlockedController } from 'src/blocked/blocked.controller';
+import { ChatModule } from 'src/chat/chat.module';
 
 @Module({
-  imports: [ConfigModule.forRoot(), TypeOrmModule.forFeature([UserEntity, FriendEntity, DataUserEntity, Avatar, BlockedEntity])],
+  imports: [ConfigModule.forRoot(), TypeOrmModule.forFeature([UserEntity, FriendEntity, DataUserEntity, Avatar, BlockedEntity]),
+  forwardRef(() => ChatModule)],
   providers: [UserService, AvatarService],
   controllers: [UserController, BlockedController],
   exports: [UserService]

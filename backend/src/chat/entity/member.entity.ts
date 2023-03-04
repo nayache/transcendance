@@ -3,7 +3,7 @@ import { join } from "path";
 import { UserEntity } from "src/entity/user.entity";
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { ChannelEntity } from "./channel.entity";
-import { ChannelRole } from "../enums/channel-role.enum";
+import { ChannelRole } from "../../enums/channel-role.enum";
 
 @Entity()
 export class Member {

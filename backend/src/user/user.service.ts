@@ -1,15 +1,19 @@
-import { HttpException, HttpStatus, Injectable, StreamableFile } from '@nestjs/common';
+import { forwardRef, HttpException, HttpStatus, Inject, Injectable, StreamableFile } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataUserEntity } from 'src/entity/data-user.entity';
 import { FriendEntity } from 'src/entity/friend.entity';
 import { UserEntity } from 'src/entity/user.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Avatar } from 'src/entity/avatar.entity';
 import { AvatarService } from './avatar.service';
 import { BlockedEntity } from 'src/entity/blocked.entity';
 import { ErrorException } from 'src/exceptions/error.exception';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { userDto } from 'src/dto/user.dto';
+import { Relation } from '../enums/relation.enum';
+import { friendDto } from './user.controller';
+import { ChatGateway } from 'src/chat/chat.gateway';
+import { Status } from 'src/enums/status.enum';
 
 @Injectable()
 export class UserService {
@@ -17,6 +21,7 @@ export class UserService {
     @InjectRepository(FriendEntity) private friendRepository: Repository<FriendEntity>,
     @InjectRepository(DataUserEntity) private dataUserRepository: Repository<DataUserEntity>,
 	@InjectRepository(BlockedEntity) private blockedRepository: Repository<BlockedEntity>,
+    @Inject(forwardRef(() => ChatGateway)) private readonly chatGateway: ChatGateway,
 	private readonly avatarService: AvatarService) {}
     
     async saveUser(login: string) {
@@ -87,7 +92,7 @@ export class UserService {
 
     async getUser(user: UserEntity) : Promise<userDto> {
         const avatar: StreamableFile = (user.avatar?.datafile) ? this.avatarService.toStreamableFile(user.avatar.datafile): null;
-        let friendlist: string[] = null;
+        let friendlist: friendDto[] = null;
         let blockedlist: string[] = null;
         
         const friends: FriendEntity[] = await this.getFriends(user.id, true);
@@ -110,6 +115,13 @@ export class UserService {
     async removeUser(login: string) {
         const user = await this.findByLogin(login);
         return this.userRepository.delete(user.id);
+    }
+
+    async getRelation(userId: string, targetId: string): Promise<Relation> {
+        if (await this.friendShipPending(userId, targetId))
+            return Relation.PENDING;
+        else
+            return (await this.friendshipExist(userId, targetId)) ? Relation.FRIEND : Relation.UNKNOW;
     }
 
     async createFriendship(userId: string, userId2: string) {
@@ -136,6 +148,13 @@ export class UserService {
         }
     }
 
+    async getFriendshipInWaiting(userId: string) : Promise<FriendEntity[]> {
+        return this.friendRepository.find({where: [
+            {authorId: Not(userId), user1Id: userId, accepted: false},
+            {authorId: Not(userId), user2Id: userId, accepted: false}
+        ]});
+    }
+
     async frienshipWaiting(userId: string, userId2: string) : Promise<boolean> {
         return this.friendRepository.exist({where: [
             {authorId: userId2, user1Id: userId2, user2Id: userId, accepted: false},
@@ -151,6 +170,14 @@ export class UserService {
             {authorId: userId, user1Id: userId, user2Id: userId2, accepted: false},
             {authorId: userId, user1Id: userId2, user2Id: userId, accepted: false}
         ]});
+    }
+
+    async friendShipPending(userId: string, userId2: string): Promise<boolean> {
+        return this.friendRepository.exist({where: [
+            {authorId: userId, user1Id: userId, user2Id: userId2, accepted: false},
+            {authorId: userId, user1Id: userId2, user2Id: userId, accepted: false}
+        ]})
+
     }
 
     async friendshipPendingFromOther(otherId: string, userId: string) : Promise<boolean> {
@@ -189,16 +216,24 @@ export class UserService {
         return blockedList;
     }
     
-    async makeFriendList(userId: string, friends: FriendEntity[]) : Promise<string[]> {
+    async makeList(pendings: FriendEntity[], userId: string): Promise<string[]> {
+        return Promise.all(pendings.map(async (pending) => {
+            const id: string = (pending.user1Id === userId) ? pending.user2Id : pending.user1Id; 
+            return await this.getPseudoById(id);
+        }));
+    }
+
+    async makeFriendList(userId: string, friends: FriendEntity[]) : Promise<friendDto[]> {
         let friendList : string[] = friends.map((friend) => {
           return (friend.user1Id == userId) ? friend.user2Id : friend.user1Id;
         })
         
-        friendList = await Promise.all( friendList.map(async (id) => {
-            const user = await this.findById(id)
-            return user.pseudo
+        const friendListDto: friendDto[] = await Promise.all( friendList.map(async (id) => {
+            const user: UserEntity = await this.findById(id);
+            const status: Status = await this.chatGateway.getStatus(user.id);
+            return { pseudo: user.pseudo, status };
         }))
-        return friendList;
+        return friendListDto;
     }
 
     async getFriends(userId: string, value: boolean) : Promise<FriendEntity[]> {
