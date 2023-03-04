@@ -157,6 +157,10 @@
 	.show-nav .slideInDown-4 {
 		transition: all 1.3s ease-out;
 	}
+
+	.show-nav .slideInDown-5 {
+		transition: all 1.4s ease-out;
+	}
 }
 
 .navbar img {

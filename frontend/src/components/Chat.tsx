@@ -12,6 +12,7 @@ import { RootState } from "../redux/store";
 import { ChannelRole, Status } from "../constants/EMessage";
 import { useDispatch } from "react-redux";
 import { ChannelProps, updateChannel } from "../redux/channelsSlice";
+import UserPreview from "./UserPreview";
 
 interface Props {
 	socket?: Socket,
@@ -25,27 +26,26 @@ const Chat = ({ socket, pseudo }: Props) => {
 	const rpseudoSender = useRef<string>('');
 	const messagesContainerRef = useRef<HTMLDivElement>(null);
 	const noMessages = useRef<number>(0);
-	const [messages, setMessages] = useState<JSX.Element[]>([]);
+	const [ messages, setMessages ] = useState<JSX.Element[]>([]);
 	const msg = useRef<string>('');
 	const textAreaRef = useRef<HTMLTextAreaElement>(null);
 	const { currentChannelId, channels } = useSelector((state: RootState) => state.room)
 	const users: IChannelUser[] | null = currentChannelId !== -1 ? channels[currentChannelId].users : null
+	const [ doPrintUserPreview, setDoPrintUserPreview ] = useState<boolean>(false);
 	const oldChannelName = useRef<string | undefined>(currentChannelId !== -1 ? channels[currentChannelId].name : undefined)
 	const dispatch = useDispatch()
 
 
 
 
-	const printPreviewProfile = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-		
-	}, [])
-
 	const resetMessagesBlock = useCallback((messages: IOldMessageChannel[]) => {
-		const formattedMessages: JSX.Element[] = messages.map((oldMessage: IOldMessageChannel) => (
-			<div className="message-container without-animation">
+		const formattedMessages: JSX.Element[] = messages.map((oldMessage: IOldMessageChannel, i) => (
+			<div key={i} className="message-container without-animation">
+				{/* <UserPreview /> */}
 				<p className="message-text">
 					<b className="other_pseudo" style={{color: oldMessage.color}}>
-						<button className="pseudo-button button_without_style" onClick={printPreviewProfile} >
+						<button className="pseudo-button button_without_style"
+						onClick={() => setDoPrintUserPreview(true)} >
 							{oldMessage.author}
 						</button>
 					</b>
@@ -62,7 +62,8 @@ const Chat = ({ socket, pseudo }: Props) => {
 			<div className="message-container">
 				<p className="message-text">
 					<b className="other_pseudo" style={{color}}>
-						<button className="pseudo-button button_without_style" onClick={printPreviewProfile} >
+						<button className="pseudo-button button_without_style"
+						onClick={() => setDoPrintUserPreview(true)} >
 							{author}
 						</button>
 					</b>
@@ -72,7 +73,7 @@ const Chat = ({ socket, pseudo }: Props) => {
 		])
 	}, [])
 
-	const updateMessagesBlockUserJoin = useCallback(({pseudo: author}: IChannelJoin) => {
+	const updateMessagesBlockUserJoin = useCallback(({user: {pseudo: author}}: IChannelJoin) => {
 		setMessages(oldmessages => [...oldmessages,
 			<div className="event-text-container">
 				<p className="event-text">
@@ -228,18 +229,13 @@ const Chat = ({ socket, pseudo }: Props) => {
 		console.log("pseudo dans useEffect du ChannelPart = ", pseudo)
 		if (pseudo) {
 			socket?.on('joinRoom', (payload: IChannelJoin) => {
-				console.log("(join) pseudo = ", pseudo, " et paypseudo = ", payload.pseudo)
+				console.log("(join) pseudo = ", pseudo, " et paypseudo = ", payload.user.pseudo)
 				console.log("(join) currentChannelId = ", currentChannelId)
-				if (payload.pseudo !== pseudo && currentChannelId !== -1
+				if (payload.user.pseudo !== pseudo && currentChannelId !== -1
 				&& channels[currentChannelId].name === payload.channel) {
-					const newUser: IChannelUser = {
-						pseudo: payload.pseudo,
-						status: Status.ONLINE,
-						role: ChannelRole.USER
-					}
 					const users: IChannelUser[] = channels[currentChannelId].users.map(channel => channel)
-					if (users.every(user => user.pseudo !== newUser.pseudo)) // contre les bugs graphiques
-						users.push(newUser)
+					if (users.every(user => user.pseudo !== payload.user.pseudo)) // contre les bugs graphiques
+						users.push(payload.user)
 					const channel: ChannelProps = {
 						name: channels[currentChannelId].name,
 						users,
@@ -256,12 +252,7 @@ const Chat = ({ socket, pseudo }: Props) => {
 				console.log("(leave) currentChannelId = ", currentChannelId)
 				if (payload.pseudo !== pseudo && currentChannelId !== -1
 				&& channels[currentChannelId].name === payload.channel) {
-					const newUser: IChannelUser = {
-						pseudo: payload.pseudo,
-						status: Status.ONLINE,
-						role: ChannelRole.USER
-					}
-					const users: IChannelUser[] = channels[currentChannelId].users.filter(user => user.pseudo !== newUser.pseudo)
+					const users: IChannelUser[] = channels[currentChannelId].users.filter(user => user.pseudo !== payload.pseudo)
 					const channel: ChannelProps = {
 						name: channels[currentChannelId].name,
 						users,

@@ -24,6 +24,7 @@ import { delay } from "../functions/Debug_utils";
 const ChatContainer = styled.div`
 	position: relative;
 	display: flex;
+	justify-content: center;
 	margin: 0% 2% 0;
 	height: 80%;
 `

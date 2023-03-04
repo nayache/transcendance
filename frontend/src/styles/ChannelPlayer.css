@@ -1,4 +1,17 @@
 
 .channelPlayer-container {
-	
+	width: fit-content;
+	font-family: 'Tilt Neon', cursive;
+
+}
+
+.playerName {
+	border-radius: 5px;
+	transition: all 0.2s;
+	cursor: pointer;
+	margin: 8px 2px 5px 10px;
+}
+
+.playerName:hover {
+	background: rgb(215, 215, 215);
 }

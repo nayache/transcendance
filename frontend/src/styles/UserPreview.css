@@ -1,0 +1,91 @@
+
+.userPreview-container {
+	position: absolute;
+	transform-origin: 0 0 0;
+	transform: translateY(-100%);
+	border-radius: 4px;
+	padding: 3px 10px 10px 10px;
+	z-index: 4;
+	background: rgb(205, 207, 235);
+	cursor: default;
+	box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+
+.userPreview_with_close {
+	display: flex;
+}
+
+.close-preview {
+	position: relative;
+	color: #aaa;
+	font-size: 2em;
+	font-weight: bold;
+	line-height: 1em;
+	align-self: flex-start;
+	margin-bottom: 30px;
+}
+
+.close-preview:hover,
+.close-preview:focus {
+	color: black;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.userPreview_without_close {
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	margin-top: 1em;
+}
+
+.pseudo {
+	margin: 0;
+	margin-bottom: 2px;
+	font-weight: normal;
+}
+
+.first-element-container {
+	position: relative;
+	display: flex;
+	width: 100%;
+	justify-content: space-between;
+	padding-bottom: 0.7em;
+}
+
+.first-element-container::before {
+	content: "";
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	z-index: -2;
+	border-bottom: 1px solid rgb(221, 221, 221);
+}
+
+.first-element-container + div {
+	margin-top: 0.7em;
+}
+
+.preview-button {
+	height: fit-content;
+	align-self: flex-end;
+	transition: all 0.2s;
+	cursor: pointer;
+	text-align:start;
+	width: 100%;
+	margin: 2px 0;
+	padding: 3px 5px;
+	border-radius: 5px;
+	box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+	background: rgb(194, 196, 222);
+}
+
+.preview-button:hover {
+	color: rgb(55, 55, 55);
+	background: rgb(187, 188, 212);
+}
+
+.preview-button:active {
+	color: rgb(55, 55, 55);
+	box-shadow: none;
+}

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import '../styles/Navbar.css'
 import { useState } from "react"
 import Logo from '../img/pong.png'
-import { CHAT_EP, MYFRIENDS_EP, MYPROFILE_EP, SETTINGS_EP } from '../constants/RoutesApi';
+import { CHAT_EP, MESSAGES_EP, MYFRIENDS_EP, MYPROFILE_EP, SETTINGS_EP } from '../constants/RoutesApi';
 
 
 interface BarItem {
@@ -23,12 +23,16 @@ const Navbar = () => {
 			href: MYFRIENDS_EP,
 		},
 		{
-			name: "Settings",
-			href: SETTINGS_EP,
+			name: "Messages",
+			href: MESSAGES_EP
 		},
 		{
 			name: "Chat",
 			href: CHAT_EP,
+		},
+		{
+			name: "Settings",
+			href: SETTINGS_EP,
 		},
 	]
 

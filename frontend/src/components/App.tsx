@@ -12,7 +12,7 @@ import Settings from './Settings';
 import { IUser } from '../interface/IUser';
 import userEvent from '@testing-library/user-event';
 import ClientApi from './ClientApi.class';
-import { API_SOCKET_URL, CHAT_EP, FRIENDS_EP, GAMEPAGE_EP, HOME_EP, MYFRIENDS_EP, MYPROFILE_EP, PROFILE_EP, REGISTER_EP, SETTINGS_EP, SETTINGS_MYPROFILE_EP, SETTINGS_TWOFA_EP, SIGNIN_EP, TWOFA_EP } from '../constants/RoutesApi';
+import { API_SOCKET_URL, CHAT_EP, FRIENDS_EP, GAMEPAGE_EP, HOME_EP, MESSAGES_EP, MYFRIENDS_EP, MYPROFILE_EP, PROFILE_EP, REGISTER_EP, SETTINGS_EP, SETTINGS_MYPROFILE_EP, SETTINGS_TWOFA_EP, SIGNIN_EP, TWOFA_EP } from '../constants/RoutesApi';
 import MyProfile from './MyProfile';
 import ChatPage from './ChatPage';
 import TwoFA from './TwoFA';
@@ -20,6 +20,7 @@ import TwoFASettings from './TwoFASettings';
 import MyProfileSettings from './MyProfileSettings';
 import { Provider } from 'react-redux';
 import store from '../redux/store';
+import DM from './DM';
 
 
 const router = createBrowserRouter([
@@ -62,6 +63,10 @@ const router = createBrowserRouter([
 	{
 		path: CHAT_EP,
 		element: <ChatPage />
+	},
+	{
+		path: MESSAGES_EP,
+		element: <DM />
 	},
 	{
 		path: SETTINGS_EP,
