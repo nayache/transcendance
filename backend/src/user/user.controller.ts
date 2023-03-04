@@ -9,6 +9,13 @@ import { ErrorException } from 'src/exceptions/error.exception';
 import { AboutErr, TypeErr } from '../enums/error_constants';
 import { extname } from 'path';
 import { userDto } from 'src/dto/user.dto';
+import { Relation } from '../enums/relation.enum';
+import { Status } from 'src/enums/status.enum';
+
+export class friendDto {
+	pseudo: string;
+	status: Status;
+}
 
 @Controller('user')
 export class UserController {
@@ -55,6 +62,18 @@ export class UserController {
 			throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found');
 		const data: userDto = await this.userService.getUser(user);
 		return { user: data }
+	}
+
+	@Get('friends/relation/:pseudo')
+	async getRelation(@User() userId: string, @Param('pseudo') pseudo: string) {
+		if (!pseudo)
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.EMPTY, 'empty pseudo argument.');
+		const target: UserEntity = await this.userService.findByPseudo(pseudo);
+		if (!target) 
+			throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'target user not found.');
+		const relation: Relation = await this.userService.getRelation(userId, target.id);
+		const blocked: boolean = await this.userService.blockandauthorExist(userId, target.id);	
+		return {relation, blocked};
 	}
 
     //for test

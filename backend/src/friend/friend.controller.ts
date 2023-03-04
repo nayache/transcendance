@@ -1,13 +1,17 @@
 import { Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { ChatGateway } from 'src/chat/chat.gateway';
 import { User } from 'src/decorators/user.decorator';
+import { FriendEntity } from 'src/entity/friend.entity';
 import { UserEntity } from 'src/entity/user.entity';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { ErrorException } from 'src/exceptions/error.exception';
+import { friendDto } from 'src/user/user.controller';
 import { UserService } from 'src/user/user.service';
 
-@Controller('user/friend')
+@Controller('user/friends')
 export class FriendController {
-    constructor(private userService: UserService) {}
+    constructor(private userService: UserService,
+    private readonly chatGateway: ChatGateway) {}
 
     @Post('add/:pseudo')
     async makeFriend(@User() userId: string, @Param('pseudo') pseudo: string) {
@@ -20,10 +24,14 @@ export class FriendController {
         if (await this.userService.friendshipExist(userId, user2.id)) {
             throw new HttpException('already friend(or in waiting)', HttpStatus.BAD_REQUEST);
         }
-        else if (await this.userService.frienshipWaiting(userId, user2.id))
-            return this.userService.acceptFriendship(userId, user2.id)
+        let eventName: string = 'newRequest';
+        if (await this.userService.frienshipWaiting(userId, user2.id)) {
+            await this.userService.acceptFriendship(userId, user2.id);
+            eventName = 'acceptedRequest;'
+        }
         else
-            return this.userService.createFriendship(userId, user2.id);
+            await this.userService.createFriendship(userId, user2.id);
+        await this.chatGateway.friendEvent(eventName, user2.id, pseudo);
     }
 
     @Delete('del/:pseudo')
@@ -38,16 +46,16 @@ export class FriendController {
             return this.userService.removeFriendship(userId, user2.id);
     }
 
-   /*  @Get('/:value')
-    async getFriendList(@User() userId: string, @Param('value') value: boolean) {
-        if (value != true && value != false)
-            throw new HttpException('invalid param set ` true or false `', HttpStatus.BAD_REQUEST);
-        const friends = await this.userService.getFriends(userId, value);
-        const friendList : string[] = await this.userService.makeFriendList(userId, friends);
-        return { friends: friendList }
-    } */
-
-   /*  @Get('/:pseudo/:value')
+    @Get('list')
+    async getFriendList(@User() userId: string) {
+        const friends: FriendEntity[] = await this.userService.getFriends(userId, true);
+        const friendList : friendDto[] = await this.userService.makeFriendList(userId, friends);
+        const friendshipPendings: FriendEntity[] = await this.userService.getFriendshipInWaiting(userId);
+        const pendings: string[] = await this.userService.makeList(friendshipPendings, userId);
+        return { friends: friendList, pendings };
+    }
+/*
+    @Get('/:pseudo/:value')
     async getUserFriendList(@Param('value') value: boolean, @Param('pseudo') pseudo: string) {
         if (value != true && value != false)
             throw new HttpException('invalid param set ` true or false `', HttpStatus.BAD_REQUEST);
@@ -59,14 +67,6 @@ export class FriendController {
         return { friends: friendList }
     } */
    
-    //for test
-    @Get('list')
-    async getList(@Query('id') id: string) {
-        const friends = await this.userService.getFriends(id, true);
-        const friendList : string[] = await this.userService.makeFriendList(id, friends);
-        return { friends: friendList }
-    }
-
     //FOR TESTTTTTT
     @Patch('add')
     async addFriend(@Query('src') src: string, @Query('dst') dst: string) {

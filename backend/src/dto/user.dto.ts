@@ -1,7 +1,8 @@
 import { StreamableFile } from "@nestjs/common";
+import { friendDto } from "src/user/user.controller";
 
 export class userDto {
-    constructor(p: string, a: StreamableFile, f: string[], b: string[]) {
+    constructor(p: string, a: StreamableFile, f: friendDto[], b: string[]) {
         this.pseudo = p;
         this.avatar = a;
         this.friends = f;
@@ -9,6 +10,6 @@ export class userDto {
     }
     pseudo: string;
     avatar: StreamableFile;
-    friends: string[];
+    friends: friendDto[];
     blockeds: string[];
 }

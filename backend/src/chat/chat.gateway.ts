@@ -5,8 +5,8 @@ import { AuthService } from 'src/auth/auth.service';
 import { Error } from 'src/exceptions/error.interface';
 import { UserService } from 'src/user/user.service';
 import { ChatService } from './chat.service';
-import { ChannelRole } from './enums/channel-role.enum';
-import { Status } from './enums/status.enum';
+import { ChannelRole } from '../enums/channel-role.enum';
+import { Status } from '../enums/status.enum';
 import { eventMessageDto, joinRoomDto, leaveRoomDto, userDto } from './dto/chat-gateway.dto';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { ChannelUserDto } from './chat.controller';
@@ -14,7 +14,9 @@ import { ChannelUserDto } from './chat.controller';
 //@UseGuards(JwtGuard)
 @WebSocketGateway({ cors: {origin: '*'} })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  constructor(private authService: AuthService, private userService: UserService,
+  constructor(
+    @Inject(forwardRef(() => AuthService )) private authService: AuthService,
+    @Inject(forwardRef(() => UserService)) private userService: UserService,
     @Inject(forwardRef(() => ChatService)) private chatService: ChatService) {}
 
   @WebSocketServer() server: Server;
@@ -96,6 +98,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   async sendMessageToUser(userId: string, targetId: string, message: string) {
+    if (!this.users.get(targetId))
+      return
+    
     const pseudo: string = await this.userService.getPseudoById(userId);
     this.users.get(targetId).forEach((socket) => {
       this.server.to(socket.id).emit('message', pseudo, message);
@@ -106,6 +111,15 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const author: string = await this.userService.getPseudoById(userId);
     const messageData: eventMessageDto = {author, message, channel, color: color};
     this.server.to(channel).emit('messageRoom', messageData);
+  }
+
+  friendEvent(eventName: string, targetId: string, pseudo: string) {
+    if (!this.users.get(targetId))
+      return
+    
+    this.users.get(targetId).forEach((socket) => {
+      this.server.to(socket.id).emit(eventName, pseudo);
+    });
   }
 
   async handleDisconnect(socket: Socket) {
