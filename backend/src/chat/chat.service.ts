@@ -1,7 +1,7 @@
-import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { ChannelRole } from '../enums/channel-role.enum';
-import { ChannelDto, ChannelMessageDto, ChannelUserDto } from './chat.controller';
+import { ChannelDto, ChannelMessageDto, ChannelUserDto, prvMsgDto } from './chat.controller';
 import { ChatGateway } from './chat.gateway';
 import { Status } from '../enums/status.enum';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,6 +9,8 @@ import { ChannelEntity } from './entity/channel.entity';
 import { Repository } from 'typeorm';
 import { Member } from './entity/member.entity';
 import { MessageEntity } from './entity/message.entity';
+import { PrivateMessageEntity } from './entity/privateMessage.entity';
+import { UserEntity } from 'src/entity/user.entity';
 
 @Injectable()
 export class ChatService {
@@ -17,10 +19,11 @@ export class ChatService {
         @InjectRepository(ChannelEntity) private channelRepository: Repository<ChannelEntity>,
         @InjectRepository(Member) private memberRepository: Repository<Member>,
         @InjectRepository(MessageEntity) private messageRepository: Repository<MessageEntity>,
+        @InjectRepository(PrivateMessageEntity) private privateMsgRepository: Repository<PrivateMessageEntity>,
         @Inject(forwardRef(() => ChatGateway))private readonly chatGateway: ChatGateway) {
     }
 
-    private color: string[] = ["brown", "red", "blue", "black", "blueviolet",
+    private color: string[] = ["blue", "red", "brown", "black", "blueviolet",
      "DarkGoldenRod", "Crimson", "DarkBlue", "DarkCyan", "DarkGreen", "DarkSeaGreen", "Green"];
 
     generateColorr(channel: ChannelEntity): string {
@@ -31,7 +34,7 @@ export class ChatService {
         console.log('name: ',name)
         if (name.search(/\s/) != -1)
             return false
-        return (name.length >= 3 && name.length <= 25);
+        return (name.length >= 3 && name.length <= 20);
     }
 
     async channelExistt(name: string): Promise<boolean> {
@@ -151,6 +154,12 @@ export class ChatService {
         return this.channelRepository.find();        
     }
     
+    async getChannelNames(): Promise<string[]> {
+        const channels: ChannelEntity[] = await this.getChannels();
+        const channelsNames: string[] = channels.map((channel) => channel.name);
+        return channelsNames;
+    }
+
     async getChannelNamesByUserId(userId: string): Promise<string[]> {
         const channels: ChannelEntity[] = await this.getChannelsByUserId(userId);
         return channels.map((channel) => channel.name);
@@ -185,8 +194,34 @@ export class ChatService {
         await this.memberRepository.delete({id: member.id});
     }
 
-    messageToUser(userId: string, target: string, text: string) {
-        //must create message entitie ??
+
+    async getPrivateMessages(user1: string, user2: string): Promise<PrivateMessageEntity[]> {
+        const messages: PrivateMessageEntity[] = await this.privateMsgRepository.find({
+            where: [
+                {authorId: user1, targetId: user2},
+                {authorId: user2, targetId: user1} 
+            ]
+        })
+        return messages;
+        //penser a check si throw 500
+    }
+    
+    async getConversation(user1Id: string, user2Id: string): Promise<prvMsgDto[]> {
+        const messages: PrivateMessageEntity[] = await this.getPrivateMessages(user1Id, user2Id);
+        const user1: string = await this.userService.getPseudoById(user1Id);
+        const user2: string = await this.userService.getPseudoById(user2Id);
+        const conversation: prvMsgDto[] = messages.map((message) => {
+            const author: string = (message.authorId === user1Id) ? user1 : user2;
+            return { author, content: message.content, date: message.created_at };
+        });
+        return conversation;
+    }
+
+    async messageToUser(userId: string, targetId: string, content: string) {
+        const author: UserEntity = await this.userService.findById(userId);
+        const target: UserEntity = await this.userService.findById(targetId);
+        const message: PrivateMessageEntity = new PrivateMessageEntity(author, target, content);
+        await this.privateMsgRepository.save(message);
     }
     
     async messageToChannel(userId: string, channelName: string, text: string): Promise<string> {

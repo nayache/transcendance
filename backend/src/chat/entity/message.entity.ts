@@ -1,4 +1,3 @@
-import { channel } from "diagnostics_channel";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { ChannelEntity } from "./channel.entity";
 

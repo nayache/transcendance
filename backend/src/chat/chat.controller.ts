@@ -56,6 +56,12 @@ export class messageDto {
     msg: string;
 }
 
+export class prvMsgDto {
+    author: string;
+    content: string;
+    date: Date;
+}
+
 @UsePipes(ValidationPipe)
 @UseFilters(ValidationFilter)
 @Controller('chat')
@@ -90,6 +96,12 @@ export class ChatController {
     async allChannel() {
         const channels: ChannelEntity[] = await this.chatService.getChannels();
         return {channels: await this.chatService.getChannelDto(channels)};
+    }
+    
+    @Get('channels/all/names')
+    async allChannelNames() {
+        const channelNames: string[] = await this.chatService.getChannelNames();
+        return {channelNames};
     }
 
     @Get('channel/isPrivate/:name')
@@ -181,17 +193,30 @@ export class ChatController {
         return {}
     }
 
+    @Get('message/:pseudo')
+    async getPrivateConversation(@User() userId: string, @Param('pseudo') pseudo: string) {
+        if (!pseudo)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.EMPTY, 'argument empty');
+        const target: UserEntity = await this.userService.findByPseudo(pseudo);
+        if (!target)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'target not found');
+        if (target.id === userId)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.INVALID, 'target must different than user');
+        const messages: prvMsgDto[] = await this.chatService.getConversation(userId, target.id);
+        return {messages};
+    }
+
     @Post('message')
     async sendMessage(@User() userId: string, @Body() payload: messageDto) {
-        const user: UserEntity = await this.userService.findByPseudo(payload.target);
-        if (!user)
+        const target: UserEntity = await this.userService.findByPseudo(payload.target);
+        if (!target)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'target not found');
-        if (user.id === userId)
+        if (target.id === userId)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.MESSAGE, TypeErr.INVALID, 'cant send himself message');
-        if (this.chatService.isBlocked(user.id, userId))
+        if (this.chatService.isBlocked(target.id, userId))
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.MESSAGE, TypeErr.INVALID, 'user is blocked by target');
-        this.chatService.messageToUser(userId, user.id, payload.msg);
-        await this.chatGateway.sendMessageToUser(userId, user.id, payload.msg);
+        this.chatService.messageToUser(userId, target.id, payload.msg);
+        await this.chatGateway.sendMessageToUser(userId, target.id, target.pseudo, payload.msg);
         return {}
     }
 
