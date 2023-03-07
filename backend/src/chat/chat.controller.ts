@@ -35,6 +35,12 @@ export class ChannelDto {
     messages: ChannelMessageDto[];
 }
 
+export class channelPreviewDto {
+    name: string;
+    password: boolean;
+    prv: boolean;
+}
+
 export class createChannelDto {
     @IsString()
     @IsNotEmpty()
@@ -110,10 +116,11 @@ export class ChatController {
         return {channels: await this.chatService.getChannelDto(channels)};
     }
     
-    @Get('channels/all/names')
-    async allChannelNames() {
-        const channelNames: string[] = await this.chatService.getChannelNames();
-        return {channelNames};
+    @Get('channels/all/preview')
+    async allChannelPreview() {
+        const channs: ChannelEntity[] = await this.chatService.getChannels();
+        const channels: channelPreviewDto[] = await this.chatService.getChannelPreviewDto(channs);
+        return {channels};
     }
 
     @Get('channel/isPrivate/:name')
@@ -173,12 +180,14 @@ export class ChatController {
     @UseGuards(isAdmin)
     @Patch('channel/setAdmin')
     async setAdmin(@User() userId: string, @Body() payload: adminActionDto) {
-        const user: UserEntity = await this.userService.findByPseudo(payload.target);
-        if (user.id === userId)
+        const target: UserEntity = await this.userService.findByPseudo(payload.target);
+        if (target.id === userId)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant set/unset admin himself');
-        await this.chatService.setRole(payload.channel, user.id, ChannelRole.ADMIN);
-        this.chatGateway.channelEvent(payload.channel, `${user.pseudo} become an admin`);
-        return {newAdmin: user.pseudo}
+        if (await this.chatService.isAdmin(target.id, payload.channel))
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'target is already admin');
+        await this.chatService.setRole(payload.channel, target.id, ChannelRole.ADMIN);
+        this.chatGateway.channelEvent(payload.channel, `${target.pseudo} become an admin`);
+        return {newAdmin: target.pseudo}
     }
     
     @UseGuards(isAdmin)

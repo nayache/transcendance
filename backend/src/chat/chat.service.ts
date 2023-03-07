@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { ChannelRole } from '../enums/channel-role.enum';
-import { ChannelDto, ChannelMessageDto, ChannelUserDto, prvMsgDto } from './chat.controller';
+import { ChannelDto, ChannelMessageDto, channelPreviewDto, ChannelUserDto, prvMsgDto } from './chat.controller';
 import { ChatGateway } from './chat.gateway';
 import { Status } from '../enums/status.enum';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -172,6 +172,13 @@ export class ChatService {
             })
             return {name: channel.name, users, messages};
         }));
+        return channs;
+    }
+
+    getChannelPreviewDto(channels: ChannelEntity[]): channelPreviewDto[] {
+        const channs: channelPreviewDto[] = channels.map((channel) => {
+            return { name: channel.name, password: !!channel.password, prv: channel.private };
+        })
         return channs;
     }
 
