@@ -42,10 +42,10 @@
 .pseudo {
 	margin: 0;
 	margin-bottom: 2px;
-	font-weight: normal;
+	font-weight: bolder;
 }
 
-.first-element-container {
+.sep-element-container {
 	position: relative;
 	display: flex;
 	width: 100%;
@@ -53,7 +53,7 @@
 	padding-bottom: 0.7em;
 }
 
-.first-element-container::before {
+.sep-element-container::before {
 	content: "";
 	position: absolute;
 	width: 100%;
@@ -62,7 +62,7 @@
 	border-bottom: 1px solid rgb(221, 221, 221);
 }
 
-.first-element-container + div {
+.sep-element-container + div {
 	margin-top: 0.7em;
 }
 
@@ -88,4 +88,38 @@
 .preview-button:active {
 	color: rgb(55, 55, 55);
 	box-shadow: none;
+}
+
+.self_buttons_channel {
+	box-shadow: none;
+	background: none;
+	padding: 1px;
+}
+
+.self_buttons_channel:hover {
+	box-shadow: none;
+	background: none;
+	color: rgb(32, 32, 114);
+}
+
+.admin_buttons_channel {
+	color: red;
+	box-shadow: none;
+	background: none;
+	padding: 1px;
+}
+
+.admin_buttons_channel:hover {
+	color: rgb(255, 92, 92);
+}
+
+.owner_buttons_channel {
+	color: red;
+	box-shadow: none;
+	background: none;
+	padding: 1px;
+}
+
+.owner_buttons_channel:hover {
+	color: rgb(255, 92, 92);
 }

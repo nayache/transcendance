@@ -22,7 +22,7 @@
 	--animation-time: 1.4s;
 	position: relative;
 	height: 100%;
-	flex: 1 1 0;
+	flex: 1 0 0;
 	display: flex;
 	flex-direction: column;
 }
@@ -78,7 +78,7 @@
 	width: 300%;
 	height: 300%;
 	z-index: -1;
-	background-image: conic-gradient(rgba(255, 0, 0, 0.65) 0deg calc(90deg - 10deg), white calc(90deg + 45deg) calc(270deg - 45deg), rgba(255, 0, 0, 0.65) calc(270deg + 10deg) 360deg);
+	background-image: conic-gradient(rgb(40, 187, 255) 0deg calc(90deg - 10deg), white calc(90deg + 45deg) calc(270deg - 45deg), rgb(40, 187, 255) calc(270deg + 10deg) 360deg);
 	animation: rotate var(--animation-time);
 }
 

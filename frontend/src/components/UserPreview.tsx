@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from "react"
 import '../styles/UserPreview.css'
 import { ChannelRole, Status } from "../constants/EMessage"
-import { PROFILE_EP } from "../constants/RoutesApi"
+import { BASE_URL, PROFILE_EP } from "../constants/RoutesApi"
 import { IChannelUser } from "../interface/IChannelUser"
+import ClientApi from "./ClientApi.class"
 
 interface Props {
 	chanUser: IChannelUser | undefined,
@@ -25,7 +26,7 @@ const UserPreview = ({ chanUser, player, onClose }: Props) => {
 		{
 			content: "See the profile",
 			action: () => {
-
+				ClientApi.redirect = new URL(BASE_URL + '/profile/' + playerName)
 			}
 		},
 		{
@@ -63,6 +64,20 @@ const UserPreview = ({ chanUser, player, onClose }: Props) => {
 			},
 			role: ChannelRole.ADMIN,
 		},
+		{
+			content: "Mute",
+			action: () => {
+
+			},
+			role: ChannelRole.ADMIN,
+		},
+		{
+			content: "Ban",
+			action: () => {
+
+			},
+			role: ChannelRole.ADMIN,
+		},
 	]
 
 
@@ -70,31 +85,31 @@ const UserPreview = ({ chanUser, player, onClose }: Props) => {
 
 
 	const printOtherFromRole = (chanUser: IChannelUser, playerName: string, role: ChannelRole): JSX.Element[] => {
+		const classes = new Map<ChannelRole | undefined, string>([
+			[undefined, "self_buttons_channel"],
+			[ChannelRole.USER, "user_buttons_channel"],
+			[ChannelRole.ADMIN, "admin_buttons_channel"],
+			[ChannelRole.OWNER, "owner_buttons_channel"],
+		]);
 		const newButtons = buttons.filter(({role: _role}: ButtonProps) => (
 			(chanUser.pseudo === playerName && _role === undefined) ||
 			(chanUser.pseudo !== playerName && (_role === undefined || chanUser.role >= _role))
 		))
 
 		return (
-			newButtons.map(({content, action}: ButtonProps, index: number, array) => {
-				if (index === 0 && array.length > 1)
+			newButtons.map(({content, action, role}: ButtonProps, index: number, array) => {
+				if (index + 1 < array.length && role !== array[index + 1].role)
 					return (
 						<React.Fragment key={index}>
-							<div className="first-element-container">
-								<button onClick={action} className="preview-button button_without_style" >{content}</button>
+							<div className="sep-element-container">
+								<button onClick={action} className={"preview-button " + classes.get(role) + " button_without_style"}>{content}</button>
 							</div>
-						</React.Fragment>
-					)
-				else if (index === 0 && array.length === 1)
-					return (
-						<React.Fragment key={index}>
-							<button onClick={action} className="preview-button button_without_style" >{content}</button>
 						</React.Fragment>
 					)
 				else
 					return (
 						<div key={index}>
-							<button onClick={action} className="preview-button button_without_style">{content}</button>
+							<button onClick={action} className={"preview-button " + classes.get(role) + " button_without_style"}>{content}</button>
 						</div>
 					)
 			})

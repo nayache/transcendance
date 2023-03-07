@@ -3,8 +3,8 @@ import '../styles/Modal.css'
 
 interface Props {
 	active: boolean,
-	title: JSX.Element,
-	content: JSX.Element,
+	title?: JSX.Element,
+	content?: JSX.Element,
 	callback?: () => any,
 	callbackFail?: () => any,
 }

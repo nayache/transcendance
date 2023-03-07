@@ -28,6 +28,7 @@ const ChatContainer = styled.div`
 	position: relative;
 	display: flex;
 	justify-content: center;
+	align-items: flex-basis;
 	margin: 0% 2% 0;
 	height: 80%;
 `

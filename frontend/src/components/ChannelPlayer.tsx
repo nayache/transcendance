@@ -5,6 +5,7 @@ import UserPreview from './UserPreview'
 import OwnerLogo from '../img/owner-logo.png'
 import ModoLogo from '../img/modo-logo.png'
 import { IChannelUser } from '../interface/IChannelUser'
+import { useResizeText } from '../hooks/useResizeText'
 
 interface Props {
 	chanUser: IChannelUser | undefined,
@@ -17,13 +18,13 @@ interface Props {
 const ChannelPlayer = ({ chanUser, player, doDisplayPreview, onClick, onClosePreview }: Props) => {
 
 
-	const channelPlayerRef = useRef<HTMLDivElement>(null)
 	const { pseudo: playerName, role, status } = player
+	const playerTextRef = useResizeText(useRef<HTMLParagraphElement>(null))
 
 
 	return (
 		<React.Fragment>
-			<div ref={channelPlayerRef} className="channelPlayer-container-container">
+			<div className="channelPlayer-container-container">
 				{ doDisplayPreview &&
 				<UserPreview chanUser={chanUser} player={player}
 				onClose={onClosePreview} /> }
@@ -32,7 +33,7 @@ const ChannelPlayer = ({ chanUser, player, doDisplayPreview, onClick, onClosePre
 						role === ChannelRole.OWNER && <img className='logo-role' src={OwnerLogo} /> ||
 						role === ChannelRole.ADMIN && <img className='logo-role' src={ModoLogo} />
 					}
-					<div className='playerName-text'>{playerName}</div>
+					<p ref={playerTextRef} className='playerName-text'>{playerName}</p>
 					<div className='circle custom-on-circle online' />
 				</button>
 			</div>

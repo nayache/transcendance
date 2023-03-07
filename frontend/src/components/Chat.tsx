@@ -13,6 +13,7 @@ import { ChannelRole, Status } from "../constants/EMessage";
 import { useDispatch } from "react-redux";
 import { ChannelProps, updateChannel } from "../redux/channelsSlice";
 import UserPreview from "./UserPreview";
+import { GoGear } from "react-icons/go"
 
 interface Props {
 	socket?: Socket,
@@ -304,9 +305,14 @@ const Chat = ({ socket, pseudo }: Props) => {
 	const getPage = () => (
 		<React.Fragment>
 			<div className="chat-container">
-				<h3 className={(() => (
+				<div className="chat-title-container">
+					<h3 className={(() => (
 					currentChannelId === -1 ? "chat-title hidden" : "chat-title"
-					))()}>{currentChannelId !== -1 ? channels[currentChannelId].name : 'a'}</h3>
+					))()}>
+						{currentChannelId !== -1 ? channels[currentChannelId].name : 'a'}
+					</h3>
+					<GoGear />
+				</div>
 				<div className="messages-container-container">
 					<div className="messages-container-bg" />
 					<div ref={messagesContainerRef} className="messages-container">

@@ -9,9 +9,10 @@
 	--scrollbar-width: 10px;
 	--whole-scrollbar-gap-height: 10px;
 	--animation-time: 1.8s;
-	flex: 0.5 1 0;
+	flex: 0.5 0 0;
 	margin: 0 20px;
 	height: 100%;
+	border-radius: 10px;
 }
 
 .chat-title {
@@ -20,6 +21,7 @@
 	display: block;
 	width: fit-content;
 	margin: 15px 0 0 15px;
+	padding-bottom: 10px;
 	opacity: 100%;
 	transition: all var(--animation-time);
 }
@@ -30,6 +32,7 @@
 	height: 80%;
 	box-shadow: 0 0 10px 3px blue;
 	background-color: rgb(245, 245, 245);
+	border-radius: 10px;
 }
 
 .channelPlayers-child {
