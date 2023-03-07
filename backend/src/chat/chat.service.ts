@@ -11,6 +11,7 @@ import { Member } from './entity/member.entity';
 import { MessageEntity } from './entity/message.entity';
 import { PrivateMessageEntity } from './entity/privateMessage.entity';
 import { UserEntity } from 'src/entity/user.entity';
+import { isAlpha } from 'class-validator';
 
 @Injectable()
 export class ChatService {
@@ -67,8 +68,15 @@ export class ChatService {
 
     async isAdmin(userId: string, channelName: string): Promise<boolean> {
         return this.memberRepository.exist({ relations: ['channel'],
+            where: [
+                { channel: { name: channelName }, userId: userId, role: ChannelRole.ADMIN },
+                { channel: { name: channelName }, userId: userId, role: ChannelRole.OWNER },
+        ]});
+    }
+    async isOwner(userId: string, channelName: string): Promise<boolean> {
+        return this.memberRepository.exist({ relations: ['channel'],
             where: { channel: { name: channelName },
-                userId: userId, role: ChannelRole.ADMIN,
+                userId: userId, role: ChannelRole.OWNER,
             }
         });
     }
@@ -77,15 +85,42 @@ export class ChatService {
         return (await this.getChannelByName(channelName)).private;
     }
 
+    isValidChannelPassword(password: string): boolean {
+        if (password.length < 5 || password.length > 15)
+            return false;
+        if (password.search(/\s/) != -1)
+            return false;
+        let alphaCount: number = 0;
+        for (var i = 0; i < password.length; i++) {
+            if (isAlpha(password[i]))
+                alphaCount++;
+        }
+        return (alphaCount >= 6);
+    }
+
     async channelAccess(userId: string, channelName: string, password?: string): Promise<boolean> {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
-       // return !(this.isBanned(channelName, userId) || channel.private && channel.password != password);
-       return !(channel.private && channel.password != password);
+        if (channel.private === true)
+            return false;
+        if (await this.isBanned(channelName, userId))
+            return false;
+        return !(channel.private && channel.password != password);
+    }
+
+    async setChannelAccess(channelName: string, prv: boolean) {
+        const channel: ChannelEntity = await this.getChannelByName(channelName);
+        await this.channelRepository.update(channel.id, {private: prv});
+    }
+
+    async setChannelPassword(channelName: string, password: string) {
+        const channel: ChannelEntity = await this.getChannelByName(channelName);
+        await this.channelRepository.update(channel.id, {password: password});
     }
 
     async banUser(channelName: string, userId: string) {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
         channel.banneds.push(userId);
+        await this.channelRepository.update(channel.id, {banneds: channel.banneds});
     }
 
     async setRole(channelName: string, userId: string, role: ChannelRole) {
@@ -119,10 +154,10 @@ export class ChatService {
 
     async getChannelUserDto(userId: string, channelName: string): Promise<ChannelUserDto> {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
-        const member: Member = await this.getMemberByUserId(userId, channel.id)
+        const member: Member = await this.getMemberByUserId(userId, channel.id);
+        const pseudo: string = await this.userService.getPseudoById(member.userId);
         const status: Status = this.chatGateway.getStatus(userId);
-        //const status: Status = Status.ONLINE;
-        const user: ChannelUserDto = {pseudo: member.user.pseudo, color: member.color, role: member.role, status};
+        const user: ChannelUserDto = {pseudo: pseudo, color: member.color, role: member.role, status};
         return user;
     }
 
@@ -133,11 +168,10 @@ export class ChatService {
             const messages: ChannelMessageDto[] = messagesChannel.map((msg) => this.messageToDto(msg));
             const users: ChannelUserDto[] = members.map((member) => {
                 const status: Status = this.chatGateway.getStatus(member.userId);
-                //const status: Status = Status.ONLINE;
                 return {pseudo: member.user.pseudo, color: member.color, role: member.role, status};
             })
             return {name: channel.name, users, messages};
-        }))
+        }));
         return channs;
     }
 
@@ -165,8 +199,8 @@ export class ChatService {
         return channels.map((channel) => channel.name);
     }
 
-    async createChannel(nameChannel: string, password?: string) {
-        await this.channelRepository.save(new ChannelEntity(nameChannel, password));
+    async createChannel(nameChannel: string, prv: boolean, password?: string) {
+        await this.channelRepository.save(new ChannelEntity(nameChannel, prv, password));
     }
 
     async joinChannel(userId: string, role: ChannelRole, channelName: string): Promise<ChannelEntity> {

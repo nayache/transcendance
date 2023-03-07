@@ -3,10 +3,10 @@ import { UserEntity } from "./user.entity";
 
 @Entity()
 export class Channel {
-    constructor(name: string, owner: UserEntity, password?: string) {
+    constructor(name: string, owner: UserEntity, prv: boolean, password?: string) {
         this.name = name;
+        this.private = prv;
         if (password) {
-            this.private = true;
             this.password = password;
         }
         this.owner = owner;

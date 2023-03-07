@@ -4,9 +4,9 @@ import { MessageEntity } from "./message.entity";
 
 @Entity()
 export class ChannelEntity {
-    constructor(name: string, password?: string) {
+    constructor(name: string, prv: boolean, password?: string) {
         this.name = name;
-        this.private = (password) ? true : false;
+        this.private = prv;
         this.password = (password) ? password : null;
         this.visited = 0;
         this.banneds = [];
