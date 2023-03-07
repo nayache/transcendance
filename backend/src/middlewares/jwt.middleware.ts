@@ -8,7 +8,7 @@ export class JwtDecoding implements NestMiddleware {
 
   async use(req: Request, res: Response, next: () => void) {
     console.log('==========in Middleware==========')
-      const userId: string = await this.authService.jwtVerif(req.headers.authorization); 
+      const userId: string = await this.authService.jwtVerif(req.headers.authorization);
       req.user = userId;
       console.log('==========out Middleware==========')
       next();

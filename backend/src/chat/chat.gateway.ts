@@ -7,7 +7,7 @@ import { UserService } from 'src/user/user.service';
 import { ChatService } from './chat.service';
 import { ChannelRole } from '../enums/channel-role.enum';
 import { Status } from '../enums/status.enum';
-import { eventMessageDto, joinRoomDto, leaveRoomDto, userDto } from './dto/chat-gateway.dto';
+import { eventMessageDto, joinRoomDto, kickBanDto, leaveRoomDto, userDto } from './dto/chat-gateway.dto';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { ChannelUserDto } from './chat.controller';
 
@@ -26,7 +26,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async afterInit() {
     if (!await this.chatService.channelExistt('General')) {
       console.log('BUILD GENERAL')
-      await this.chatService.createChannel('General');
+      await this.chatService.createChannel('General', false);
     }
     this.logger.log('success initialized');
   }
@@ -119,6 +119,20 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.users.get(targetId).forEach((socket) => {
       this.server.to(socket.id).emit(eventName, pseudo);
     });
+  }
+
+  channelPasswordEvent(channelName: string, activePassword: boolean) {
+    this.server.to(channelName).emit('updatePassword', activePassword);
+  }
+
+  channelAccessEvent(channelName: string, activePrivate: boolean) {
+    this.server.to(channelName).emit('updateAccess', activePrivate);
+  }
+
+  async punishEvent(channel: string, authorId: string, target: string, action: string) {
+    const author: ChannelUserDto = await this.chatService.getChannelUserDto(authorId, channel);
+    const payload: kickBanDto = { channel, author, target, action };
+    this.server.to(payload.channel).emit('punishUser', payload);
   }
 
   async handleDisconnect(socket: Socket) {

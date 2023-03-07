@@ -8,11 +8,12 @@ import { ChannelRole } from '../enums/channel-role.enum';
 import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
 import { Status } from '../enums/status.enum';
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { IsBoolean, isNotEmpty, IsNotEmpty, IsOptional, isString, IsString, MaxLength, MinLength } from 'class-validator';
 import { ValidationFilter } from './filter/validation-filter';
 import { isAdmin } from './guards/is-admin.guard';
 import { ChannelEntity } from './entity/channel.entity';
 import { Transform } from 'class-transformer';
+import { isOwner } from './guards/is-owner.guard';
 
 export class ChannelMessageDto {
     author: string;
@@ -32,6 +33,32 @@ export class ChannelDto {
     name: string;
     users: ChannelUserDto[];
     messages: ChannelMessageDto[];
+}
+
+export class channelPreviewDto {
+    name: string;
+    password: boolean;
+    prv: boolean;
+}
+
+export class createChannelDto {
+    @IsString()
+    @IsNotEmpty()
+    @MinLength(3)
+    @MaxLength(20)
+    name: string;
+
+    @IsBoolean()
+    @IsNotEmpty()
+    prv: boolean;
+
+    @IsString()
+    @MinLength(4)
+    @MaxLength(15)
+    @Transform(({value}) => (value as string).trim())
+    @IsNotEmpty()
+    @IsOptional()
+    password: string;
 }
 
 export class adminActionDto {
@@ -83,25 +110,17 @@ export class ChatController {
         return {channel: (await this.chatService.getChannelDto([channel]))[0]};
     }
 
-/*    @Get('channelonverraplustard')
-    async getChannelsByUser(@Param('pseudo') pseudo: string) {
-        const user: UserEntity = await this.userService.findByPseudo(pseudo);
-        if (!user)
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found');
-        const names: string[] = this.chatService.getChannelNamesByUserId(user.id);
-        return {channels: this.chatService.getChannelDto(names)};
-    }*/
-    
     @Get('channels/all')
     async allChannel() {
         const channels: ChannelEntity[] = await this.chatService.getChannels();
         return {channels: await this.chatService.getChannelDto(channels)};
     }
     
-    @Get('channels/all/names')
-    async allChannelNames() {
-        const channelNames: string[] = await this.chatService.getChannelNames();
-        return {channelNames};
+    @Get('channels/all/preview')
+    async allChannelPreview() {
+        const channs: ChannelEntity[] = await this.chatService.getChannels();
+        const channels: channelPreviewDto[] = await this.chatService.getChannelPreviewDto(channs);
+        return {channels};
     }
 
     @Get('channel/isPrivate/:name')
@@ -114,14 +133,16 @@ export class ChatController {
     }
 
     @Post('channel')
-    async createChannel(@User() userId: string, @Body('name') channelName: string, @Body('password') password?: string) {
-        if (!channelName || !this.chatService.isValidChannelName(channelName))
+    async createChannel(@User() userId: string, @Body() payload: createChannelDto) {
+        if (!this.chatService.isValidChannelName(payload.name))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'invalid channelName');
-        if (await this.chatService.channelExistt(channelName))
+        if (await this.chatService.channelExistt(payload.name))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'channel already exist');
-        await this.chatService.createChannel(channelName, password);
-        const chann: ChannelEntity = await this.chatService.joinChannel(userId, ChannelRole.OWNER, channelName);
-        await this.chatGateway.joinRoom(userId, channelName);
+        if (payload.password && !this.chatService.isValidChannelPassword(payload.password))
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'invalid password syntax');
+        await this.chatService.createChannel(payload.name, payload.prv, payload.password);
+        const chann: ChannelEntity = await this.chatService.joinChannel(userId, ChannelRole.OWNER, payload.name);
+        await this.chatGateway.joinRoom(userId, payload.name);
         return {channel: (await this.chatService.getChannelDto([chann]))[0]};
     }
 
@@ -159,38 +180,61 @@ export class ChatController {
     @UseGuards(isAdmin)
     @Patch('channel/setAdmin')
     async setAdmin(@User() userId: string, @Body() payload: adminActionDto) {
-        const user: UserEntity = await this.userService.findByPseudo(payload.target);
-        if (user.id === userId)
+        const target: UserEntity = await this.userService.findByPseudo(payload.target);
+        if (target.id === userId)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant set/unset admin himself');
-        await this.chatService.setRole(payload.channel, user.id, ChannelRole.ADMIN);
-        this.chatGateway.channelEvent(payload.channel, `${user.pseudo} become an admin`);
-        return {}
+        if (await this.chatService.isAdmin(target.id, payload.channel))
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'target is already admin');
+        await this.chatService.setRole(payload.channel, target.id, ChannelRole.ADMIN);
+        this.chatGateway.channelEvent(payload.channel, `${target.pseudo} become an admin`);
+        return {newAdmin: target.pseudo}
     }
     
     @UseGuards(isAdmin)
     @Patch('channel/kick')
     async kickUser(@User() userId: string, @Body() payload: adminActionDto) {
-        const user: UserEntity = await this.userService.findByPseudo(payload.target);
-        if (user.id === userId)
+        const target: UserEntity = await this.userService.findByPseudo(payload.target);
+        if (target.id === userId)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant kick himself');
-        await this.chatService.leaveChannel(user.id, payload.channel);
-        await this.chatGateway.leaveRoom(user.id, payload.channel);
-        this.chatGateway.channelEvent(payload.channel, `${user.pseudo} has been kicked!`);
-        return {}
+        await this.chatService.leaveChannel(target.id, payload.channel);
+//        await this.chatGateway.leaveRoom(target.id, payload.channel);
+        await this.chatGateway.punishEvent(payload.channel, userId, target.pseudo, 'kick');
+        return {kicked: target.pseudo}
     }
 
     @UseGuards(isAdmin)
     @Patch('channel/ban')
     async banUser(@User() userId: string, @Body() payload: adminActionDto) {
-        const user: UserEntity = await this.userService.findByPseudo(payload.target);
-        if (user.id === userId)
+        const target: UserEntity = await this.userService.findByPseudo(payload.target);
+        if (target.id === userId)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant ban himself');
-        if (await this.chatService.isBanned(payload.channel, user.id))
+        if (await this.chatService.isBanned(payload.channel, target.id))
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'target is already banned');
-        await this.chatService.banUser(payload.channel, user.id);
-        await this.chatGateway.leaveRoom(user.id, payload.channel);
-        this.chatGateway.channelEvent(payload.channel, `${user.pseudo} has been banned!`);
-        return {}
+        await this.chatService.banUser(payload.channel, target.id);
+        await this.chatService.leaveChannel(target.id, payload.channel);
+       // await this.chatGateway.leaveRoom(target.id, payload.channel);
+        await this.chatGateway.punishEvent(payload.channel, userId, target.pseudo, 'ban');
+        return {banned: target.pseudo}
+    }
+
+    @UseGuards(isOwner)
+    @Patch('channel/access')
+    async setAccess(@Body('name') channelName: string, @Body('prv') prv: boolean) {
+        if (typeof(prv) !== 'boolean')
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'prv argument must be boolean value');
+        await this.chatService.setChannelAccess(channelName, prv);
+        this.chatGateway.channelAccessEvent(channelName, prv);
+        return { channel: channelName, private: prv };
+    }
+    
+    @UseGuards(isOwner)
+    @Patch('channel/access/password')
+    async setPassword(@Body('name') channelName: string, @Body('password') password: string = null) {
+        if (password != null && !this.chatService.isValidChannelPassword(password))
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'invalid password syntax');
+        await this.chatService.setChannelPassword(channelName, password);
+        this.chatGateway.channelPasswordEvent(channelName, !!password);
+        return { password: !!password };
     }
 
     @Get('message/:pseudo')
