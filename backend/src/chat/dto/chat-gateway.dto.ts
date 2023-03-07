@@ -23,3 +23,10 @@ export class leaveRoomDto {
   channel: string;
   pseudo: string;
 }
+
+export class kickBanDto {
+  channel: string;
+  author: ChannelUserDto;
+  target: string;
+  action: string;
+}

@@ -148,9 +148,10 @@ export class AuthService {
             throw new InvalidTokenException(TypeErr.EXPIRED);
         }*/
         const user = await this.userService.findById(decoded.userId);
-        if (!user) {
+        if (!user)
             throw new ErrorException(HttpStatus.FORBIDDEN, AboutErr.USER, TypeErr.NOT_FOUND, 'token not associated with an user');
-        }
+        if (!user.pseudo)
+            throw new ErrorException(HttpStatus.FORBIDDEN, AboutErr.USER, TypeErr.INVALID, 'invalid user, must be set a pseudo');
         return user.id;
     }
     
