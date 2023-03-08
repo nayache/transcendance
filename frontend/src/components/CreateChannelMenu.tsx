@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import { useDispatch } from "react-redux";
 import { API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi";
-import { IChannelUser } from "../interface/IChannelUser";
-import { addChannel, setCurrentChannel } from "../redux/channelsSlice";
+import { IChannel, IChannelUser } from "../interface/IChannelUser";
 import { MAX_CARAC_NAME_CHANNEL } from "./ChannelPart";
 import ClientApi from "./ClientApi.class";
 import { GiPadlock, GiPadlockOpen } from "react-icons/gi"
@@ -10,10 +8,12 @@ import "../styles/CreateChannelMenu.css"
 
 interface Props {
 	chanUser: IChannelUser,
+	addChannel: (channel: IChannel) => void,
+	setCurrentChannel: (channelName: string) => void,
 	onCreate?: () => void,
 }
 
-const CreateChannelMenu = ({ onCreate, chanUser }: Props) => {
+const CreateChannelMenu = ({ onCreate, addChannel, setCurrentChannel, chanUser }: Props) => {
 
 
 	const channelWritten = useRef<string>('');
@@ -21,7 +21,6 @@ const CreateChannelMenu = ({ onCreate, chanUser }: Props) => {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const inputPwdRef = useRef<HTMLInputElement>(null);
 	const [isPrivate, setIsPrivate] = useState<boolean>(false);
-	const dispatch = useDispatch()
 
 
 	const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,8 +51,8 @@ const CreateChannelMenu = ({ onCreate, chanUser }: Props) => {
 					name: channelWritten.current,
 					password: passwordWritten.current
 				}), 'application/json')
-				dispatch(addChannel(channel))
-				dispatch(setCurrentChannel(channel.name))
+				addChannel(channel)
+				setCurrentChannel(channel.name)
 				if (onCreate)
 					onCreate()
 			} catch (err) {

@@ -1,21 +1,17 @@
 import { useEffect, useState } from "react"
-import { useSelector } from "react-redux"
-import { IChannelUser } from "../interface/IChannelUser"
-import { RootState } from "../redux/store"
+import { IChannel, IChannelUser } from "../interface/IChannelUser"
 
 
-export const useChanUser = (pseudo: string | undefined) => {
+export const useChanUser = (pseudo: string | undefined, channels: IChannel[], currentChannelId: number) => {
 
 	const [chanUser, setChanUser] = useState<IChannelUser>()
-	const { channels, currentChannelId } = useSelector((state: RootState) => state.room)
 
 	useEffect(() => {
-		console.log("currentChannelId = ", currentChannelId);
-		if (pseudo && currentChannelId !== -1) {
+		if (pseudo && !(currentChannelId <= -1 || currentChannelId >= channels.length)) {
 			setChanUser(channels[currentChannelId].users
 				.filter(user => user.pseudo === pseudo)[0])
 		}
-	}, [pseudo, currentChannelId])
+	}, [pseudo, channels, currentChannelId])
 
 	return chanUser
 }

@@ -92,9 +92,7 @@ const App = () => {
 
 	return (
 		<React.Fragment>
-			<Provider store={store}>
-				<RouterProvider router={router} />
-			</Provider>
+			<RouterProvider router={router} />
 		</React.Fragment>
 	)
 }

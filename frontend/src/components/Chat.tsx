@@ -7,23 +7,22 @@ import { IChannel, IChannelJoin, IChannelLeave, IChannelUser } from "../interfac
 import { AboutErr, IError, TypeErr } from "../constants/EError";
 import { IMessage, IOldMessageChannel } from "../interface/IMessage";
 import { Socket } from "socket.io-client";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
 import { ChannelRole, Status } from "../constants/EMessage";
-import { useDispatch } from "react-redux";
-import { ChannelProps, updateChannel } from "../redux/channelsSlice";
 import UserPreview from "./UserPreview";
 import { GoGear } from "react-icons/go"
 
 interface Props {
 	socket?: Socket,
 	pseudo: string | undefined,
+	currentChannelId: number,
+	updateChannel: (channel: IChannel) => void,
+	channels: IChannel[],
 	// chanUser: IChannelUser | undefined,
 }
 
 const MAX_CARAC: number = 300
 
-const Chat = ({ socket, pseudo }: Props) => {
+const Chat = ({ socket, channels, currentChannelId, updateChannel, pseudo }: Props) => {
 
 	const rpseudoSender = useRef<string>('');
 	const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -31,11 +30,11 @@ const Chat = ({ socket, pseudo }: Props) => {
 	const [ messages, setMessages ] = useState<JSX.Element[]>([]);
 	const msg = useRef<string>('');
 	const textAreaRef = useRef<HTMLTextAreaElement>(null);
-	const { currentChannelId, channels } = useSelector((state: RootState) => state.room)
-	const users: IChannelUser[] | null = currentChannelId !== -1 ? channels[currentChannelId].users : null
+	const users: IChannelUser[] | null = !(currentChannelId <= -1 || currentChannelId >= channels.length)
+	? channels[currentChannelId].users : null
 	const [ doPrintUserPreview, setDoPrintUserPreview ] = useState<boolean>(false);
-	const oldChannelName = useRef<string | undefined>(currentChannelId !== -1 ? channels[currentChannelId].name : undefined)
-	const dispatch = useDispatch()
+	const oldChannelName = useRef<string | undefined>(!(currentChannelId <= -1 || currentChannelId >= channels.length)
+	? channels[currentChannelId].name : undefined)
 
 
 
@@ -151,7 +150,7 @@ const Chat = ({ socket, pseudo }: Props) => {
 		{
 			console.log("msg.current = ", msg.current)
 			try {
-				if (currentChannelId !== -1 && msg.current.trimEnd().length > 0) {
+				if (!(currentChannelId <= -1 || currentChannelId >= channels.length) && msg.current.trimEnd().length > 0) {
 					await ClientApi.post(API_CHAT_MESSAGES_CHANNEL_ROUTE,
 					JSON.stringify({
 						target: channels[currentChannelId].name,
@@ -165,7 +164,7 @@ const Chat = ({ socket, pseudo }: Props) => {
 	}, [pseudo, currentChannelId])
 
 	const handleMessageRoom = useCallback((message: IMessage) => {
-		if (currentChannelId !== -1) {
+		if (!(currentChannelId <= -1 || currentChannelId >= channels.length)) {
 			rpseudoSender.current = message.author;
 			console.log("psuudo       =    ", pseudo);
 			console.log("message.channel = ", message.channel);
@@ -190,7 +189,7 @@ const Chat = ({ socket, pseudo }: Props) => {
 	useEffect(() => {
 		(async () => {
 			try {
-				if (currentChannelId !== -1) {
+				if (!(currentChannelId <= -1 || currentChannelId >= channels.length)) {
 					const { channel }: { channel: IChannel } = await ClientApi
 						.get(API_CHAT_CHANNEL_ROUTE + '/' + channels[currentChannelId].name)
 					resetMessagesBlock(channel.messages)
@@ -203,9 +202,8 @@ const Chat = ({ socket, pseudo }: Props) => {
 
 	useEffect(() => {
 		console.log("pseudo dans useEffect() = ", pseudo)
-		if (pseudo && currentChannelId !== -1)
+		if (pseudo && !(currentChannelId <= -1 || currentChannelId >= channels.length))
 		{
-			console.log("channels[currentChannelId].name dans useEffect() = ", channels[currentChannelId].name)
 			console.log("gonna bind messageRoom")
 			console.log("pseudo avant bind = ", pseudo)
 			socket?.on("messageRoom", (message: IMessage) => {
@@ -233,18 +231,17 @@ const Chat = ({ socket, pseudo }: Props) => {
 			socket?.on('joinRoom', (payload: IChannelJoin) => {
 				console.log("(join) pseudo = ", pseudo, " et paypseudo = ", payload.user.pseudo)
 				console.log("(join) currentChannelId = ", currentChannelId)
-				if (payload.user.pseudo !== pseudo && currentChannelId !== -1
+				if (payload.user.pseudo !== pseudo && !(currentChannelId <= -1 || currentChannelId >= channels.length)
 				&& channels[currentChannelId].name === payload.channel) {
 					const users: IChannelUser[] = channels[currentChannelId].users.map(channel => channel)
 					if (users.every(user => user.pseudo !== payload.user.pseudo)) // contre les bugs graphiques
 						users.push(payload.user)
-					const channel: ChannelProps = {
+					const channel: IChannel = {
 						name: channels[currentChannelId].name,
 						users,
 						messages: channels[currentChannelId].messages,
-						draftMessage: channels[currentChannelId].draftMessage,
 					}
-					dispatch(updateChannel(channel))
+					updateChannel(channel)
 					console.log("test ici en join")
 					updateMessagesBlockUserJoin(payload)
 				}
@@ -252,16 +249,16 @@ const Chat = ({ socket, pseudo }: Props) => {
 			socket?.on('leaveRoom', (payload: IChannelLeave) => {
 				console.log("(leave) pseudo = ", pseudo, " et paypseudo = ", payload.pseudo)
 				console.log("(leave) currentChannelId = ", currentChannelId)
-				if (payload.pseudo !== pseudo && currentChannelId !== -1
+				if (payload.pseudo !== pseudo && !(currentChannelId <= -1 || currentChannelId >= channels.length)
 				&& channels[currentChannelId].name === payload.channel) {
-					const users: IChannelUser[] = channels[currentChannelId].users.filter(user => user.pseudo !== payload.pseudo)
-					const channel: ChannelProps = {
+					const users: IChannelUser[] = channels[currentChannelId].users
+					.filter(user => user.pseudo !== payload.pseudo)
+					const channel: IChannel = {
 						name: channels[currentChannelId].name,
 						users,
 						messages: channels[currentChannelId].messages,
-						draftMessage: channels[currentChannelId].draftMessage,
 					}
-					dispatch(updateChannel(channel))
+					updateChannel(channel)
 					console.log("test ici en leave")
 					updateMessagesBlockUserLeave(payload)
 				}
@@ -276,22 +273,18 @@ const Chat = ({ socket, pseudo }: Props) => {
 	useEffect(() => {
 		const lastChild: HTMLDivElement | undefined | null = messagesContainerRef.current?.lastChild as HTMLDivElement
 		
-		if (messagesContainerRef.current && lastChild?.previousElementSibling && currentChannelId !== -1) {
+		if (messagesContainerRef.current && lastChild?.previousElementSibling && !(currentChannelId <= -1 || currentChannelId >= channels.length)) {
 			const previousElementSibling: HTMLDivElement = lastChild.previousElementSibling as HTMLDivElement
 			const lowerBottomPoint: number = messagesContainerRef.current.scrollTop + messagesContainerRef.current.scrollHeight
 			const lowerTopPoint: number = messagesContainerRef.current?.offsetTop + previousElementSibling.offsetTop
 			const scrollBottom: number = messagesContainerRef.current.scrollTop
 			+ messagesContainerRef.current.getBoundingClientRect().height;
 
-			console.log("scrollBottom = ", scrollBottom)
 			if (messages.length > noMessages.current)
 			{
-				console.log("scrollBottom = ", scrollBottom)
 				if (scrollBottom >= lowerTopPoint || pseudo === rpseudoSender.current
 				|| oldChannelName.current != channels[currentChannelId].name)
 					messagesContainerRef.current?.scrollTo(0, lowerBottomPoint);
-				console.log("lowerTopPoint = ", lowerTopPoint)
-				console.log("lowerBottomPoint = ", lowerBottomPoint);
 				oldChannelName.current = channels[currentChannelId].name
 			}
 			noMessages.current = messages.length;
@@ -307,9 +300,9 @@ const Chat = ({ socket, pseudo }: Props) => {
 			<div className="chat-container">
 				<div className="chat-title-container">
 					<h3 className={(() => (
-					currentChannelId === -1 ? "chat-title hidden" : "chat-title"
+					(currentChannelId <= -1 || currentChannelId >= channels.length) ? "chat-title hidden" : "chat-title"
 					))()}>
-						{currentChannelId !== -1 ? channels[currentChannelId].name : 'a'}
+						{!(currentChannelId <= -1 || currentChannelId >= channels.length) ? channels[currentChannelId].name : 'a'}
 					</h3>
 					<GoGear />
 				</div>
@@ -320,7 +313,7 @@ const Chat = ({ socket, pseudo }: Props) => {
 					</div>
 				</div>
 				<div className={(() => (
-					currentChannelId === -1 ? "textarea-text-container hidden" : "textarea-text-container"
+					(currentChannelId <= -1 || currentChannelId >= channels.length) ? "textarea-text-container hidden" : "textarea-text-container"
 					))()}>
 					<textarea placeholder="Write something..." ref={textAreaRef} className="textarea-text"
 					spellCheck={false} maxLength={MAX_CARAC}

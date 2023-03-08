@@ -82,13 +82,13 @@ const Settings = () => {
 	const handleonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		e.preventDefault();
 		
-		const value= e.target.value;
-
+		const { value } = e.target;
+		
 		if (value.trim().length == 0) {
 			setVisibleOptions(options);
 			return ;
 		}
-		const returnedItems: any[] = [];
+		const returnedItems: IOption[] = [];
 		options.forEach((options, index) => {
 			const foundOptions = options.values.filter((item) => {
 				return (item.name.toLocaleLowerCase().search(value.trim().toLowerCase()) !== -1

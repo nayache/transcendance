@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { IChannelUser } from '../interface/IChannelUser';
+import { IChannel, IChannelUser } from '../interface/IChannelUser';
 import '../styles/ModalChannelMenu.css'
 import CreateChannelMenu from './CreateChannelMenu';
 import JoinChannelMenu from './JoinChannelMenu';
@@ -15,12 +15,20 @@ interface Props {
 	active: boolean,
 	type: ModalChannelType,
 	chanUser: IChannelUser,
+	channels: IChannel[],
+	currentChannelId: number,
+	addChannel: (channel: IChannel) => void,
+	setCurrentChannel: (channelName: string) => void,
+	updateChannel: (channel: IChannel) => void,
+	removeChannel: (channelName: string, genUpdated: IChannel | null) => void,
 	pointedChannelName?: string,
 	callback?: () => any,
 	callbackFail?: () => any,
 }
 
-const ModalChannelMenu = ({ active, type, chanUser, pointedChannelName, callback, callbackFail }: Props) => {
+const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
+	addChannel, setCurrentChannel, removeChannel, updateChannel,
+	pointedChannelName, callback, callbackFail }: Props) => {
 
 	const modalRef = useRef<HTMLDivElement>(null);
 	const [update, setUpdate] = useState<string>("");
@@ -67,12 +75,24 @@ const ModalChannelMenu = ({ active, type, chanUser, pointedChannelName, callback
 				<span onClick={(e) => handleClick(callbackFail)}
 				className="close-channelMenu">&times;</span>
 				{
-					update === "CREATECHANNEL" && <CreateChannelMenu onCreate={() => onCreate()} chanUser={chanUser} /> ||
-					update === "JOINCHANNEL" && <JoinChannelMenu onJoin={() => onJoin()} chanUser={chanUser} /> ||
-					type === ModalChannelType.JOINORCREATECHANNEL && <JoinOrCreateChannelMenu
+					update === "CREATECHANNEL" &&
+					<CreateChannelMenu addChannel={addChannel}
+					setCurrentChannel={setCurrentChannel}
+					onCreate={() => onCreate()} chanUser={chanUser} /> ||
+					
+					update === "JOINCHANNEL" &&
+					<JoinChannelMenu addChannel={addChannel} channels={channels}
+					setCurrentChannel={setCurrentChannel}
+					onJoin={() => onJoin()} chanUser={chanUser} /> ||
+					
+					type === ModalChannelType.JOINORCREATECHANNEL
+					&& <JoinOrCreateChannelMenu
 					onJoinClick={onJoinClick} onCreateClick={onCreateClick} /> ||
+					
 					type === ModalChannelType.LEAVECHANNEL && pointedChannelName
-					&& <LeaveChannelMenu chanUser={chanUser} channelName={pointedChannelName}
+					&& <LeaveChannelMenu channels={channels} currentChannelId={currentChannelId}
+					setCurrentChannel={setCurrentChannel} removeChannel={removeChannel}
+					updateChannel={updateChannel} chanUser={chanUser} channelName={pointedChannelName}
 					onLeave={() => onLeave()} />
 				}
 			</div>

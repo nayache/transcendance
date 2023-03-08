@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from "react"
-import { useDispatch } from "react-redux"
+import React, { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import { API_CHAT_CHANNEL_LEAVE_ROUTE } from "../constants/RoutesApi"
 import { IChannel, IChannelUser } from "../interface/IChannelUser"
-import { removeChannel, setCurrentChannel, updateChannel } from "../redux/channelsSlice"
 import { RootState } from "../redux/store"
 import ClientApi from "./ClientApi.class"
 import '../styles/LeaveChannelMenu.css'
@@ -11,45 +9,81 @@ import '../styles/LeaveChannelMenu.css'
 interface Props {
 	channelName: string
 	chanUser: IChannelUser,
+	channels: IChannel[],
+	currentChannelId: number,
+	setCurrentChannel: (channelName: string) => void,
+	removeChannel: (channelName: string, genUpdated: IChannel | null) => void,
+	updateChannel: (channel: IChannel) => void,
 	onLeave?: () => void,
 	onLeaveFail?: () => void,
 }
 
-export const LeaveChannelMenu = ({ channelName, onLeave, onLeaveFail }: Props) => {
+export const LeaveChannelMenu = ({ channelName, currentChannelId, onLeave,
+setCurrentChannel, channels, removeChannel, updateChannel, onLeaveFail }: Props) => {
 
 
-	const { channels, currentChannelId } = useSelector((state: RootState) => state.room)
-	const [isFinished, setIsFinished] = useState<boolean>(false);
-	const dispatch = useDispatch()
+	const previousLength = useRef<number>(0);
+	const chanToRedirectTo = useRef<IChannel | null>(null);
 
 
 
 
 	const click = async () => {
-		try {
+		if (!(currentChannelId <= -1 || currentChannelId >= channels.length)) {
 			const currentChannelName: string = channels[currentChannelId].name;
-			const { channel }: { channel: IChannel } = await ClientApi.patch(API_CHAT_CHANNEL_LEAVE_ROUTE, JSON.stringify({
+			
+			ClientApi.patch(API_CHAT_CHANNEL_LEAVE_ROUTE, JSON.stringify({
 				name: channelName
 			}), 'application/json')
-			dispatch(removeChannel(channelName))
-			dispatch(updateChannel(channel))
-			if (currentChannelName === channelName)
-				dispatch(setCurrentChannel('General'))
-			setIsFinished(true)
-		} catch (err) {
-			console.log("err = ", err);
-			if (onLeaveFail)
-				onLeaveFail()
+				.then (({ channel }: { channel: IChannel }) => {
+					removeChannel(channelName, currentChannelName === channelName ? channel : null)
+					if (onLeave)
+						onLeave();
+				})
+				.catch(err => {
+					console.log("err = ", err);
+					if (onLeaveFail)
+						onLeaveFail()
+				})
 		}
 	}
 
 
 
+
+	
 	useEffect(() => {
-		if (isFinished)
-			if (onLeave)
-				onLeave(); // peut etre mettre ca dans un useEffect
-	}, [isFinished])
+
+		console.log("chanToRedirectTo.current.name = ", chanToRedirectTo.current?.name)
+		if (chanToRedirectTo.current) {
+			if (channels.length < previousLength.current) {
+				setCurrentChannel(chanToRedirectTo.current.name)
+				chanToRedirectTo.current = null
+				previousLength.current = channels.length
+			}
+		}
+	}, [channels])
+
+	// useEffect(() => {
+	// 	console.log("(dans useEffect) previousChannelsLength.current = ", previousChannelsLength.current)
+	// 	console.log("(dans useEffect) previousCurrentChannelName.current = ", previousCurrentChannelName.current)
+	// 	console.log("(dans useEffect) previousCurrentChannelId.current = ", previousCurrentChannelId.current)
+	// 	if (previousChannelsLength.current !== undefined
+	// 	&& previousCurrentChannelName.current !== undefined) {
+	// 		if (previousChannelsLength.current < channels.length) {
+	// 			if (previousCurrentChannelName.current === channelName) {
+	// 				if (previousCurrentChannelId.current !== currentChannelId) {
+	// 					if (onLeave)
+	// 						onLeave();
+	// 				}
+	// 				else {
+	// 					if (onLeave)
+	// 						onLeave();
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }, [currentChannelId, channels, previousCurrentChannelId.current, previousChannelsLength.current, previousCurrentChannelName.current])
 
 
 

@@ -31,7 +31,6 @@ class ClientApi {
 		|| (redirect.pathname.includes(ClientApi.registerEndpoint)
 		&& cleanUrlParameters.has('code')))
 			return;
-		console.log("redirect.href = ", redirect.href)
 		window.location.href = redirect.href;
 	}
 
@@ -43,8 +42,6 @@ class ClientApi {
 		const res = await fetch(imgSrc)
 		const blob = await res.blob()
 		// const file = new File([blob], filename + '.png', blob)
-		// console.log(file)
-		console.log("blob dans formation = ", blob)
 		return blob
 	}
 
@@ -52,7 +49,6 @@ class ClientApi {
 		const res = await fetch(imgSrc)
 		const blob = await res.blob()
 		const file = new File([blob], filename + '.png', blob)
-		console.log("file dans formation = ", file)
 		return file
 	}
 	
@@ -84,7 +80,6 @@ class ClientApi {
 	private static async fetchEndpoint(url: string, init?: RequestInit | undefined): Promise<any> {
 		console.log("------- Bienvenue dans fetchEndPoint -------");
 		const res = await fetch(url, init);
-		console.log("res = ", res);
 		const data: any = await res.json();
 		console.log("data = ", data);
 		if (!res.ok)
@@ -93,7 +88,6 @@ class ClientApi {
 			console.log("data.error = ", data.error)
 			if (this.doRedirectToRegister(data.error))
 			{
-				console.log("dans le 2nd if")
 				ClientApi.redirect = new URL(ClientApi.registerRoute)
 				throw err;
 			}
@@ -105,14 +99,12 @@ class ClientApi {
 							Authorization: `Refresh ${ClientApi.token}`,
 						}
 					})
-					console.log("res dans expired = ", res);
 					const data: any = await res.json();
 					console.log("data dans expired = ", data);
 					if (data.error)
 					{
 						if (this.doRedirectToRegister(data.error))
 						{
-							console.log("dans le 2nd if de l'autre")
 							ClientApi.redirect = new URL(ClientApi.registerRoute)
 							throw data.error;
 						}
@@ -128,10 +120,8 @@ class ClientApi {
 							Authorization: `Bearer ${ClientApi.token}`,
 						}
 					});
-					console.log("apres le fetchendpoint")
 					return data2ndChance;
 				} catch (err) {
-					console.log("err ici = ", err);
 					console.log("avant de throw ici")
 					throw err;
 				}

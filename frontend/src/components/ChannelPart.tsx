@@ -1,13 +1,9 @@
 import '../styles/ChannelPart.css'
 import React, { useEffect, useReducer, useState } from "react"
-import { useSelector } from "react-redux"
-import { RootState } from "../redux/store"
 import Channel from "./Channel"
 import { Socket } from "socket.io-client"
-import { useDispatch } from "react-redux"
-import { IChannelUser } from "../interface/IChannelUser"
+import { IChannel, IChannelUser } from "../interface/IChannelUser"
 import { AiOutlinePlus } from "react-icons/ai"
-import Modal from "./Modal"
 import ModalChannelMenu, { ModalChannelType } from "./ModalChannelMenu"
 
 
@@ -16,24 +12,31 @@ export const MIN_CARAC_NAME_CHANNEL: number = 3;
 
 interface Props {
 	socket?: Socket,
-	channelNames?: string[],
 	chanUser: IChannelUser | undefined,
+	currentChannelId: number,
+	channels: IChannel[],
+	addChannel: (channel: IChannel) => void,
+	updateChannel: (channel: IChannel) => void,	
+	removeChannel: (channelName: string, genUpdated: IChannel | null) => void,
+	setCurrentChannel: (channelName: string) => void,
 }
 
-const ChannelPart = ({ socket, chanUser }: Props) => {
+const ChannelPart = ({ socket, updateChannel, setCurrentChannel, removeChannel,
+	addChannel, chanUser, channels, currentChannelId  }: Props) => {
 
-	const { channels } = useSelector((state: RootState) => state.room)
+	console.log("channels (channelPart) = ", channels)
 	const [visibleChannels, setVisibleChannels] = useState<string[] | undefined>(
 		channels.map(channel => channel.name)
 	)
 	const [doPrintChannelMenu, setDoPrintChannelMenu] = useState<boolean>(false);
-	const dispatch = useDispatch();
 
 
 
 	useEffect(() => {
-		console.log("visibleChannels = ", visibleChannels)
-		setVisibleChannels(channels.map(channel => channel.name))
+		if (!(currentChannelId <= -1 || currentChannelId >= channels.length)) {
+			console.log("visibleChannels = ", visibleChannels)
+			setVisibleChannels(channels.map(channel => channel.name))
+		}
 	}, [channels])
 
 
@@ -49,12 +52,21 @@ const ChannelPart = ({ socket, chanUser }: Props) => {
 						<div className="channels-child">
 							{ chanUser && visibleChannels?.map((visibleChannel, i) => (
 								<React.Fragment key={i}>
-									<Channel chanUser={chanUser} channelName={visibleChannel}/>
+									<Channel channels={channels}
+									addChannel={addChannel}
+									removeChannel={removeChannel}
+									updateChannel={updateChannel}
+									setCurrentChannel={setCurrentChannel}
+									currentChannelId={currentChannelId}
+									chanUser={chanUser} channelName={visibleChannel}/>
 								</React.Fragment>
 							)) }
 						</div>
 					</div>
 					{ chanUser && <ModalChannelMenu active={doPrintChannelMenu} type={ModalChannelType.JOINORCREATECHANNEL}
+					channels={channels} currentChannelId={currentChannelId} addChannel={addChannel}
+					removeChannel={removeChannel} setCurrentChannel={setCurrentChannel}
+					updateChannel={updateChannel}
 					chanUser={chanUser} callback={() => setDoPrintChannelMenu(false)}
 					callbackFail={() => setDoPrintChannelMenu(false)} /> }
 				</div>

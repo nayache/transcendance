@@ -43,13 +43,5 @@ const channelsSlice = createSlice({
 	},
 })
 
-export const {
-	addChannel,
-	updateChannel,
-	resetAllChannels,
-	removeChannel,
-	setCurrentChannel,
-} = channelsSlice.actions
-
 const roomReducer = channelsSlice.reducer
 export default roomReducer;
