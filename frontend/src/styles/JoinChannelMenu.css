@@ -195,6 +195,7 @@ div::-webkit-scrollbar-thumb {
 }
 
 .joinChannel-channel-text {
+	word-break: break-all;
 	font-family: inherit;
 	font-size: inherit;
 	margin: 0;

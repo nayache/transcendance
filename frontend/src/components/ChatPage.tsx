@@ -19,6 +19,7 @@ const ChatContainer = styled.div`
 	display: flex;
 	justify-content: center;
 	align-items: flex-basis;
+	flex-wrap: wrap;
 	margin: 0% 2% 0;
 	height: 80%;
 `
@@ -225,8 +226,7 @@ const ChatPage = () => {
 					updateChannel={updateChannel}
 					currentChannelId={currentChannelId}
 					channels={channels}
-					pseudo={pseudo} />
-					{/* // chanUser={chanUser} /> */}
+					chanUser={chanUser} />
 					<ChannelPlayers socket={socket}
 					currentChannelId={currentChannelId}
 					channels={channels}

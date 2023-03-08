@@ -34,7 +34,14 @@
 	padding: 5px;
 }
 
-.channel-text, .channel-text * {
+.channel-text-container {
+	font-family: inherit;
+	text-shadow: inherit;
+	font-size: inherit;
+	margin: 0;
+}
+
+.channel-text {
 	font-family: inherit;
 	text-shadow: inherit;
 	font-size: inherit;

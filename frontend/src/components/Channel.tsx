@@ -51,8 +51,8 @@ const Channel = ({ chanUser, channelName, currentChannelId, addChannel, removeCh
 			return ("channel-container")
 		})()}>
 			<button className="button-channel button_without_style" onClick={handleClick}>
-				<div className="channel-text">                              
-					<p ref={channelTextRef}>{channelName}</p>
+				<div className="channel-text-container">                              
+					<p className="channel-text" ref={channelTextRef}>{channelName}</p>
 				</div>
 			</button>
 			{channelName !== 'General' && <FaMinus onClick={() => setDoPrintModal(true)} className="minus-svg" />}

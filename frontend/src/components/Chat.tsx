@@ -13,16 +13,15 @@ import { GoGear } from "react-icons/go"
 
 interface Props {
 	socket?: Socket,
-	pseudo: string | undefined,
+	chanUser: IChannelUser | undefined,
 	currentChannelId: number,
 	updateChannel: (channel: IChannel) => void,
 	channels: IChannel[],
-	// chanUser: IChannelUser | undefined,
 }
 
 const MAX_CARAC: number = 300
 
-const Chat = ({ socket, channels, currentChannelId, updateChannel, pseudo }: Props) => {
+const Chat = ({ socket, channels, currentChannelId, updateChannel, chanUser }: Props) => {
 
 	const rpseudoSender = useRef<string>('');
 	const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -98,19 +97,6 @@ const Chat = ({ socket, channels, currentChannelId, updateChannel, pseudo }: Pro
 		])
 	}, [])
 
-	const isAlphaNumeric = useCallback((str: string): boolean => {
-		let code: number;
-	
-		for (let i = 0, len = str.length; i < len; i++) {
-			code = str.charCodeAt(i);
-			if (!(code > 47 && code < 58) && // numeric (0-9)
-				!(code > 64 && code < 91) && // upper alpha (A-Z)
-				!(code > 96 && code < 123)) { // lower alpha (a-z)
-				return false;
-			}
-		}
-		return true;
-	}, [])
 
 	const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		msg.current = e.target.value;
@@ -146,46 +132,39 @@ const Chat = ({ socket, channels, currentChannelId, updateChannel, pseudo }: Pro
 	}
 
 	const click = useCallback(async () => {
-		if (pseudo)
+		if (chanUser?.pseudo)
 		{
 			console.log("msg.current = ", msg.current)
 			try {
-				if (!(currentChannelId <= -1 || currentChannelId >= channels.length) && msg.current.trimEnd().length > 0) {
+				if (!(currentChannelId <= -1 || currentChannelId >= channels.length)
+				&& msg.current.trimEnd().length > 0) {
 					await ClientApi.post(API_CHAT_MESSAGES_CHANNEL_ROUTE,
 					JSON.stringify({
 						target: channels[currentChannelId].name,
 						msg: msg.current.trimEnd()
 					}), 'application/json')
+					msg.current = ""
 				}
 			} catch (err) {
 				console.log("err = ", err);
 			}
 		}
-	}, [pseudo, currentChannelId])
-
-	const handleMessageRoom = useCallback((message: IMessage) => {
-		if (!(currentChannelId <= -1 || currentChannelId >= channels.length)) {
-			rpseudoSender.current = message.author;
-			console.log("psuudo       =    ", pseudo);
-			console.log("message.channel = ", message.channel);
-			console.log("channels[currentChannelId].name = ", channels[currentChannelId].name);
-			if (message.channel === channels[currentChannelId].name)
-				updateMessagesBlock(message);
-		}
-	}, [currentChannelId, pseudo])
+	}, [chanUser, currentChannelId])
 
 
 
 
 
+	/* reset la height de l'input */
 	useEffect(() => {
-		if (textAreaRef.current) // ca a pas trop de sens mais bon..
+		if (textAreaRef.current)
 		{
   			textAreaRef.current.style.height = "";
 			textAreaRef.current.style.height = textAreaRef.current.scrollHeight + "px"
 		}
 	}, [])
 
+	/* remet tous les anciens messages */
 	useEffect(() => {
 		(async () => {
 			try {
@@ -201,15 +180,15 @@ const Chat = ({ socket, channels, currentChannelId, updateChannel, pseudo }: Pro
 	}, [currentChannelId])
 
 	useEffect(() => {
-		console.log("pseudo dans useEffect() = ", pseudo)
-		if (pseudo && !(currentChannelId <= -1 || currentChannelId >= channels.length))
+		console.log("chanUser.pseudo dans useEffect() = ", chanUser?.pseudo)
+		if (chanUser?.pseudo && !(currentChannelId <= -1 || currentChannelId >= channels.length))
 		{
 			console.log("gonna bind messageRoom")
-			console.log("pseudo avant bind = ", pseudo)
+			console.log("chanUser.pseudo avant bind = ", chanUser.pseudo)
 			socket?.on("messageRoom", (message: IMessage) => {
 				try {
 					rpseudoSender.current = message.author;
-					console.log("psuudo       =    ", pseudo);
+					console.log("psuudo       =    ", chanUser.pseudo);
 					console.log("message.channel = ", message.channel);
 					console.log("channels[currentChannelId].name = ", channels[currentChannelId].name);
 					if (message.channel === channels[currentChannelId].name)
@@ -223,15 +202,15 @@ const Chat = ({ socket, channels, currentChannelId, updateChannel, pseudo }: Pro
 			console.log("before debind messageRoom")
 			socket?.removeAllListeners("messageRoom");
 		}
-	}, [socket, pseudo, currentChannelId])
+	}, [socket, chanUser, currentChannelId])
 	
 	useEffect(() => {
-		console.log("pseudo dans useEffect du ChannelPart = ", pseudo)
-		if (pseudo) {
+		console.log("chanUser.pseudo dans useEffect du ChannelPart = ", chanUser?.pseudo)
+		if (chanUser?.pseudo) {
 			socket?.on('joinRoom', (payload: IChannelJoin) => {
-				console.log("(join) pseudo = ", pseudo, " et paypseudo = ", payload.user.pseudo)
+				console.log("(join) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.user.pseudo)
 				console.log("(join) currentChannelId = ", currentChannelId)
-				if (payload.user.pseudo !== pseudo && !(currentChannelId <= -1 || currentChannelId >= channels.length)
+				if (payload.user.pseudo !== chanUser.pseudo && !(currentChannelId <= -1 || currentChannelId >= channels.length)
 				&& channels[currentChannelId].name === payload.channel) {
 					const users: IChannelUser[] = channels[currentChannelId].users.map(channel => channel)
 					if (users.every(user => user.pseudo !== payload.user.pseudo)) // contre les bugs graphiques
@@ -247,9 +226,10 @@ const Chat = ({ socket, channels, currentChannelId, updateChannel, pseudo }: Pro
 				}
 			})
 			socket?.on('leaveRoom', (payload: IChannelLeave) => {
-				console.log("(leave) pseudo = ", pseudo, " et paypseudo = ", payload.pseudo)
+				console.log("(leave) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.pseudo)
 				console.log("(leave) currentChannelId = ", currentChannelId)
-				if (payload.pseudo !== pseudo && !(currentChannelId <= -1 || currentChannelId >= channels.length)
+				if (payload.pseudo !== chanUser.pseudo
+				&& !(currentChannelId <= -1 || currentChannelId >= channels.length)
 				&& channels[currentChannelId].name === payload.channel) {
 					const users: IChannelUser[] = channels[currentChannelId].users
 					.filter(user => user.pseudo !== payload.pseudo)
@@ -268,12 +248,13 @@ const Chat = ({ socket, channels, currentChannelId, updateChannel, pseudo }: Pro
 			socket?.removeAllListeners('joinRoom')
 			socket?.removeAllListeners('leaveRoom')
 		}
-	}, [socket, pseudo, currentChannelId, users])
+	}, [socket, chanUser, currentChannelId, users])
 
 	useEffect(() => {
 		const lastChild: HTMLDivElement | undefined | null = messagesContainerRef.current?.lastChild as HTMLDivElement
 		
-		if (messagesContainerRef.current && lastChild?.previousElementSibling && !(currentChannelId <= -1 || currentChannelId >= channels.length)) {
+		if (messagesContainerRef.current && lastChild?.previousElementSibling
+		&& !(currentChannelId <= -1 || currentChannelId >= channels.length)) {
 			const previousElementSibling: HTMLDivElement = lastChild.previousElementSibling as HTMLDivElement
 			const lowerBottomPoint: number = messagesContainerRef.current.scrollTop + messagesContainerRef.current.scrollHeight
 			const lowerTopPoint: number = messagesContainerRef.current?.offsetTop + previousElementSibling.offsetTop
@@ -282,14 +263,17 @@ const Chat = ({ socket, channels, currentChannelId, updateChannel, pseudo }: Pro
 
 			if (messages.length > noMessages.current)
 			{
-				if (scrollBottom >= lowerTopPoint || pseudo === rpseudoSender.current
-				|| oldChannelName.current != channels[currentChannelId].name)
+				console.log("oldChannelName.current = ", oldChannelName.current)
+				if (scrollBottom >= lowerTopPoint || chanUser?.pseudo === rpseudoSender.current
+				|| oldChannelName.current != channels[currentChannelId].name) {
+					console.log("noMessages.current = ", noMessages.current)
 					messagesContainerRef.current?.scrollTo(0, lowerBottomPoint);
+				}
 				oldChannelName.current = channels[currentChannelId].name
 			}
 			noMessages.current = messages.length;
 		}
-	}, [messages, currentChannelId])
+	}, [chanUser, messages, currentChannelId])
 
 
 
