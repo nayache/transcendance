@@ -65,11 +65,13 @@ const CreateChannelMenu = ({ onCreate, addChannel, setCurrentChannel, chanUser }
 				if (onCreate)
 					onCreate()
 				channelWritten.current = ""
-				passwordWritten.current = ""
 			} catch (err) {
 				const _error: IError = err as IError;
 
-				if ((_error.about === AboutErr.REQUEST ||
+				if (_error.about === AboutErr.CHANNEL && _error.type === TypeErr.DUPLICATED) {
+					setErrorChanName("The channel name already exist")
+				}
+				else if ((_error.about === AboutErr.REQUEST ||
 					_error.about === AboutErr.CHANNEL) && _error.type === TypeErr.INVALID) {
 					if (channelWritten.current.length < MIN_CARAC_CHANNEL_NAME)
 						setErrorChanName("The channel name written is too little (" + MIN_CARAC_CHANNEL_NAME + " char min)")
@@ -87,9 +89,15 @@ const CreateChannelMenu = ({ onCreate, addChannel, setCurrentChannel, chanUser }
 							setErrorPassword("Please set a password more little (" + MAX_CARAC_CHANNEL_PWD + " char max)")
 						else if (passwordWritten.current.length >= MIN_CARAC_CHANNEL_NAME
 						&& passwordWritten.current.length <= MAX_CARAC_CHANNEL_NAME) {
-							setErrorPassword("The password must have 6 letters minimum")
+							let alphaCount: number = 0;
+							for (let i = 0; i < passwordWritten.current.length; i++) {
+								if (passwordWritten.current[i].length === 1 && passwordWritten.current[i].match(/[a-z]/i))
+									alphaCount++;
+							}
 							if (passwordWritten.current.search(/\s/) !== -1)
 								setErrorPassword("The password can't have whitespaces")
+							else if (!(alphaCount >= 6))
+								setErrorPassword("The password must have 6 letters minimum")
 						}
 					}
 				}

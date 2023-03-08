@@ -7,6 +7,7 @@ import { MAX_CARAC_CHANNEL_NAME } from "./ChannelPart";
 import { BiArrowBack } from "react-icons/bi"
 import { GiPadlock } from "react-icons/gi";
 import { RiEyeFill, RiEyeCloseFill } from "react-icons/ri";
+import { AboutErr, IError, TypeErr } from "../constants/EError";
 
 
 interface Props {
@@ -65,6 +66,7 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 
 	const handleValidate = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
+		setErrorPassword("");
 		(async () => {
 			try {
 				console.log("channelSelected?.name = ", channelSelected?.name, " passwordWritten.current = ", passwordWritten.current)
@@ -72,12 +74,18 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 					name: channelSelected?.name,
 					password: passwordWritten.current
 				}), 'application/json')
+				passwordWritten.current = ""
 				addChannel(channel)
 				setCurrentChannel(channel.name)
 				if (onJoin)
 					onJoin()
 			} catch (err) {
+				const _error: IError = err as IError
+
 				console.log("err = ", err);
+				if (_error.about === AboutErr.CHANNEL && _error.type === TypeErr.REJECTED) {
+					setErrorPassword("The password is invalid")
+				}
 			}
 			channelWritten.current = ""
 			passwordWritten.current = ""
@@ -175,8 +183,8 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 	}, [])
 
 	useEffect(() => {
-		if (inputPwdRef.current) {
-			if (!channelSelected?.password)
+		if (!channelSelected?.password) {
+			if (inputPwdRef.current)
 				inputPwdRef.current.value = ""
 		}
 	}, [channelSelected?.password])
@@ -184,7 +192,8 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 	useEffect(() => {
 		if (!channelSelected) {
 			if (inputRef.current)
-				inputRef.current.value = channelWritten.current
+				inputRef.current.value = channelWritten.current			
+			setErrorPassword("");
 		}
 	}, [channelSelected])
 
@@ -201,7 +210,7 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 						onClick={() => {
 							setChannelSelected(null)
 						}} /> }
-						{ !channelSelected && <input ref={inputRef} className='joinChannel-input'
+						{ !channelSelected && <input spellCheck={false} ref={inputRef} className='joinChannel-input'
 						placeholder='Search a channel...'
 						onChange={handleChange} /> }
 						<div className="joinChannel-content-container">
