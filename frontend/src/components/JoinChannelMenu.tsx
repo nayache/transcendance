@@ -3,7 +3,7 @@ import { API_CHAT_ALL_CHANNELNAMES_ROUTE, API_CHAT_ALL_CHANNELPRVW_ROUTE, API_CH
 import { IChannel, IChannelUser } from "../interface/IChannelUser";
 import ClientApi from "./ClientApi.class";
 import '../styles/JoinChannelMenu.css'
-import { MAX_CARAC_NAME_CHANNEL } from "./ChannelPart";
+import { MAX_CARAC_CHANNEL_NAME } from "./ChannelPart";
 import { BiArrowBack } from "react-icons/bi"
 
 
@@ -40,7 +40,7 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 		passwordWritten.current = e.target.value;
 		console.log("passwordWritten.current = ", passwordWritten.current)
 		if (inputRef.current &&
-			inputRef.current.value.length >= MAX_CARAC_NAME_CHANNEL)
+			inputRef.current.value.length >= MAX_CARAC_CHANNEL_NAME)
 			console.log("max length reached")
 		else
 			console.log("okay good")

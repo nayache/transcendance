@@ -7,8 +7,10 @@ import { AiOutlinePlus } from "react-icons/ai"
 import ModalChannelMenu, { ModalChannelType } from "./ModalChannelMenu"
 
 
-export const MAX_CARAC_NAME_CHANNEL: number = 20;
-export const MIN_CARAC_NAME_CHANNEL: number = 3;
+export const MIN_CARAC_CHANNEL_NAME: number = 3;
+export const MAX_CARAC_CHANNEL_NAME: number = 20;
+export const MIN_CARAC_CHANNEL_PWD: number = 5;
+export const MAX_CARAC_CHANNEL_PWD: number = 15;
 
 interface Props {
 	socket?: Socket,

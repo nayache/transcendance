@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
 import { API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi";
 import { IChannel, IChannelUser } from "../interface/IChannelUser";
-import { MAX_CARAC_NAME_CHANNEL } from "./ChannelPart";
+import { MAX_CARAC_CHANNEL_NAME, MAX_CARAC_CHANNEL_PWD, MIN_CARAC_CHANNEL_NAME, MIN_CARAC_CHANNEL_PWD } from "./ChannelPart";
 import ClientApi from "./ClientApi.class";
-import { GiPadlock, GiPadlockOpen } from "react-icons/gi"
+import { GiPadlock, GiPadlockOpen, GiOpenGate, GiGate } from "react-icons/gi"
 import "../styles/CreateChannelMenu.css"
+import { AboutErr, IError, TypeErr } from "../constants/EError";
 
 interface Props {
 	chanUser: IChannelUser,
@@ -17,17 +18,20 @@ const CreateChannelMenu = ({ onCreate, addChannel, setCurrentChannel, chanUser }
 
 
 	const channelWritten = useRef<string>('');
+	const [errorChanName, setErrorChanName] = useState<string>("")
 	const passwordWritten = useRef<string>('');
+	const [errorPassword, setErrorPassword] = useState<string>("")
 	const inputRef = useRef<HTMLInputElement>(null);
 	const inputPwdRef = useRef<HTMLInputElement>(null);
-	const [isPrivate, setIsPrivate] = useState<boolean>(false);
+	const [password, setPassword] = useState<boolean>(false);
+	const [prv, setPrv] = useState<boolean>(false);
 
 
 	const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		channelWritten.current = e.target.value;
 		console.log("channelWritten.current = ", channelWritten.current)
 		if (inputRef.current &&
-			inputRef.current.value.length >= MAX_CARAC_NAME_CHANNEL)
+			inputRef.current.value.length >= MAX_CARAC_CHANNEL_NAME)
 			console.log("max length reached")
 		else
 			console.log("okay good")
@@ -37,7 +41,7 @@ const CreateChannelMenu = ({ onCreate, addChannel, setCurrentChannel, chanUser }
 		passwordWritten.current = e.target.value;
 		console.log("passwordWritten.current = ", passwordWritten.current)
 		if (inputRef.current &&
-			inputRef.current.value.length >= MAX_CARAC_NAME_CHANNEL)
+			inputRef.current.value.length >= MAX_CARAC_CHANNEL_NAME)
 			console.log("max length reached")
 		else
 			console.log("okay good")
@@ -45,21 +49,49 @@ const CreateChannelMenu = ({ onCreate, addChannel, setCurrentChannel, chanUser }
 
 	const handleValidate = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
+		setErrorChanName("")
+		setErrorPassword("");
 		(async () => {
 			try {
 				const { channel } = await ClientApi.post(API_CHAT_CHANNEL_ROUTE, JSON.stringify({
 					name: channelWritten.current,
+					prv,
 					password: passwordWritten.current
 				}), 'application/json')
 				addChannel(channel)
 				setCurrentChannel(channel.name)
 				if (onCreate)
 					onCreate()
+				channelWritten.current = ""
+				passwordWritten.current = ""
 			} catch (err) {
-				console.log("err = ", err);
+				const _error: IError = err as IError;
+
+				if ((_error.about === AboutErr.REQUEST ||
+					_error.about === AboutErr.CHANNEL) && _error.type === TypeErr.INVALID) {
+					if (channelWritten.current.length < MIN_CARAC_CHANNEL_NAME)
+						setErrorChanName("The channel name written is too little")
+					else if (channelWritten.current.length > MAX_CARAC_CHANNEL_NAME)
+						setErrorChanName("The channel name written is too long")
+					else if (channelWritten.current.length >= MIN_CARAC_CHANNEL_NAME
+					&& channelWritten.current.length <= MAX_CARAC_CHANNEL_NAME) {
+						if (channelWritten.current.search(/\s/) !== -1)
+							setErrorChanName("The channel can't have spaces")
+					}
+					if (password) {
+						if (passwordWritten.current.length < MIN_CARAC_CHANNEL_PWD)
+							setErrorPassword("Please set a password longer")
+						else if (passwordWritten.current.length > MAX_CARAC_CHANNEL_PWD)
+							setErrorPassword("Please set a password more little")
+						else if (passwordWritten.current.length >= MIN_CARAC_CHANNEL_NAME
+						&& passwordWritten.current.length <= MAX_CARAC_CHANNEL_NAME) {
+							setErrorPassword("The password must have 6 letters minimum")
+							if (passwordWritten.current.search(/\s/) !== -1)
+								setErrorPassword("The password can't have whitespaces")
+						}
+					}
+				}
 			}
-			channelWritten.current = ""
-			passwordWritten.current = ""
 		})()
 	}
 
@@ -68,10 +100,12 @@ const CreateChannelMenu = ({ onCreate, addChannel, setCurrentChannel, chanUser }
 
 	useEffect(() => {
 		if (inputPwdRef.current) {
-			if (isPrivate)
+			if (!password) {
 				inputPwdRef.current.value = ""
+				setErrorPassword("")
+			}
 		}
-	}, [isPrivate])
+	}, [password])
 
 
 
@@ -81,23 +115,37 @@ const CreateChannelMenu = ({ onCreate, addChannel, setCurrentChannel, chanUser }
 				<div className="createChannel-title-container">
 					<p className="createChannel-title">Create a new channel</p>
 					{
-						isPrivate && <GiPadlock className="padlock-svg" onClick={() => setIsPrivate(false)} /> ||
-						!isPrivate && <GiPadlockOpen className="padlock-svg" onClick={() => setIsPrivate(true)} />
+						password && <GiPadlock className="padlock-svg" onClick={() => {setPassword(false)}} /> ||
+						!password && <GiPadlockOpen className="padlock-svg" onClick={() => setPassword(true)} />
 					}
 				</div>
 				<form onSubmit={handleValidate} className="createChannel-form">
+					<div className="createChannel-prv">
+						<label>Lock to public 
+						{
+							prv && <GiGate className="gate-svg" /> ||
+							!prv && <GiOpenGate className="gate-svg" />
+						}</label>
+						<label className="switch">
+							<input type="checkbox" onClick={() => setPrv(prv => !prv)} />
+							<span className="slider round"></span>
+						</label>
+					</div>
 					<div className="createChannel-name">
 						<label>Name</label>
-						<input onKeyDown={(e) => e.key === "Enter" && e.preventDefault()} onChange={handleNameChange} />
+						<input onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
+						className={errorChanName && "shaking-input"} onChange={handleNameChange} />
+						{ errorChanName && <p className="error-text">{errorChanName}</p> }
 					</div>
 					<div className={(() => {
-						if (!isPrivate)
+						if (!password)
 							return "createChannel-password disabled-div-form"
 						return "createChannel-password"
 					})()}>
 						<label>Password</label>
-						<input ref={inputPwdRef} onKeyDown={(e) => e.key === "Enter" && e.preventDefault()} onChange={handlePasswordChange} disabled={!isPrivate}
-						/>
+						<input ref={inputPwdRef} onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
+						className={errorPassword && "shaking-input"} onChange={handlePasswordChange} disabled={!password} />
+						{ password && errorPassword && <p className="error-text">{errorPassword}</p> }
 					</div>
 					<button className="form-createChannel-button" type="submit">Validate</button>
 				</form>

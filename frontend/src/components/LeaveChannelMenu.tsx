@@ -22,8 +22,8 @@ export const LeaveChannelMenu = ({ channelName, currentChannelId, onLeave,
 setCurrentChannel, channels, removeChannel, updateChannel, onLeaveFail }: Props) => {
 
 
-	const previousLength = useRef<number>(0);
-	const chanToRedirectTo = useRef<IChannel | null>(null);
+	// const previousLength = useRef<number>(0);
+	// const chanToRedirectTo = useRef<IChannel | null>(null);
 
 
 
@@ -37,6 +37,7 @@ setCurrentChannel, channels, removeChannel, updateChannel, onLeaveFail }: Props)
 			}), 'application/json')
 				.then (({ channel }: { channel: IChannel }) => {
 					removeChannel(channelName, currentChannelName === channelName ? channel : null)
+					setCurrentChannel(channel.name)
 					if (onLeave)
 						onLeave();
 				})
@@ -52,17 +53,17 @@ setCurrentChannel, channels, removeChannel, updateChannel, onLeaveFail }: Props)
 
 
 	
-	useEffect(() => {
+	// useEffect(() => {
 
-		console.log("chanToRedirectTo.current.name = ", chanToRedirectTo.current?.name)
-		if (chanToRedirectTo.current) {
-			if (channels.length < previousLength.current) {
-				setCurrentChannel(chanToRedirectTo.current.name)
-				chanToRedirectTo.current = null
-				previousLength.current = channels.length
-			}
-		}
-	}, [channels])
+	// 	console.log("chanToRedirectTo.current.name = ", chanToRedirectTo.current?.name)
+	// 	if (chanToRedirectTo.current) {
+	// 		if (channels.length < previousLength.current) {
+	// 			setCurrentChannel(chanToRedirectTo.current.name)
+	// 			chanToRedirectTo.current = null
+	// 			previousLength.current = channels.length
+	// 		}
+	// 	}
+	// }, [channels])
 
 	// useEffect(() => {
 	// 	console.log("(dans useEffect) previousChannelsLength.current = ", previousChannelsLength.current)

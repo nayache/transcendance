@@ -1,4 +1,12 @@
 
+@keyframes horizontal-shaking {
+	0% { transform: translateX(0) }
+	25% { transform: translateX(5px) }
+	50% { transform: translateX(-5px) }
+	75% { transform: translateX(5px) }
+	100% { transform: translateX(0) }
+}
+
 .createChannel-container {
 	position: relative;
 	margin: 50px auto 10px;
@@ -31,6 +39,15 @@
 	display: block;
 	height: auto;
 	color: rgb(46, 46, 46);
+}
+
+.gate-svg {
+	display: inline-block;
+	vertical-align: bottom;
+	width: 30px;
+	height: auto;
+	margin-left: 10px;
+	transition: all 0.1s;
 }
 
 .createChannel-form {
@@ -69,6 +86,10 @@
 
 }
 
+.shaking-input {
+	animation: horizontal-shaking 0.20s 2;
+}
+
 .disabled-div-form {
 
 }
@@ -97,4 +118,10 @@
 
 .disabled-div-form * {
 	color: rgba(0, 0, 0, 0.289);
+}
+
+.error-text {
+    font-size: small;
+    color: red;
+    text-shadow: 0.5px 0.5px 0px black;
 }
