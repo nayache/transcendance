@@ -22,8 +22,6 @@ export const LeaveChannelMenu = ({ channelName, currentChannelId, onLeave,
 setCurrentChannel, channels, removeChannel, updateChannel, onLeaveFail }: Props) => {
 
 
-	// const previousLength = useRef<number>(0);
-	// const chanToRedirectTo = useRef<IChannel | null>(null);
 
 
 

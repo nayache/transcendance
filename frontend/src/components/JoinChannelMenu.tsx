@@ -5,6 +5,8 @@ import ClientApi from "./ClientApi.class";
 import '../styles/JoinChannelMenu.css'
 import { MAX_CARAC_CHANNEL_NAME } from "./ChannelPart";
 import { BiArrowBack } from "react-icons/bi"
+import { GiPadlock } from "react-icons/gi";
+import { RiEyeFill, RiEyeCloseFill } from "react-icons/ri";
 
 
 interface Props {
@@ -29,6 +31,8 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [channelPrvws, setChannelPrvws] = useState<IChannelPreview[]>([]);
 	const [visibleChannelPrvws, setVisibleChannelPrvws] = useState<IChannelPreview[]>([]);
+	const [showPassword, setShowPassword] = useState<boolean>(false);
+	const [errorPassword, setErrorPassword] = useState<string>("")
 	const inputPwdRef = useRef<HTMLInputElement>(null);
 	const [channelSelected, setChannelSelected] = useState<IChannelPreview | null>(null);
 
@@ -83,32 +87,66 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 	const printAboutChannels = () => {
 		if (!channelSelected)
 			return (
-				<div className="channels-child">
-					{ visibleChannelPrvws?.map((visibleChannelPrvw, i) => (
-						<div className="joinChannel-channel" key={i}>
-							<button onClick={() => setChannelSelected(visibleChannelPrvw)} className="button_without_style">
-								<p className="joinChannel-channel-text">{visibleChannelPrvw.name}</p>
-							</button>
-						</div>
-					)) }
+				<div className="joinChannel-channels-container">
+					<div className="joinChannel-channels-child">
+						{ visibleChannelPrvws?.map((visibleChannelPrvw, i) => (
+							<div className={(() => {
+								if (visibleChannelPrvw.prv)
+									return "joinChannel-channel-container joinChannel-channel-container-prv"
+								return "joinChannel-channel-container"
+							})()}>
+								<button key={i} onClick={() => setChannelSelected(visibleChannelPrvw)}
+								disabled={visibleChannelPrvw.prv} className={(() => {
+									if (visibleChannelPrvw.prv)
+										return "joinChannel-channel-btn joinChannel-channel-btn-prv button_without_style"
+									return "joinChannel-channel-btn button_without_style"
+								})()}>
+									<p className="joinChannel-channel-text">
+										{visibleChannelPrvw.name}
+									</p>
+									{ visibleChannelPrvw.password && <GiPadlock className="joinChannel-padlock" /> }
+								</button>
+							</div>
+						)) }
+					</div>
 				</div>
 			)
 		else
 			return (
-				<div className="joinChannel-container">
+				<div className="joinChannel-form-container">
 					<div className="joinChannel-title-container">
-						<p className="joinChannel-title">Join the channel {channelSelected.name}</p>
+						<h3 className="joinChannel-title">Join the channel <b>{channelSelected.name}</b></h3>
 					</div>
 					<form onSubmit={handleValidate} className="joinChannel-form">
-					{
-						channelSelected.password &&
-						<div className="joinChannel-password">
-							<label>Password</label>
-							<input ref={inputPwdRef} onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
-							onChange={handlePasswordChange} />
-						</div>
-					}
-						<button className="form-joinChannel-button" type="submit">Validate</button>
+						{
+							channelSelected.password &&
+							<div className="joinChannel-password-container">
+								<label>Password {
+									channelSelected.password && (
+										showPassword &&
+										<RiEyeFill className="eye-svg" onClick={() => setShowPassword(false)}/> ||
+										
+										!showPassword &&
+										<RiEyeCloseFill className="eye-svg" onClick={() => setShowPassword(true)}/>
+									)
+								}</label>
+								<input ref={inputPwdRef} onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
+								className={(() => {
+									if (errorPassword) 
+										return "shaking-input"
+									return undefined
+								})()} onChange={handlePasswordChange}
+								type={(() => {
+									if (showPassword)
+										return "text"
+									else
+										return "password"
+								})()} />
+								{ errorPassword && <p className="error-text">{errorPassword}</p> }
+							</div>
+						}
+						<button className="form-joinChannel-button"
+						type="submit">Enter</button>
 					</form>
 				</div>
 			)
@@ -164,10 +202,10 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 							setChannelSelected(null)
 						}} /> }
 						{ !channelSelected && <input ref={inputRef} className='joinChannel-input'
-						placeholder='Type an existing channel name...'
+						placeholder='Search a channel...'
 						onChange={handleChange} /> }
-						<div className="channels-container">
-						{printAboutChannels()}
+						<div className="joinChannel-content-container">
+							{ printAboutChannels() }
 						</div>
 					</div>
 				</div>

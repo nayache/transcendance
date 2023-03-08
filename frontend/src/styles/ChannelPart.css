@@ -57,7 +57,6 @@
 	padding: var(--local-gap);
 	display: flex;
 	flex-direction: column;
-	height: 100%;
 	position: relative;
 	flex: 0.5 1 0;
 	height: 80%;
@@ -65,6 +64,8 @@
 	background-color: rgb(245, 245, 245);
 	border-radius: 10px;
 }
+
+
 
 .channels-container {
 	position: relative;

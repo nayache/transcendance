@@ -1,47 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Tilt+Neon&display=swap');
+
+
 .joinChannel-container {
 	position: relative;
 	width: fit-content;
 	margin: 50px auto 10px;
 }
 
-.channelPart-child {
-	--local-gap: 6px;
-	padding: var(--local-gap);
-	display: flex;
-	flex-direction: column;
-	height: 100%;
+.joinChannel-child {
 	position: relative;
-	flex: 0.5 1 0;
-	height: 80%;
-	box-shadow: 0 0 10px 3px blue;
-	background-color: rgb(245, 245, 245);
+	padding: 20px;
 	border-radius: 10px;
-}
-
-.channels-container {
-	position: relative;
-	box-sizing: border-box;
-	overflow-y: scroll;
-	overflow-x: hidden;
-	left: var(--gap);
-	width: calc(100% - var(--gap) * 2);
-	height: calc(100% - var(--gap) * 4);
-	scrollbar-width: thin;
-}
-
-.channels-container::-webkit-scrollbar {
-	width: var(--scrollbar-width);
-}
-
-div::-webkit-scrollbar-thumb {
-	border-radius: 5px; 
-	background: #c5c5c5;
-}
-
-.channels-child {
-	position: relative;
-	left: var(--scrollbar-width);
-	width: calc(100% - var(--scrollbar-width) * 2);
+	background-color: rgb(238, 238, 238);
 }
 
 .joinChannel-text {
@@ -54,12 +24,184 @@ div::-webkit-scrollbar-thumb {
 	padding: 7px;
 	border: 1px solid;
 	border-radius: 7px;
+	margin-bottom: 2em;
+}
+
+.joinChannel-input::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border: 2px solid;
 }
 
 .joinChannel-input:focus {
 	outline: none;
 }
 
-.joinChannel-datalist {
-	
+.back-arrow-svg {
+	color: rgb(44, 44, 44);
+	cursor: pointer;
+}
+
+.back-arrow-svg:hover {
+	color: rgb(81, 81, 81);
+}
+
+
+.joinChannel-content-container {
+	position: relative;
+}
+
+
+
+.joinChannel-form-container {
+	position: relative;
+	padding: 20px;
+	margin: 20px auto 10px;
+}
+
+.joinChannel-title-container {
+	display: flex;
+	flex-direction: row;
+	width: fit-content;
+	justify-content: center;
+	align-items: center;
+	margin: 0 auto 1em;
+}
+
+.joinChannel-title {
+	margin: 0;
+	width: fit-content;
+}
+
+.joinChannel-form {
+	display: flex;
+	flex-direction: column;
+	margin: 0 auto;
+	box-sizing: border-box;
+	border-radius: 10px;
+	font-size: 15px;
+}
+
+.joinChannel-form div {
+	display: flex;
+	flex-direction: column;
+	margin: 10px auto;
+}
+
+.joinChannel-form label {
+	margin: 0 5px;
+	font-size: 1.1rem;
+}
+
+.joinChannel-form div input {
+	box-sizing: border-box;
+	font-size: 1rem;
+	padding: 7px;
+	border: 1px solid;
+	border-radius: 7px;
+}
+
+.joinChannel-password-container {
+
+}
+
+.form-joinChannel-button {
+	width: fit-content;
+	border-radius: 10px;
+	color: rgb(51, 51, 51);
+	font-weight: bold;
+	font-size: large;
+	padding: 14px 20px;
+	background-color: rgba(123, 242, 173, 0.8);
+	margin: 8px;
+	border: none;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.form-joinChannel-button:hover {
+	background-color: rgba(123, 242, 173, 1);
+}
+
+.form-joinChannel-button:active {
+	box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
+}
+
+
+
+.joinChannel-channels-container {
+	position: relative;
+	box-sizing: border-box;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	left: var(--gap);
+	min-height: 100px;
+	width: calc(100% - var(--gap) * 2);
+	height: calc(500px - var(--gap) * 4);
+	scrollbar-width: thin;
+}
+
+.joinChannel-channels-container::-webkit-scrollbar {
+	width: var(--scrollbar-width);
+}
+
+div::-webkit-scrollbar-thumb {
+	border-radius: 5px; 
+	background: #c5c5c5;
+}
+
+.joinChannel-channels-child {
+	position: relative;
+	left: var(--scrollbar-width);
+	width: calc(100% - var(--scrollbar-width) * 2);
+}
+
+.joinChannel-channel-container {
+	font-family: 'Tilt Neon', sans-serif;
+	margin: 7px 0;
+	font-size: large;
+	padding: 5px;
+	border-radius: 5px;
+	background-color: beige;
+	box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+}
+
+.joinChannel-channel-container:hover {
+	background-color: rgb(238, 238, 215);
+}
+
+.joinChannel-channel-container-prv {
+	cursor: default;
+	background-color: beige !important;
+	box-shadow: none;
+	opacity: 0.68;
+}
+
+.joinChannel-channel-btn {
+	position: relative;
+	text-align: start;
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.joinChannel-channel-btn-prv {
+	cursor: default;
+}
+
+.joinChannel-channel-text {
+	font-family: inherit;
+	font-size: inherit;
+	margin: 0;
+}
+
+.joinChannel-padlock {
+	height: auto;
+	margin-left: 10px;
+	transition: all 0.1s;
 }
