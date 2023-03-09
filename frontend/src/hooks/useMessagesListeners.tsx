@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react"
 import { Socket } from "socket.io-client"
+import { AlertType } from "../components/ChatPage"
 import ClientApi from "../components/ClientApi.class"
 import { API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi"
-import { addMessageBlock, addMessageBlockUserJoin, addMessageBlockUserLeave, resetMessagesBlock } from "../functions/Chat_utils_messages"
-import { IChannel, IChannelJoin, IChannelKick, IChannelLeave, IChannelUser } from "../interface/IChannelUser"
+import { addMessageBlock, addMessageBlockUserBan, addMessageBlockUserJoin, addMessageBlockUserKick, addMessageBlockUserLeave, resetMessagesBlock } from "../functions/Chat_utils_messages"
+import { IChannel, IChannelEvJoin, IChannelEvPunish, IChannelEvLeave, IChannelUser } from "../interface/IChannel"
 import { IMessage } from "../interface/IMessage"
 import { useJoinRoomUpdater } from "./useJoinRoomUpdater"
 import { useLeaveRoomUpdater } from "./useLeaveRoomUpdater"
+import { usePunishUserUpdater } from "./usePunishUserUpdater"
 
 
 
@@ -15,7 +17,11 @@ export const useMessagesListeners = (
 	messagesContainerRef: React.RefObject<HTMLDivElement>,
 	socket: Socket | undefined, currentChannelId: number, channels: IChannel[],
 	chanUser: IChannelUser | undefined,
+	setAlertModal: (alertModal: AlertType, author: IChannelUser,
+		channelName: string, target: string) => void,
 	updateChannel: (channel: IChannel) => void,
+	removeChannel: (channelName: string, genUpdated: IChannel | null) => void,
+	setCurrentChannel: (channelName: string) => void,
 ) => {
 
 	const [ messages, setMessages ] = useState<JSX.Element[]>([]);
@@ -31,11 +37,36 @@ export const useMessagesListeners = (
 			])
 		}
 	)
+
 	useLeaveRoomUpdater(socket, chanUser, updateChannel, currentChannelId, channels,
 		(payload) => {
 			setMessages(oldmessages => [...oldmessages,
 				addMessageBlockUserLeave(payload.pseudo)
 			])
+		}
+	)
+
+	usePunishUserUpdater(socket, channels, currentChannelId,
+		chanUser, updateChannel, removeChannel, setCurrentChannel,
+		(payload) => {
+			if (payload.action === "kick") {
+				if (payload.target === chanUser?.pseudo)
+					setAlertModal(payload.action, payload.author,
+						payload.channel, payload.target)
+				else 
+					setMessages(oldmessages => [...oldmessages,
+						addMessageBlockUserKick(payload.author.pseudo, payload.target)
+					])
+			}
+			else if (payload.action === "ban") {
+				if (payload.target === chanUser?.pseudo)
+					setAlertModal(payload.action, payload.author,
+						payload.channel, payload.target)
+				else 
+					setMessages(oldmessages => [...oldmessages,
+						addMessageBlockUserBan(payload.author.pseudo, payload.target)
+					])
+			}
 		}
 	)
 
@@ -51,7 +82,7 @@ export const useMessagesListeners = (
 	}, [textAreaRef])
 	
 
-
+	/* fait un scroll down max au bon moment */
 	useEffect(() => {
 		const lastChild: HTMLDivElement | undefined | null = messagesContainerRef.current?.lastChild as HTMLDivElement
 		
@@ -94,7 +125,8 @@ export const useMessagesListeners = (
 		})()
 	}, [currentChannelId])
 
-
+	
+	/* ajoute un nouveau message */
 	useEffect(() => {
 		console.log("chanUser.pseudo dans useEffect() = ", chanUser?.pseudo)
 		if (chanUser?.pseudo && !(currentChannelId <= -1 || currentChannelId >= channels.length))

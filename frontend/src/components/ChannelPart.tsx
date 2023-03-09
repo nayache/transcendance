@@ -2,7 +2,7 @@ import '../styles/ChannelPart.css'
 import React, { useEffect, useReducer, useState } from "react"
 import Channel from "./Channel"
 import { Socket } from "socket.io-client"
-import { IChannel, IChannelUser } from "../interface/IChannelUser"
+import { IChannel, IChannelUser } from "../interface/IChannel"
 import { AiOutlinePlus } from "react-icons/ai"
 import ModalChannelMenu, { ModalChannelType } from "./ModalChannelMenu"
 
@@ -35,10 +35,12 @@ const ChannelPart = ({ socket, updateChannel, setCurrentChannel, removeChannel,
 
 
 	useEffect(() => {
-		if (!(currentChannelId <= -1 || currentChannelId >= channels.length)) {
-			console.log("visibleChannels = ", visibleChannels)
-			setVisibleChannels(channels.map(channel => channel.name))
-		}
+		setDoPrintChannelMenu(false);
+	}, [])
+
+	useEffect(() => {
+		console.log("visibleChannels = ", visibleChannels)
+		setVisibleChannels(channels.map(channel => channel.name))
 	}, [channels])
 
 

@@ -56,3 +56,29 @@ export const addMessageBlockUserLeave = (author: string) => {
 	)
 	return newMessage;
 }
+
+export const addMessageBlockUserKick = (author: string, target: string) => {
+	const newMessage = (
+		<div className="event-text-container">
+			<p className="event-text">
+				<i>
+					{author} kicked {target} from the channel
+				</i>
+			</p>
+		</div>
+	)
+	return newMessage;
+}
+
+export const addMessageBlockUserBan = (author: string, target: string) => {
+	const newMessage = (
+		<div className="event-text-container">
+			<p className="event-text">
+				<i>
+					{author} banned {target} from the channel
+				</i>
+			</p>
+		</div>
+	)
+	return newMessage;
+}

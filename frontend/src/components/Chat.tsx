@@ -3,7 +3,7 @@ import '../styles/index.css'
 import '../styles/Chat.css'
 import ClientApi from "./ClientApi.class";
 import { API_BASE_CHAT, API_CHAT_CHANNEL_ROUTE, API_CHAT_MESSAGES_CHANNEL_ROUTE, API_CHAT_USER_CHANNELS_ROUTE, API_PSEUDO_ROUTE, API_SOCKET_URL, SIGNIN_ROUTE } from "../constants/RoutesApi";
-import { IChannel, IChannelJoin, IChannelKick, IChannelLeave, IChannelUser } from "../interface/IChannelUser";
+import { IChannel, IChannelEvJoin, IChannelEvPunish, IChannelEvLeave, IChannelUser } from "../interface/IChannel";
 import { AboutErr, IError, TypeErr } from "../constants/EError";
 import { IMessage, IOldMessageChannel } from "../interface/IMessage";
 import { Socket } from "socket.io-client";
@@ -14,6 +14,7 @@ import ModalChannelMenu, { ModalChannelType } from "./ModalChannelMenu";
 import { addMessageBlock, resetMessagesBlock } from "../functions/Chat_utils_messages";
 import { handleChange, handleKeyDown } from "../functions/Chat_utils_actions";
 import { useMessagesListeners } from "../hooks/useMessagesListeners";
+import { AlertType } from "./ChatPage";
 
 interface Props {
 	socket?: Socket,
@@ -21,12 +22,17 @@ interface Props {
 	currentChannelId: number,
 	updateChannel: (channel: IChannel) => void,
 	removeChannel: (channelName: string, genUpdated: IChannel | null) => void,
+	setCurrentChannel: (channelName: string) => void,
+	setAlertModal: (alertModal: AlertType, author: IChannelUser,
+		channelName: string, target: string) => void,
 	channels: IChannel[],
 }
 
 export const MAX_CARAC_CHAT: number = 300
 
-const Chat = ({ socket, channels, currentChannelId, removeChannel, updateChannel, chanUser }: Props) => {
+const Chat = ({ socket, channels, currentChannelId, removeChannel,
+	updateChannel, setCurrentChannel, setAlertModal,
+	chanUser }: Props) => {
 
 	const messagesContainerRef = useRef<HTMLDivElement>(null);
 	const msg = useRef<string>('');
@@ -35,10 +41,8 @@ const Chat = ({ socket, channels, currentChannelId, removeChannel, updateChannel
 	const users: IChannelUser[] | null = !(currentChannelId <= -1 || currentChannelId >= channels.length)
 	? channels[currentChannelId].users : null
 	const messages = useMessagesListeners(textAreaRef, messagesContainerRef, socket,
-		currentChannelId, channels, chanUser, updateChannel)
-
-
-
+		currentChannelId, channels, chanUser, setAlertModal,
+		updateChannel, removeChannel, setCurrentChannel)
 
 
 

@@ -4,18 +4,19 @@ import '../styles/ChannelPlayer.css'
 import UserPreview from './UserPreview'
 import OwnerLogo from '../img/owner-logo.png'
 import ModoLogo from '../img/modo-logo.png'
-import { IChannelUser } from '../interface/IChannelUser'
+import { IChannel, IChannelUser } from '../interface/IChannel'
 import { useResizeText } from '../hooks/useResizeText'
 
 interface Props {
 	chanUser: IChannelUser | undefined,
-	player: IChannelUser
+	player: IChannelUser,
+	channel: IChannel,
 	doDisplayPreview: boolean,
 	onClick: (e?: React.MouseEvent<HTMLButtonElement>) => void,
 	onClosePreview: () => void,
 }
 
-const ChannelPlayer = ({ chanUser, player, doDisplayPreview, onClick, onClosePreview }: Props) => {
+const ChannelPlayer = ({ chanUser, player, channel, doDisplayPreview, onClick, onClosePreview }: Props) => {
 
 
 	const { pseudo: playerName, role, status } = player
@@ -26,7 +27,7 @@ const ChannelPlayer = ({ chanUser, player, doDisplayPreview, onClick, onClosePre
 		<React.Fragment>
 			<div className="channelPlayer-container-container">
 				{ doDisplayPreview &&
-				<UserPreview chanUser={chanUser} player={player}
+				<UserPreview chanUser={chanUser} player={player} channel={channel}
 				onClose={onClosePreview} /> }
 				<button onClick={onClick} className="playerName button_without_style">
 					{

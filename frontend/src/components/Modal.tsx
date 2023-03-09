@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import '../styles/Modal.css'
 
 interface Props {
@@ -21,12 +21,13 @@ const Modal = ({ active, title, content, callback, callbackFail }: Props) => {
 			callback();
 	}
 
-	{
-		if (active) {
-			if (modalRef.current)
-				modalRef.current.style.display = 'block';
+	
+	useEffect(() => {
+		console.log("active (dans modal) = ", active)
+		if (modalRef.current) {
+			modalRef.current.style.display = active ? "block" : "none";
 		}
-	}
+	}, [active])
 
 	return (
 		<div id="myModal" onClick={(e) => {

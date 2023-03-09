@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { Socket } from "socket.io-client"
-import { IChannel, IChannelJoin, IChannelLeave, IChannelUser } from "../interface/IChannelUser"
+import { IChannel, IChannelEvJoin, IChannelEvLeave, IChannelUser } from "../interface/IChannel"
 
 
 
@@ -8,12 +8,12 @@ export const useLeaveRoomUpdater = (
 	socket: Socket | undefined, chanUser: IChannelUser | undefined,
 	updateChannel: (channel: IChannel) => void,
 	currentChannelId: number, channels: IChannel[],
-	onLeaveRoomUpdate?: (payload: IChannelLeave) => void
+	onLeaveRoomUpdate?: (payload: IChannelEvLeave) => void
 ) => {
 
 	useEffect(() => {
 		if (chanUser?.pseudo) {
-			socket?.on('leaveRoom', (payload: IChannelLeave) => {
+			socket?.on('leaveRoom', (payload: IChannelEvLeave) => {
 
 				console.log("(leave) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.pseudo)
 				console.log("(leave) currentChannelId = ", currentChannelId)

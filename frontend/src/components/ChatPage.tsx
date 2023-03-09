@@ -7,11 +7,13 @@ import ClientApi from "./ClientApi.class";
 import { API_CHAT_USER_CHANNELS_ROUTE } from "../constants/RoutesApi";
 import { useSocket } from "../hooks/useSocket";
 import ChannelPlayers from "./ChannelPlayers";
-import { IChannel, IChannelUser } from "../interface/IChannelUser";
+import { IChannel, IChannelUser } from "../interface/IChannel";
 import { delay } from "../functions/Debug_utils";
 import { usePseudo } from "../hooks/usePseudo";
 import ServerDownPage from "./ServerDownPage";
 import { useChanUser } from "../hooks/useChanUser";
+import Modal from "./Modal";
+import AlertChannelModal from "./AlertChannelModal";
 
 
 const ChatContainer = styled.div`
@@ -24,6 +26,7 @@ const ChatContainer = styled.div`
 	height: 80%;
 `
 
+export type AlertType = "kick" | "ban" | "mute" | null;
 
 const ChatPage = () => {
 
@@ -31,6 +34,10 @@ const ChatPage = () => {
 	const [channels, setChannels] = useState<IChannel[]>([]);
 	const [currentChannelId, setCurrentChannelId] = useState<number>(0);
 	const chanUser = useChanUser(pseudo, channels, currentChannelId)
+	const [alertModal, setAlertModal] = useState<AlertType>(null);
+	const [alertAuthor, setAlertAuthor] = useState<IChannelUser | null>(null);
+	const [alertTarget, setAlertTarget] = useState<string | null>(null);
+	const [alertChannelName, setAlertChannelName] = useState<string | null>(null);
 	const [isOkay, setIsOkay] = useState<boolean>();
 	const socket = useSocket()
 
@@ -207,6 +214,54 @@ const ChatPage = () => {
 
 
 
+
+	const printModal = () => {
+		if (alertAuthor && alertChannelName) {
+			switch (alertModal) {
+				case "ban":
+				case "kick":
+					return (
+						<AlertChannelModal active={alertModal ? true : false}
+						type={alertModal} author={alertAuthor} pointedChannelName={alertChannelName}
+						channels={channels} currentChannelId={currentChannelId}
+						callback={() => {
+							setAlertModal(null)
+							setAlertAuthor(null)
+							setAlertTarget(null)
+							if (!(currentChannelId <= -1 || currentChannelId >= channels.length)
+							&& channels[currentChannelId].name === alertChannelName) {
+								setCurrentChannel('General')
+							}
+							else if (currentChannelId <= -1 || currentChannelId >= channels.length) {
+								setCurrentChannel('General')
+							}
+							setAlertChannelName(null)
+						}}
+						callbackFail={() => {
+							setAlertModal(null)
+							setAlertAuthor(null)
+							setAlertTarget(null)
+							if (!(currentChannelId <= -1 || currentChannelId >= channels.length)
+							&& channels[currentChannelId].name === alertChannelName) {
+								setCurrentChannel('General')
+							}
+							else if (currentChannelId <= -1 || currentChannelId >= channels.length) {
+								setCurrentChannel('General')
+							}
+							setAlertChannelName(null)
+						}} />
+						// <Modal active={true} title={""}/>
+					)
+					
+				default:
+					return (
+						<></>
+					)
+			}
+		}
+	}
+
+
 	const getPage = () => {
 
 		console.log("channels (dans return chatPage) = ", channels)
@@ -223,11 +278,22 @@ const ChatPage = () => {
 					channels={channels}
 					chanUser={chanUser} />
 					<Chat socket={socket}
+					setCurrentChannel={setCurrentChannel}
 					updateChannel={updateChannel}
 					removeChannel={removeChannel}
 					currentChannelId={currentChannelId}
+					setAlertModal={(alertModal: AlertType, author: IChannelUser,
+						channelName: string, target: string) => {
+							console.log("------- alertModal (dans setAlert) = ", alertModal, " ---------")
+							setAlertModal(alertModal)
+							setAlertAuthor(author)
+							setAlertTarget(target)
+							setAlertChannelName(channelName)
+						}
+					}
 					channels={channels}
 					chanUser={chanUser} />
+					{ printModal() }
 					<ChannelPlayers socket={socket}
 					currentChannelId={currentChannelId}
 					channels={channels}

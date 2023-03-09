@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
 import { API_CHAT_ALL_CHANNELNAMES_ROUTE, API_CHAT_ALL_CHANNELPRVW_ROUTE, API_CHAT_ALL_CHANNELS_ROUTE, API_CHAT_CHANNEL_JOIN_ROUTE, API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi";
-import { IChannel, IChannelUser } from "../interface/IChannelUser";
+import { IChannel, IChannelUser } from "../interface/IChannel";
 import ClientApi from "./ClientApi.class";
 import '../styles/JoinChannelMenu.css'
 import { MAX_CARAC_CHANNEL_NAME } from "./ChannelPart";

@@ -1,13 +1,16 @@
 import React, { useEffect, useRef } from "react"
 import '../styles/UserPreview.css'
 import { ChannelRole, Status } from "../constants/EMessage"
-import { BASE_URL, PROFILE_EP } from "../constants/RoutesApi"
-import { IChannelUser } from "../interface/IChannelUser"
+import { API_CHAT_CHANNEL_BAN_ROUTE, API_CHAT_CHANNEL_KICK_ROUTE, BASE_URL, PROFILE_EP } from "../constants/RoutesApi"
+import { IChannel, IChannelUser } from "../interface/IChannel"
 import ClientApi from "./ClientApi.class"
 
 interface Props {
 	chanUser: IChannelUser | undefined,
 	player: IChannelUser,
+	channel: IChannel,
+	onKick?: (kickedPseudo: string) => void,
+	onBan?: (bannedPseudo: string) => void,
 	onClose?: (e?: React.MouseEvent<HTMLSpanElement>) => void,
 }
 
@@ -18,7 +21,7 @@ interface ButtonProps {
 }
 
 /* to place juste before the element concerned */
-const UserPreview = ({ chanUser, player, onClose }: Props) => {
+const UserPreview = ({ chanUser, player, channel, onBan, onKick, onClose }: Props) => {
 
 	const { pseudo: playerName, status, role } = player
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -39,7 +42,7 @@ const UserPreview = ({ chanUser, player, onClose }: Props) => {
 		{
 			content: "Add to friends",
 			action: () => {
-
+				
 			},
 			role: ChannelRole.USER,
 		},
@@ -60,7 +63,6 @@ const UserPreview = ({ chanUser, player, onClose }: Props) => {
 		{
 			content: "Name admin",
 			action: () => {
-
 			},
 			role: ChannelRole.ADMIN,
 		},
@@ -72,9 +74,32 @@ const UserPreview = ({ chanUser, player, onClose }: Props) => {
 			role: ChannelRole.ADMIN,
 		},
 		{
+			content: "Kick",
+			action: async () => {
+				/* PATCH /chat/channel/kick {channel: string, target: string} */
+				const { kicked: pseudoKicked } = await ClientApi.patch(API_CHAT_CHANNEL_KICK_ROUTE,
+					JSON.stringify({
+						channel: channel.name,
+						target: player.pseudo
+					}),
+				'application/json')
+				if (onKick)
+					onKick(pseudoKicked)
+			},
+			role: ChannelRole.ADMIN,
+		},
+		{
 			content: "Ban",
-			action: () => {
-
+			action: async () => {
+				/* PATCH /chat/channel/ban {channel: string, target: string} */
+				const { banned: pseudoBanned } = await ClientApi.patch(API_CHAT_CHANNEL_BAN_ROUTE,
+					JSON.stringify({
+						channel: channel.name,
+						target: player.pseudo
+					}),
+				'application/json')
+				if (onBan)
+					onBan(pseudoBanned)
 			},
 			role: ChannelRole.ADMIN,
 		},

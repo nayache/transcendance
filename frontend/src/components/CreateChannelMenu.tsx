@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
 import { API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi";
-import { IChannel, IChannelUser } from "../interface/IChannelUser";
+import { IChannel, IChannelUser } from "../interface/IChannel";
 import { MAX_CARAC_CHANNEL_NAME, MAX_CARAC_CHANNEL_PWD, MIN_CARAC_CHANNEL_NAME, MIN_CARAC_CHANNEL_PWD } from "./ChannelPart";
 import ClientApi from "./ClientApi.class";
 import { GiPadlock, GiPadlockOpen, GiOpenGate, GiGate } from "react-icons/gi"

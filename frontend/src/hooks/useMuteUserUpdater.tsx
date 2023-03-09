@@ -1,18 +1,18 @@
 import { useEffect } from "react"
 import { Socket } from "socket.io-client"
-import { IChannel, IChannelJoin, IChannelLeave, IChannelUser } from "../interface/IChannelUser"
+import { IChannel, IChannelEvJoin, IChannelEvLeave, IChannelUser } from "../interface/IChannel"
 
 export const useJoinRoomUpdater = (
 	socket: Socket | undefined, chanUser: IChannelUser | undefined,
 	updateChannel: (channel: IChannel) => void,
 	currentChannelId: number, channels: IChannel[],
-	onJoinRoomUpdate?: (payload: IChannelJoin) => void
+	onJoinRoomUpdate?: (payload: IChannelEvJoin) => void
 ) => {
 	
 	
 	useEffect(() => {
 		if (chanUser?.pseudo) {
-			socket?.on('joinRoom', (payload: IChannelJoin) => {
+			socket?.on('joinRoom', (payload: IChannelEvJoin) => {
 				console.log("(join) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.user.pseudo)
 				console.log("(join) currentChannelId = ", currentChannelId)
 				if (payload.user.pseudo !== chanUser.pseudo && !(currentChannelId <= -1 || currentChannelId >= channels.length)

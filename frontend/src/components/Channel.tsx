@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
 import { API_CHAT_CHANNEL_LEAVE_ROUTE, API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi"
-import { IChannel, IChannelUser } from "../interface/IChannelUser"
+import { IChannel, IChannelUser } from "../interface/IChannel"
 import '../styles/Channel.css'
 import ClientApi from "./ClientApi.class"
 import { FaMinus } from "react-icons/fa"
@@ -32,11 +32,10 @@ const Channel = ({ chanUser, channelName, currentChannelId, addChannel, removeCh
 			if (!(currentChannelId <= -1 || currentChannelId >= channels.length)
 			&& channels[currentChannelId].name !== channelName) {
 				const { channel }: { channel: IChannel } = await ClientApi.get(API_CHAT_CHANNEL_ROUTE + '/' + channelName)
-				
 				console.log("channels[currentChannelId].name = ", channels[currentChannelId].name, "  channelName = ", channelName)
 				updateChannel(channel)
-				setCurrentChannel(channelName)
 			}
+			setCurrentChannel(channelName)
 		} catch (err) {
 			console.log("err = ", err);
 		}

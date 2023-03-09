@@ -39,6 +39,7 @@ export const API_CHAT_CHANNEL_ROUTE = API_BASE_CHAT + '/channel' /* + '/:channel
 export const API_CHAT_CHANNEL_JOIN_ROUTE = API_BASE_CHAT + '/channel/join'
 export const API_CHAT_CHANNEL_LEAVE_ROUTE = API_BASE_CHAT + '/channel/leave'
 export const API_CHAT_CHANNEL_KICK_ROUTE = API_BASE_CHAT + '/channel/kick'
+export const API_CHAT_CHANNEL_BAN_ROUTE = API_BASE_CHAT + '/channel/ban'
 
 
 

@@ -1,41 +1,70 @@
 import { useEffect } from "react"
 import { Socket } from "socket.io-client"
-import { IChannel, IChannelJoin, IChannelLeave, IChannelUser } from "../interface/IChannelUser"
+import { AlertType } from "../components/ChatPage"
+import ClientApi from "../components/ClientApi.class"
+import { API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi"
+import { IChannel, IChannelEvJoin, IChannelEvLeave, IChannelEvPunish, IChannelUser } from "../interface/IChannel"
 
-export const useJoinRoomUpdater = (
-	socket: Socket | undefined, chanUser: IChannelUser | undefined,
+export const usePunishUserUpdater = (
+	socket: Socket | undefined, channels: IChannel[],
+	currentChannelId: number, chanUser: IChannelUser | undefined,
 	updateChannel: (channel: IChannel) => void,
-	currentChannelId: number, channels: IChannel[],
-	onJoinRoomUpdate?: (payload: IChannelJoin) => void
+	removeChannel: (channelName: string, genUpdated: IChannel | null) => void,
+	setCurrentChannel: (channelName: string) => void,
+	onPunishUserUpdate?: (payload: IChannelEvPunish) => void
 ) => {
 	
 	
 	useEffect(() => {
 		if (chanUser?.pseudo) {
-			socket?.on('joinRoom', (payload: IChannelJoin) => {
-				console.log("(join) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.user.pseudo)
-				console.log("(join) currentChannelId = ", currentChannelId)
-				if (payload.user.pseudo !== chanUser.pseudo && !(currentChannelId <= -1 || currentChannelId >= channels.length)
-				&& channels[currentChannelId].name === payload.channel) {
-					const users: IChannelUser[] = channels[currentChannelId].users.map(user => user)
-					if (users.every(user => user.pseudo !== payload.user.pseudo)) // contre les bugs graphiques
-						users.push(payload.user)
+			socket?.on('punishUser', async (payload: IChannelEvPunish) => {
+				console.log("(punish) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.target)
+				console.log("(punish) currentChannelId = ", currentChannelId)
+				const daChannel: IChannel | undefined =
+				channels.find(channel => channel.name === payload.channel)
+				if (daChannel) { // impossible que daChannel soit undefined
+					const users: IChannelUser[] = daChannel.users
+						.filter(user => user.pseudo !== payload.target)
 					const channel: IChannel = {
-						name: channels[currentChannelId].name,
+						name: daChannel.name,
 						users,
-						prv: channels[currentChannelId].prv,
-						password: channels[currentChannelId].password,
-						messages: channels[currentChannelId].messages,
+						prv: daChannel.prv,
+						password: daChannel.password,
+						messages: daChannel.messages,
 					}
-					updateChannel(channel)
-					console.log("test ici en join")
-					if (onJoinRoomUpdate)
-						onJoinRoomUpdate(payload)
+					if (chanUser.pseudo === payload.target) {
+						let genUpdated: IChannel | null = null;
+						if (!(currentChannelId <= -1 || currentChannelId >= channels.length)
+							&& channels[currentChannelId].name === payload.channel) {
+							
+							try {
+								const data: { channel: IChannel } =
+								await ClientApi.get(API_CHAT_CHANNEL_ROUTE + '/General')
+								genUpdated = data.channel
+								console.log("genUpdated (a peine apres) = ", genUpdated);
+							} catch (err) {
+								console.log("err = ", err);
+							}
+						}
+						console.log("genUpdated (apres) = ", genUpdated);
+						removeChannel(payload.channel, genUpdated)
+						if (onPunishUserUpdate)
+							onPunishUserUpdate(payload)
+					}
+					else if (payload.target !== chanUser.pseudo) {
+						updateChannel(channel)
+						if (!(currentChannelId <= -1 || currentChannelId >= channels.length)
+						&& channels[currentChannelId].name === payload.channel) {
+							console.log("test ici en punish")
+							if (onPunishUserUpdate)
+								onPunishUserUpdate(payload)
+						}
+					}
 				}
 			})
 		}
 		return () => {
-			socket?.removeAllListeners('joinRoom')
+			socket?.removeAllListeners('punishUser')
 		}
 	}, [socket, chanUser, currentChannelId])
 }

@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { IChannel, IChannelUser } from '../interface/IChannelUser'
+import { IChannel, IChannelUser } from '../interface/IChannel'
 
 interface DraftMessageProps {
 	draftMessage?: string,

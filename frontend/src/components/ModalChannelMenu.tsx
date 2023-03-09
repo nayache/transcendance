@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react'
-import { IChannel, IChannelUser } from '../interface/IChannelUser';
+import React, { useEffect, useRef, useState } from 'react'
+import { IChannel, IChannelUser } from '../interface/IChannel';
 import '../styles/ModalChannelMenu.css'
 import CreateChannelMenu from './CreateChannelMenu';
 import EditChannelMenu from './EditChannelMenu';
@@ -11,6 +11,7 @@ export enum ModalChannelType {
 	JOINORCREATECHANNEL,
 	LEAVECHANNEL,
 	EDITCHANNEL,
+	KICKUSER,
 }
 
 interface Props {
@@ -69,12 +70,18 @@ const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
 	const onEdit = () => {
 		handleClick(callback)
 	}
+	
+	const onKick = () => {
+		handleClick(callback)
+	}
 
-	{
+	useEffect(() => {
+		console.log("type (dans modal) = ", type)
+		console.log("active (dans modal) = ", active)
 		if (modalRef.current) {
 			modalRef.current.style.display = active ? "block" : "none";
 		}
-	}
+	}, [active])
 
 	return (
 		<div id="myModal-channelMenu"

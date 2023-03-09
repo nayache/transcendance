@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { IChannel, IChannelUser } from "../interface/IChannelUser"
+import { IChannel, IChannelUser } from "../interface/IChannel"
 
 
 export const useChanUser = (pseudo: string | undefined, channels: IChannel[], currentChannelId: number) => {

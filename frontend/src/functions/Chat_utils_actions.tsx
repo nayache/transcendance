@@ -1,7 +1,7 @@
 import { MAX_CARAC_CHAT } from "../components/Chat";
 import ClientApi from "../components/ClientApi.class";
 import { API_CHAT_MESSAGES_CHANNEL_ROUTE } from "../constants/RoutesApi";
-import { IChannel, IChannelUser } from "../interface/IChannelUser";
+import { IChannel, IChannelUser } from "../interface/IChannel";
 
 export const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>,
 	textAreaRef: React.RefObject<HTMLTextAreaElement>, msg: React.MutableRefObject<string>) => {
