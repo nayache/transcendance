@@ -8,12 +8,13 @@ import { ChannelRole } from '../enums/channel-role.enum';
 import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
 import { Status } from '../enums/status.enum';
-import { IsBoolean, isNotEmpty, IsNotEmpty, IsOptional, isString, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, isNotEmpty, IsNotEmpty, IsNumber, IsOptional, isString, IsString, MaxLength, MinLength } from 'class-validator';
 import { ValidationFilter } from './filter/validation-filter';
 import { isAdmin } from './guards/is-admin.guard';
 import { ChannelEntity } from './entity/channel.entity';
 import { Transform } from 'class-transformer';
 import { isOwner } from './guards/is-owner.guard';
+import { Mute } from './entity/mute.entity';
 
 export class ChannelMessageDto {
     author: string;
@@ -31,6 +32,8 @@ export class ChannelUserDto {
 
 export class ChannelDto {
     name: string;
+    prv: boolean;
+    password: boolean;
     users: ChannelUserDto[];
     messages: ChannelMessageDto[];
 }
@@ -69,6 +72,20 @@ export class adminActionDto {
     @IsString()
     @IsNotEmpty()
     target: string;
+}
+
+export class muteActionDto {
+    @IsString()
+    @IsNotEmpty()
+    channel: string;
+
+    @IsString()
+    @IsNotEmpty()
+    target: string;
+
+    @IsNumber()
+    @IsNotEmpty()
+    duration: number;
 }
 
 export class messageDto {
@@ -137,7 +154,7 @@ export class ChatController {
         if (!this.chatService.isValidChannelName(payload.name))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'invalid channelName');
         if (await this.chatService.channelExistt(payload.name))
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'channel already exist');
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.DUPLICATED, 'channel already exist');
         if (payload.password && !this.chatService.isValidChannelPassword(payload.password))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'invalid password syntax');
         await this.chatService.createChannel(payload.name, payload.prv, payload.password);
@@ -186,7 +203,7 @@ export class ChatController {
         if (await this.chatService.isAdmin(target.id, payload.channel))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'target is already admin');
         await this.chatService.setRole(payload.channel, target.id, ChannelRole.ADMIN);
-        this.chatGateway.channelEvent(payload.channel, `${target.pseudo} become an admin`);
+        await this.chatGateway.setAdminEvent(payload.channel, userId, target.id);
         return {newAdmin: target.pseudo}
     }
     
@@ -197,7 +214,6 @@ export class ChatController {
         if (target.id === userId)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant kick himself');
         await this.chatService.leaveChannel(target.id, payload.channel);
-//        await this.chatGateway.leaveRoom(target.id, payload.channel);
         await this.chatGateway.punishEvent(payload.channel, userId, target.pseudo, 'kick');
         return {kicked: target.pseudo}
     }
@@ -212,9 +228,28 @@ export class ChatController {
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'target is already banned');
         await this.chatService.banUser(payload.channel, target.id);
         await this.chatService.leaveChannel(target.id, payload.channel);
-       // await this.chatGateway.leaveRoom(target.id, payload.channel);
         await this.chatGateway.punishEvent(payload.channel, userId, target.pseudo, 'ban');
         return {banned: target.pseudo}
+    }
+
+    @Get('channel/ismute/:pseudo')
+    async ismuteUser(@User() userId: string, @Param('pseudo') pseudo: string) {
+        const user = await this.userService.findByPseudo(pseudo);
+        return this.chatService.isMuted('testchann', user.id)
+    }
+
+    @UseGuards(isAdmin)
+    @Patch('channel/mute')
+    async muteUser(@User() userId: string, @Body() payload: muteActionDto) {
+        const target: UserEntity = await this.userService.findByPseudo(payload.target);
+        if (target.id === userId)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant mute himself');
+        if (await this.chatService.isBanned(payload.channel, target.id))
+            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'target is already muted');
+        const muted: Mute = await this.chatService.muteUser(payload.channel, target.id, payload.duration);
+        const expiration: Date = this.chatService.getMuteExpiration(muted);
+        await this.chatGateway.muteEvent(payload.channel, userId, target.id, expiration);
+        return { muted: target.pseudo, expiration };
     }
 
     @UseGuards(isOwner)
@@ -222,8 +257,10 @@ export class ChatController {
     async setAccess(@Body('name') channelName: string, @Body('prv') prv: boolean) {
         if (typeof(prv) !== 'boolean')
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'prv argument must be boolean value');
-        await this.chatService.setChannelAccess(channelName, prv);
-        this.chatGateway.channelAccessEvent(channelName, prv);
+        if (await this.chatService.isPrivateChannel(channelName) !== prv) {
+            await this.chatService.setChannelAccess(channelName, prv);
+            this.chatGateway.channelAccessEvent(channelName, prv, 'prv');
+        }
         return { channel: channelName, private: prv };
     }
     
@@ -233,7 +270,7 @@ export class ChatController {
         if (password != null && !this.chatService.isValidChannelPassword(password))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'invalid password syntax');
         await this.chatService.setChannelPassword(channelName, password);
-        this.chatGateway.channelPasswordEvent(channelName, !!password);
+        this.chatGateway.channelAccessEvent(channelName, !!password, 'password');
         return { password: !!password };
     }
 

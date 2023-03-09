@@ -135,7 +135,7 @@ export class AuthService {
             return false;
     }
 
-    async jwtVerif(token: string): Promise<string> {
+    async jwtVerif(token: string, wantedPseudo: boolean): Promise<string> {
         if (!this.authorizationHeader('Bearer', token))
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.HEADER, TypeErr.INVALID, 'authorization header (bearer) incorrect')
         
@@ -150,8 +150,8 @@ export class AuthService {
         const user = await this.userService.findById(decoded.userId);
         if (!user)
             throw new ErrorException(HttpStatus.FORBIDDEN, AboutErr.USER, TypeErr.NOT_FOUND, 'token not associated with an user');
-        if (!user.pseudo)
-            throw new ErrorException(HttpStatus.FORBIDDEN, AboutErr.USER, TypeErr.INVALID, 'invalid user, must be set a pseudo');
+        if (wantedPseudo && !user.pseudo)
+            throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.PSEUDO, TypeErr.NOT_FOUND, 'invalid user, must be set a pseudo');
         return user.id;
     }
     

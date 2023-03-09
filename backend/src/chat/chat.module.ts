@@ -9,10 +9,11 @@ import { ChannelEntity } from './entity/channel.entity';
 import { Member } from './entity/member.entity';
 import { MessageEntity } from './entity/message.entity';
 import { PrivateMessageEntity } from './entity/privateMessage.entity';
+import { Mute } from './entity/mute.entity';
 
 @Module({
   imports: [forwardRef(() => AuthModule), forwardRef(() => UserModule), TypeOrmModule.forFeature([ChannelEntity, Member, MessageEntity,
-  PrivateMessageEntity])],
+  PrivateMessageEntity, Mute])],
   providers: [ChatService, ChatGateway],
   controllers: [ChatController],
   exports: [ChatGateway, ChatService]

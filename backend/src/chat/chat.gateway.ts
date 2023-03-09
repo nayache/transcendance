@@ -7,9 +7,10 @@ import { UserService } from 'src/user/user.service';
 import { ChatService } from './chat.service';
 import { ChannelRole } from '../enums/channel-role.enum';
 import { Status } from '../enums/status.enum';
-import { eventMessageDto, joinRoomDto, kickBanDto, leaveRoomDto, userDto } from './dto/chat-gateway.dto';
+import { eventMessageDto, joinRoomDto, kickBanDto, leaveRoomDto, muteDto, userDto } from './dto/chat-gateway.dto';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { ChannelUserDto } from './chat.controller';
+import { Mute } from './entity/mute.entity';
 
 //@UseGuards(JwtGuard)
 @WebSocketGateway({ cors: {origin: '*'} })
@@ -33,7 +34,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   async authentication(socket: Socket) : Promise<userDto> {
     try {
-      const id: string = await this.authService.jwtVerif(socket.handshake.auth.token);
+      const id: string = await this.authService.jwtVerif(socket.handshake.auth.token, true);
       const pseudo: string = await this.userService.getPseudoById(id);
       return {id, pseudo, socket};
     } catch (err) {
@@ -121,18 +122,34 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     });
   }
 
-  channelPasswordEvent(channelName: string, activePassword: boolean) {
-    this.server.to(channelName).emit('updatePassword', activePassword);
-  }
-
-  channelAccessEvent(channelName: string, activePrivate: boolean) {
-    this.server.to(channelName).emit('updateAccess', activePrivate);
-  }
-
-  async punishEvent(channel: string, authorId: string, target: string, action: string) {
+  async setAdminEvent(channel: string, authorId: string, targetId: string) {
     const author: ChannelUserDto = await this.chatService.getChannelUserDto(authorId, channel);
+    const target: ChannelUserDto = await this.chatService.getChannelUserDto(targetId, channel);
+    this.server.to(channel).emit('setAdmin', {channel, author, target});
+  }
+
+  channelAccessEvent(channel: string, enabled: boolean, action: string) {
+    this.server.to(channel).emit('updateRoomAccess', {channel, action, enabled});
+  }
+
+  async punishEvent(channel: string, authorId: string, targetId: string, action: string) {
+    const author: ChannelUserDto = await this.chatService.getChannelUserDto(authorId, channel);
+    const target: string = await this.userService.getPseudoById(targetId);
     const payload: kickBanDto = { channel, author, target, action };
+    if (this.users.get(targetId)) {
+      this.users.get(targetId).forEach((socket) => {
+        this.server.to(socket.id).emit('punishUser', payload);
+        socket.leave(channel);
+      });
+    }
     this.server.to(payload.channel).emit('punishUser', payload);
+  }
+
+  async muteEvent(channel: string, authorId: string, targetId: string, expiration: Date) {
+    const author: ChannelUserDto = await this.chatService.getChannelUserDto(authorId, channel);
+    const target: ChannelUserDto = await this.chatService.getChannelUserDto(targetId, channel);
+    const payload: muteDto = {channel, author, target, expiration};
+    this.server.to(channel).emit('muteUser', payload);
   }
 
   async handleDisconnect(socket: Socket) {
