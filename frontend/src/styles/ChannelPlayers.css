@@ -9,7 +9,7 @@
 	--scrollbar-width: 10px;
 	--whole-scrollbar-gap-height: 10px;
 	--animation-time: 1.8s;
-	flex: 0.5 0 0;
+	flex: 0.5 1 0;
 	margin: 0 20px;
 	height: 100%;
 	min-width: 17em;

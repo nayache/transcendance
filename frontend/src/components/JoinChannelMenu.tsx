@@ -98,7 +98,7 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 				<div className="joinChannel-channels-container">
 					<div className="joinChannel-channels-child">
 						{ visibleChannelPrvws?.map((visibleChannelPrvw, i) => (
-							<div className={(() => {
+							<div key={i} className={(() => {
 								if (visibleChannelPrvw.prv)
 									return "joinChannel-channel-container joinChannel-channel-container-prv"
 								return "joinChannel-channel-container"

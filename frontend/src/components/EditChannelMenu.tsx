@@ -1,43 +1,36 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
 import { API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi";
 import { IChannel, IChannelUser } from "../interface/IChannelUser";
-import { MAX_CARAC_CHANNEL_NAME, MAX_CARAC_CHANNEL_PWD, MIN_CARAC_CHANNEL_NAME, MIN_CARAC_CHANNEL_PWD } from "./ChannelPart";
+import { MAX_CARAC_CHANNEL_NAME, MAX_CARAC_CHANNEL_PWD, MIN_CARAC_CHANNEL_NAME,
+	MIN_CARAC_CHANNEL_PWD } from "./ChannelPart";
 import ClientApi from "./ClientApi.class";
 import { GiPadlock, GiPadlockOpen, GiOpenGate, GiGate } from "react-icons/gi"
 import { RiEyeFill, RiEyeCloseFill } from "react-icons/ri"
-import "../styles/CreateChannelMenu.css"
+import "../styles/EditChannelMenu.css"
 import { AboutErr, IError, TypeErr } from "../constants/EError";
 
 interface Props {
 	chanUser: IChannelUser,
-	addChannel: (channel: IChannel) => void,
-	setCurrentChannel: (channelName: string) => void,
-	onCreate?: () => void,
+	channelPrv: boolean,
+	channelPassword: boolean,
+	channelName: string,
+	onEdit?: () => void,
 }
 
-const CreateChannelMenu = ({ onCreate, addChannel, setCurrentChannel, chanUser }: Props) => {
+const EditChannelMenu = ({ chanUser, channelName, channelPrv, channelPassword, onEdit }: Props) => {
 
 
-	const channelWritten = useRef<string>('');
 	const [errorChanName, setErrorChanName] = useState<string>("")
-	const passwordWritten = useRef<string | null>(null);
+	const passwordWritten = useRef<string | undefined>(undefined);
 	const [showPassword, setShowPassword] = useState<boolean>(false)
 	const [errorPassword, setErrorPassword] = useState<string>("")
 	const inputRef = useRef<HTMLInputElement>(null);
 	const inputPwdRef = useRef<HTMLInputElement>(null);
-	const [password, setPassword] = useState<boolean>(false);
-	const [prv, setPrv] = useState<boolean>(false);
+	const [password, setPassword] = useState<boolean>(channelPassword);
+	const [prv, setPrv] = useState<boolean>(channelPrv);
+	console.log("prv (dans edit channel) = ", prv)
 
 
-	const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		channelWritten.current = e.target.value;
-		console.log("channelWritten.current = ", channelWritten.current)
-		if (inputRef.current &&
-			inputRef.current.value.length >= MAX_CARAC_CHANNEL_NAME)
-			console.log("max length reached")
-		else
-			console.log("okay good")
-	}
 
 	const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		passwordWritten.current = e.target.value;
@@ -56,15 +49,12 @@ const CreateChannelMenu = ({ onCreate, addChannel, setCurrentChannel, chanUser }
 		(async () => {
 			try {
 				const { channel } = await ClientApi.post(API_CHAT_CHANNEL_ROUTE, JSON.stringify({
-					name: channelWritten.current,
 					prv,
 					password: passwordWritten.current
 				}), 'application/json')
-				addChannel(channel)
-				setCurrentChannel(channel.name)
-				if (onCreate)
-					onCreate()
-				channelWritten.current = ""
+				if (onEdit)
+					onEdit()
+				passwordWritten.current = ""
 			} catch (err) {
 				const _error: IError = err as IError;
 
@@ -73,16 +63,7 @@ const CreateChannelMenu = ({ onCreate, addChannel, setCurrentChannel, chanUser }
 				}
 				else if ((_error.about === AboutErr.REQUEST ||
 					_error.about === AboutErr.CHANNEL) && _error.type === TypeErr.INVALID) {
-					if (channelWritten.current.length < MIN_CARAC_CHANNEL_NAME)
-						setErrorChanName("The channel name written is too little (" + MIN_CARAC_CHANNEL_NAME + " char min)")
-					else if (channelWritten.current.length > MAX_CARAC_CHANNEL_NAME)
-						setErrorChanName("The channel name written is too long (" + MAX_CARAC_CHANNEL_NAME + " char max)")
-					else if (channelWritten.current.length >= MIN_CARAC_CHANNEL_NAME
-					&& channelWritten.current.length <= MAX_CARAC_CHANNEL_NAME) {
-						if (channelWritten.current.search(/\s/) !== -1)
-							setErrorChanName("The channel can't have spaces")
-					}
-					if (password && passwordWritten.current !== null) {
+					if (password && passwordWritten.current !== undefined) {
 						if (passwordWritten.current.length < MIN_CARAC_CHANNEL_PWD)
 							setErrorPassword("Please set a password longer (" + MIN_CARAC_CHANNEL_PWD + " char min)")
 						else if (passwordWritten.current.length > MAX_CARAC_CHANNEL_PWD)
@@ -108,12 +89,13 @@ const CreateChannelMenu = ({ onCreate, addChannel, setCurrentChannel, chanUser }
 
 
 
+
 	useEffect(() => {
 		if (inputPwdRef.current) {
 			if (!password) {
 				inputPwdRef.current.value = ""
 				setErrorPassword("")
-				passwordWritten.current = null
+				passwordWritten.current = undefined
 				setPassword(false);
 			}
 			else {
@@ -122,13 +104,15 @@ const CreateChannelMenu = ({ onCreate, addChannel, setCurrentChannel, chanUser }
 		}
 	}, [password])
 
+	
+
 
 
 	return (
 		<React.Fragment>
 			<div className="createChannel-container">
 				<div className="createChannel-title-container">
-					<h3 className="createChannel-title">Create a new channel</h3>
+					<h3 className="createChannel-title">Edit the {channelName} channel</h3>
 					{
 						password && <GiPadlock className="padlock-svg" onClick={() => {setPassword(false)}} /> ||
 						!password && <GiPadlockOpen className="padlock-svg" onClick={() => setPassword(true)} />
@@ -145,16 +129,6 @@ const CreateChannelMenu = ({ onCreate, addChannel, setCurrentChannel, chanUser }
 							<input type="checkbox" checked={!prv} onClick={() => setPrv(prv => !prv)} />
 							<span className="slider round"></span>
 						</label>
-					</div>
-					<div className="createChannel-name">
-						<label>Name</label>
-						<input onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
-						className={(() => {
-							if (errorChanName) 
-								return "shaking-input"
-							return undefined
-						})()} onChange={handleNameChange} />
-						{ errorChanName && <p className="error-text">{errorChanName}</p> }
 					</div>
 					<div className={(() => {
 						if (!password)
@@ -189,4 +163,4 @@ const CreateChannelMenu = ({ onCreate, addChannel, setCurrentChannel, chanUser }
 	)
 }
 
-export default CreateChannelMenu
+export default EditChannelMenu

@@ -224,6 +224,7 @@ const ChatPage = () => {
 					chanUser={chanUser} />
 					<Chat socket={socket}
 					updateChannel={updateChannel}
+					removeChannel={removeChannel}
 					currentChannelId={currentChannelId}
 					channels={channels}
 					chanUser={chanUser} />

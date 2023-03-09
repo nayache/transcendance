@@ -22,10 +22,9 @@
 	--animation-time: 1.4s;
 	position: relative;
 	height: 100%;
-	min-width: 30%;
 	flex: 1 0 0;
 	display: flex;
-	min-width: 17em;
+	min-width: 25em;
 	flex-direction: column;
 }
 
@@ -41,6 +40,10 @@
 	}
 }
 
+.chat-title-container {
+	display: flex;
+	align-items: first baseline;
+}
 
 .chat-title {
 	padding: 3px 10px 0px;
@@ -52,6 +55,18 @@
 	transition: all var(--animation-time);
 }
 
+.gear-svg {
+	display: inline;
+	vertical-align: middle;
+	margin-left: 10px;
+	cursor: pointer;
+	transition: all 0.3s;
+}
+
+.gear-svg:hover {
+	transform: rotate(-90deg);
+	color: rgb(28, 28, 28);
+}
 
 .messages-container-container {
 	--gap: 4px;

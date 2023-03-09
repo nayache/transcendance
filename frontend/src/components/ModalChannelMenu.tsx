@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react'
 import { IChannel, IChannelUser } from '../interface/IChannelUser';
 import '../styles/ModalChannelMenu.css'
 import CreateChannelMenu from './CreateChannelMenu';
+import EditChannelMenu from './EditChannelMenu';
 import JoinChannelMenu from './JoinChannelMenu';
 import JoinOrCreateChannelMenu from './JoinOrCreateChannelMenu';
 import LeaveChannelMenu from './LeaveChannelMenu';
@@ -9,6 +10,7 @@ import LeaveChannelMenu from './LeaveChannelMenu';
 export enum ModalChannelType {
 	JOINORCREATECHANNEL,
 	LEAVECHANNEL,
+	EDITCHANNEL,
 }
 
 interface Props {
@@ -17,18 +19,20 @@ interface Props {
 	chanUser: IChannelUser,
 	channels: IChannel[],
 	currentChannelId: number,
-	addChannel: (channel: IChannel) => void,
-	setCurrentChannel: (channelName: string) => void,
-	updateChannel: (channel: IChannel) => void,
-	removeChannel: (channelName: string, genUpdated: IChannel | null) => void,
+	addChannel?: (channel: IChannel) => void,
+	setCurrentChannel?: (channelName: string) => void,
+	updateChannel?: (channel: IChannel) => void,
+	removeChannel?: (channelName: string, genUpdated: IChannel | null) => void,
 	pointedChannelName?: string,
+	pointedChannelPrv?: boolean,
+	pointedChannelPassword?: boolean,
 	callback?: () => any,
 	callbackFail?: () => any,
 }
 
 const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
-	addChannel, setCurrentChannel, removeChannel, updateChannel,
-	pointedChannelName, callback, callbackFail }: Props) => {
+	addChannel, setCurrentChannel, removeChannel, updateChannel, pointedChannelPrv,
+	pointedChannelPassword, pointedChannelName, callback, callbackFail }: Props) => {
 
 	const modalRef = useRef<HTMLDivElement>(null);
 	const [update, setUpdate] = useState<string>("");
@@ -62,6 +66,10 @@ const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
 		setUpdate("CREATECHANNEL")
 	}
 
+	const onEdit = () => {
+		handleClick(callback)
+	}
+
 	{
 		if (modalRef.current) {
 			modalRef.current.style.display = active ? "block" : "none";
@@ -75,12 +83,12 @@ const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
 				<span onClick={(e) => handleClick(callbackFail)}
 				className="close-channelMenu">&times;</span>
 				{
-					update === "CREATECHANNEL" &&
+					update === "CREATECHANNEL" && addChannel && setCurrentChannel &&
 					<CreateChannelMenu addChannel={addChannel}
 					setCurrentChannel={setCurrentChannel}
 					onCreate={() => onCreate()} chanUser={chanUser} /> ||
 					
-					update === "JOINCHANNEL" &&
+					update === "JOINCHANNEL" && addChannel && setCurrentChannel &&
 					<JoinChannelMenu addChannel={addChannel} channels={channels}
 					setCurrentChannel={setCurrentChannel}
 					onJoin={() => onJoin()} chanUser={chanUser} /> ||
@@ -90,10 +98,17 @@ const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
 					onJoinClick={onJoinClick} onCreateClick={onCreateClick} /> ||
 					
 					type === ModalChannelType.LEAVECHANNEL && pointedChannelName
+					&& setCurrentChannel && removeChannel && updateChannel
 					&& <LeaveChannelMenu channels={channels} currentChannelId={currentChannelId}
 					setCurrentChannel={setCurrentChannel} removeChannel={removeChannel}
 					updateChannel={updateChannel} chanUser={chanUser} channelName={pointedChannelName}
-					onLeave={() => onLeave()} />
+					onLeave={() => onLeave()} /> ||
+					
+					type === ModalChannelType.EDITCHANNEL
+					&& pointedChannelName && pointedChannelPassword !== undefined && pointedChannelPrv !== undefined
+					&& <EditChannelMenu chanUser={chanUser} channelName={pointedChannelName}
+					channelPrv={pointedChannelPrv} channelPassword={pointedChannelPassword}
+					onEdit={() => onEdit()} />
 				}
 			</div>
 		</div>

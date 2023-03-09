@@ -1,0 +1,147 @@
+
+@keyframes horizontal-shaking {
+	0% { transform: translateX(0) }
+	25% { transform: translateX(5px) }
+	50% { transform: translateX(-5px) }
+	75% { transform: translateX(5px) }
+	100% { transform: translateX(0) }
+}
+
+.createChannel-container {
+	position: relative;
+	margin: 50px auto 10px;
+}
+
+.createChannel-title-container {
+	display: flex;
+	flex-direction: row;
+	width: fit-content;
+	justify-content: center;
+	align-items: center;
+	margin: 0 auto 1em;
+}
+
+.createChannel-title {
+	margin: 0;
+	width: fit-content;
+}
+
+.padlock-svg {
+	display: block;
+	width: 20px;
+	height: auto;
+	margin-left: 10px;
+	cursor: pointer;
+	transition: all 0.1s;
+}
+
+.padlock-svg:hover {
+	color: rgb(46, 46, 46);
+}
+
+.gate-svg {
+	display: inline-block;
+	vertical-align: bottom;
+	width: 30px;
+	height: auto;
+	margin-left: 10px;
+	cursor: pointer;
+	transition: all 0.1s;
+}
+
+.gate-svg:hover {
+	color: rgb(46, 46, 46);
+}
+
+.eye-svg {
+	display: inline-block;
+	vertical-align: middle;
+	height: auto;
+	cursor: pointer;
+	transition: all 0.1s;
+}
+
+.eye-svg:hover {
+	color: rgb(46, 46, 46);
+}
+
+.createChannel-form {
+	display: flex;
+	flex-direction: column;
+	margin: 0 auto;
+	box-sizing: border-box;
+	padding: 10px 0;
+	border-radius: 10px;
+	background-color: #e0e0e0;
+	font-size: 15px;
+}
+
+.createChannel-form div {
+	display: flex;
+	flex-direction: column;
+	margin: 10px auto;
+	width: 70%;
+}
+
+.createChannel-form label {
+	margin: 0 5px;
+	font-size: 1.1rem;
+}
+
+.createChannel-form div input {
+	box-sizing: border-box;
+	font-size: 1rem;
+	padding: 7px;
+	border: 1px solid;
+	border-radius: 7px;
+}
+
+.createChannel-prv {
+}
+
+.createChannel-name {
+
+}
+
+.createChannel-password {
+
+}
+
+.shaking-input {
+	animation: horizontal-shaking 0.20s 2;
+}
+
+.disabled-div-form {
+
+}
+
+.form-createChannel-button {
+	border-radius: 10px;
+	color: rgb(51, 51, 51);
+	font-weight: bold;
+	font-size: large;
+	padding: 14px 20px;
+	background-color: rgba(129, 242, 123, 0.8);
+	margin: 8px auto;
+	border: none;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.form-createChannel-button:hover {
+	background-color: rgba(129, 242, 123, 1);
+}
+
+.form-createChannel-button:active {
+	box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
+}
+
+.disabled-div-form * {
+	color: rgba(0, 0, 0, 0.289);
+}
+
+.error-text {
+    font-size: small;
+    color: red;
+    text-shadow: 0.5px 0.5px 0px black;
+}

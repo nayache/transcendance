@@ -19,7 +19,9 @@ export const usePseudo = () => {
 				const _error: IError = err as IError;
 				if (_typeError.name == "TypeError")
 					setPseudo(undefined)
-				else if (_error.about == AboutErr.PSEUDO && _error.type == TypeErr.NOT_FOUND )
+				else if (
+					_error.about == AboutErr.PSEUDO && _error.type == TypeErr.NOT_FOUND
+				)
 					ClientApi.redirect = new URL(SIGNIN_ROUTE)
 			}
 		})()

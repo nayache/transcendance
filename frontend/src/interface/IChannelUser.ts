@@ -1,12 +1,6 @@
 import { ChannelRole, Status } from "../constants/EMessage";
 import { IOldMessageChannel } from "./IMessage";
 
-/**
-	export interface IChannelJoin {
-		channel: string,
-		user: IChannelUser
-	}
- */
 
 export interface IChannelJoin {
 	channel: string,
@@ -18,6 +12,13 @@ export interface IChannelLeave {
 	pseudo: string,
 }
 
+export interface IChannelKick {
+	channel: string,
+	author: IChannelUser,
+	target: string,
+	action: "kick" | "ban"
+}
+
 export interface IChannelUser {
 	pseudo: string;
 	role: ChannelRole;
@@ -27,6 +28,8 @@ export interface IChannelUser {
 
 export interface IChannel {
 	name: string;
+	password: boolean,
+	prv: boolean,
 	users: IChannelUser[];
 	messages: IOldMessageChannel[];
 }

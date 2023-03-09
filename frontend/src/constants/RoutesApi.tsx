@@ -38,6 +38,7 @@ export const API_CHAT_ALL_CHANNELPRVW_ROUTE = API_BASE_CHAT + '/channels/all/pre
 export const API_CHAT_CHANNEL_ROUTE = API_BASE_CHAT + '/channel' /* + '/:channelName' */
 export const API_CHAT_CHANNEL_JOIN_ROUTE = API_BASE_CHAT + '/channel/join'
 export const API_CHAT_CHANNEL_LEAVE_ROUTE = API_BASE_CHAT + '/channel/leave'
+export const API_CHAT_CHANNEL_KICK_ROUTE = API_BASE_CHAT + '/channel/kick'
 
 
 
