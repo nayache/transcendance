@@ -92,9 +92,9 @@ export class ChatService {
 
     isValidChannelPassword(password: string): boolean {
         password = password.trim();
-        if (password.length < 5 || password.length > 15)
-            return false;
         if (password.search(/\s/) != -1)
+            return false;
+        if (password.length < 6 || password.length > 15)
             return false;
         let alphaCount: number = 0;
         for (var i = 0; i < password.length; i++) {
@@ -274,10 +274,15 @@ export class ChatService {
         }});
     }
 
-    async leaveChannel(userId: string, channelName: string) {
+    async leaveChannel(userId: string, channelName: string): Promise<boolean> {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
         const member: Member = await this.getMemberByUserId(userId, channel.id);
-        await this.memberRepository.delete({id: member.id});
+        const isOwner: boolean = (member.role === ChannelRole.OWNER);
+        if (member.role === ChannelRole.OWNER)
+            await this.channelRepository.delete(channel.id);
+        else
+            await this.memberRepository.delete({id: member.id});
+        return isOwner;
     }
 
 
