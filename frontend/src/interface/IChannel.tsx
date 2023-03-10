@@ -5,7 +5,7 @@ import { IOldMessageChannel } from "./IMessage";
 export interface IChannelUser {
 	pseudo: string;
 	role: ChannelRole;
-	status: Status;	
+	status: Status;
     color: string;
 }
 

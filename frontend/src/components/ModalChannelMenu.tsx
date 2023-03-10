@@ -9,6 +9,7 @@ import JoinOrCreateChannelMenu from './JoinOrCreateChannelMenu';
 import KickChannelMenu from './KickChannelMenu';
 import LeaveChannelMenu from './LeaveChannelMenu';
 import MuteChannelMenu from './MuteChannelMenu';
+import SetAdminChannelMenu from './SetAdminChannelMenu';
 
 export enum ModalChannelType {
 	JOINORCREATECHANNEL,
@@ -91,6 +92,10 @@ const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
 		handleClick(callback)
 	}
 
+	const onSetAdmin = () => {
+		handleClick(callback)
+	}
+
 	useEffect(() => {
 		console.log("type (dans modal) = ", type)
 		console.log("active (dans modal) = ", active)
@@ -154,8 +159,8 @@ const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
 					
 					type === ModalChannelType.SETADMIN
 					&& pointedChannelName !== undefined && target !== undefined
-					&& <MuteChannelMenu channelName={pointedChannelName} target={target}
-					onMute={() => onMute()} />
+					&& <SetAdminChannelMenu channelName={pointedChannelName} target={target}
+					onSetAdmin={() => onSetAdmin()} />
 				}
 			</div>
 		</div>

@@ -55,7 +55,7 @@ export const MuteChannelMenu = ({ channelName, target, onMute, onMuteFail }: Pro
 					JSON.stringify({
 						channel: channelName,
 						target: target.pseudo,
-						duration: timeWritten.current,
+						duration: +timeWritten.current,
 					}),
 				'application/json')
 				if (onMute)

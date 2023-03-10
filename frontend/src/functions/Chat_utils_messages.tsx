@@ -1,5 +1,7 @@
 import { IMessage, IOldMessageChannel } from "../interface/IMessage";
 
+
+
 /* return the old number of messages */
 export const resetMessagesBlock = (messages: IOldMessageChannel[]): JSX.Element[] => {
 	const formattedMessages: JSX.Element[] = messages.map((oldMessage: IOldMessageChannel, i) => (
@@ -83,12 +85,16 @@ export const addMessageBlockUserBan = (author: string, target: string) => {
 	return newMessage;
 }
 
-export const addMessageBlockUserMute = (target: string, duration: Date) => {
+export const getSecondsRemainingMute = (expiration: Date): number => {
+	return Math.round((expiration.getTime() - new Date().getTime()) / 1000)
+}
+
+export const addMessageBlockUserMute = (target: string, expiration: Date) => {
 	const newMessage = (
 		<div className="event-text-container">
 			<p className="event-text">
 				<i>
-					You just muted {target} during {duration.getSeconds()}sec
+					You just muted {target} {getSecondsRemainingMute(expiration)}sec
 				</i>
 			</p>
 		</div>
@@ -96,12 +102,12 @@ export const addMessageBlockUserMute = (target: string, duration: Date) => {
 	return newMessage;
 }
 
-export const addMessageBlockUserMuted = (author: string, duration: Date) => {
+export const addMessageBlockUserMuted = (author: string, expiration: Date) => {
 	const newMessage = (
 		<div className="event-text-container">
 			<p className="event-text">
 				<i>
-					{author} muted you during {duration.getSeconds()}sec
+					{author} muted you {getSecondsRemainingMute(expiration)}sec
 				</i>
 			</p>
 		</div>

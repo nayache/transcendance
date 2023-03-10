@@ -10,8 +10,9 @@ import { Socket } from "socket.io-client";
 import { ChannelRole, Status } from "../constants/EMessage";
 import UserPreview from "./UserPreview";
 import { GoGear } from "react-icons/go"
+import { AiOutlineWarning } from "react-icons/ai"
 import ModalChannelMenu, { ModalChannelType } from "./ModalChannelMenu";
-import { addMessageBlock, resetMessagesBlock } from "../functions/Chat_utils_messages";
+import { addMessageBlock, getSecondsRemainingMute, resetMessagesBlock } from "../functions/Chat_utils_messages";
 import { handleChange, handleKeyDown } from "../functions/Chat_utils_actions";
 import { useMessagesListeners } from "../hooks/useMessagesListeners";
 import { AlertType } from "./ChatPage";
@@ -40,14 +41,25 @@ const Chat = ({ socket, channels, currentChannelId, removeChannel,
 	const [ doPrintModal, setDoPrintModal ] = useState<boolean>(false)
 	const users: IChannelUser[] | null = !(currentChannelId <= -1 || currentChannelId >= channels.length)
 	? channels[currentChannelId].users : null
-	const messages = useMessagesListeners(textAreaRef, messagesContainerRef, socket,
-		currentChannelId, channels, chanUser, setAlertModal,
-		updateChannel, removeChannel, setCurrentChannel)
+	const [duration, setDuration] = useState<number>()
+	const [messages, expiration] = useMessagesListeners(textAreaRef, messagesContainerRef, socket,
+	currentChannelId, channels, chanUser, setAlertModal,
+	updateChannel, removeChannel, setCurrentChannel)
 
 
 
 
-
+	const printWarningZone = () => {
+		if (duration && duration > 0)
+			return (
+				<div className="warning-zone-container">
+					<AiOutlineWarning className="warning-svg"/>
+					<p className="warning-zone-text">
+						You are currently muted, try in {duration}sec
+					</p>
+				</div> 
+			)
+	}
 
 	const getPage = () => (
 		<React.Fragment>
@@ -56,20 +68,27 @@ const Chat = ({ socket, channels, currentChannelId, removeChannel,
 					<h3 className={(() => (
 					(currentChannelId <= -1 || currentChannelId >= channels.length) ? "chat-title hidden" : "chat-title"
 					))()}>
-						{ !(currentChannelId <= -1 || currentChannelId >= channels.length)
-						? channels[currentChannelId].name : 'a' } 
-						{ !(currentChannelId <= -1 || currentChannelId >= channels.length) && chanUser?.role === ChannelRole.OWNER
-						&& <GoGear className="gear-svg" onClick={() => setDoPrintModal(true)}/>}
-						{ !(currentChannelId <= -1 || currentChannelId >= channels.length)
-						&& chanUser?.role === ChannelRole.OWNER &&
-						<ModalChannelMenu active={doPrintModal} type={ModalChannelType.EDITCHANNEL}
-						channels={channels} currentChannelId={currentChannelId}
-						pointedChannelPrv={channels[currentChannelId].prv}
-						pointedChannelPassword={channels[currentChannelId].password}
-						pointedChannelName={channels[currentChannelId].name}
-						chanUser={chanUser}
-						callback={() => {console.log("wssshhhhhhhhhhhhhhh"); setDoPrintModal(false)}}
-						callbackFail={() => {console.log("onClose modal"); setDoPrintModal(false)}} /> }
+						{
+							!(currentChannelId <= -1 || currentChannelId >= channels.length)
+							? channels[currentChannelId].name : 'a'
+						} 
+						{
+							!(currentChannelId <= -1 || currentChannelId >= channels.length)
+							&& chanUser?.role === ChannelRole.OWNER
+							&& <GoGear className="gear-svg" onClick={() => setDoPrintModal(true)}/>
+						}
+						{
+							!(currentChannelId <= -1 || currentChannelId >= channels.length)
+							&& chanUser?.role === ChannelRole.OWNER && doPrintModal &&
+							<ModalChannelMenu active={doPrintModal} type={ModalChannelType.EDITCHANNEL}
+							channels={channels} currentChannelId={currentChannelId}
+							pointedChannelPrv={channels[currentChannelId].prv}
+							pointedChannelPassword={channels[currentChannelId].password}
+							pointedChannelName={channels[currentChannelId].name}
+							chanUser={chanUser}
+							callback={() => {console.log("wssshhhhhhhhhhhhhhh"); setDoPrintModal(false)}}
+							callbackFail={() => {console.log("onClose modal"); setDoPrintModal(false)}} />
+						}
 					</h3>
 				</div>
 				<div className="messages-container-container">
@@ -79,12 +98,17 @@ const Chat = ({ socket, channels, currentChannelId, removeChannel,
 					</div>
 				</div>
 				<div className={(() => (
-					(currentChannelId <= -1 || currentChannelId >= channels.length) ? "textarea-text-container hidden" : "textarea-text-container"
-					))()}>
+				(currentChannelId <= -1 || currentChannelId >= channels.length) ? "textarea-text-container hidden" : "textarea-text-container"
+				))()}>
+					{printWarningZone()}
 					<textarea placeholder="Write something..." ref={textAreaRef} className="textarea-text"
 					spellCheck={false} maxLength={MAX_CARAC_CHAT}
 					onChange={(e) => handleChange(e, textAreaRef, msg)}
-					onKeyDown={(e) => handleKeyDown(e, textAreaRef, msg, chanUser, currentChannelId, channels)} />
+					onKeyDown={(e) => handleKeyDown(e, textAreaRef, msg, chanUser, currentChannelId,
+					channels, () => {
+						if (expiration)
+							setDuration(getSecondsRemainingMute(expiration))
+					}, () => setDuration(undefined))} />
 				</div>
 			</div>
 		</React.Fragment>

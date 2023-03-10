@@ -17,10 +17,52 @@ interface Props {
 	onClose?: (e?: React.MouseEvent<HTMLSpanElement>) => void,
 }
 
+// const UserSitutation = {
+// 	self: (chanUser: IChannelUser, target: IChannelUser): boolean => {
+// 		return (chanUser.pseudo === target.pseudo)
+// 	},
+// 	friend: async (chanUser: IChannelUser, target: IChannelUser): Promise<boolean> => {
+// 		try {
+// 			// si erreur on cherche pas a comprendre et on renvoie false
+// 			await ClientApi.get()
+// 				return (chanUser.pseudo === target.pseudo)
+// 		} catch (err) {
+// 			return false
+// 		}
+// 	},
+// 	blocked: async (): Promise<boolean> => {
+// 		try {
+// 			// si erreur on cherche pas a comprendre et on renvoie false
+// 			await ClientApi.get()
+// 				return (chanUser.pseudo === target.pseudo)
+// 		} catch (err) {
+// 			return false
+// 		}
+// 	},
+// 	blocked: async (): Promise<boolean> => {
+// 		try {
+// 			// si erreur on cherche pas a comprendre et on renvoie false
+// 			await ClientApi.get()
+// 				return (chanUser.pseudo === target.pseudo)
+// 		} catch (err) {
+// 			return false
+// 		}
+// 	},
+// 	role: async (): Promise<boolean> => {
+// 		try {
+// 			// si erreur on cherche pas a comprendre et on renvoie false
+// 			await ClientApi.get()
+// 				return (chanUser.pseudo === target.pseudo)
+// 		} catch (err) {
+// 			return false
+// 		}
+// 	},
+// }
+
 interface ButtonProps {
 	content: string,
 	action: () => void,
-	role?: ChannelRole
+	role: ChannelRole,
 }
 
 /* to place juste before the element concerned */
@@ -34,7 +76,9 @@ const UserPreview = ({ chanUser, player, channel, onMute, onBan, onKick, onClose
 			content: "See the profile",
 			action: () => {
 				ClientApi.redirect = new URL(BASE_URL + '/profile/' + playerName)
-			}
+			},
+			role: ChannelRole.USER,
+			// omit: [],
 		},
 		{
 			content: "Invite",
@@ -42,6 +86,7 @@ const UserPreview = ({ chanUser, player, channel, onMute, onBan, onKick, onClose
 
 			},
 			role: ChannelRole.USER,
+			// omit: [UserSitutation.SELF],
 		},
 		{
 			content: "Add to friends",
@@ -49,6 +94,7 @@ const UserPreview = ({ chanUser, player, channel, onMute, onBan, onKick, onClose
 				
 			},
 			role: ChannelRole.USER,
+			// omit: [UserSitutation.SELF, UserSitutation.FRIEND],
 		},
 		{
 			content: "Send message",
@@ -56,6 +102,7 @@ const UserPreview = ({ chanUser, player, channel, onMute, onBan, onKick, onClose
 
 			},
 			role: ChannelRole.USER,
+			// omit: [UserSitutation.SELF],
 		},
 		{
 			content: "Block",
@@ -63,6 +110,7 @@ const UserPreview = ({ chanUser, player, channel, onMute, onBan, onKick, onClose
 
 			},
 			role: ChannelRole.USER,
+			// omit: [UserSitutation.SELF, UserSitutation.BLOCKED],
 		},
 		{
 			content: "Name admin",
@@ -70,6 +118,7 @@ const UserPreview = ({ chanUser, player, channel, onMute, onBan, onKick, onClose
 				setActionModal(ModalChannelType.SETADMIN)
 			},
 			role: ChannelRole.ADMIN,
+			// omit: [UserSitutation.SELF, UserSitutation.ADMIN, UserSitutation.OWNER],
 		},
 		{
 			content: "Mute",
@@ -77,6 +126,7 @@ const UserPreview = ({ chanUser, player, channel, onMute, onBan, onKick, onClose
 				setActionModal(ModalChannelType.MUTEUSER)
 			},
 			role: ChannelRole.ADMIN,
+			// omit: [UserSitutation.SELF, UserSitutation.MUTED, UserSitutation.OWNER],
 		},
 		{
 			content: "Kick",
@@ -107,7 +157,8 @@ const UserPreview = ({ chanUser, player, channel, onMute, onBan, onKick, onClose
 		]);
 		const newButtons = buttons.filter(({role: _role}: ButtonProps) => (
 			(chanUser.pseudo === playerName && _role === undefined) ||
-			(chanUser.pseudo !== playerName && (_role === undefined || chanUser.role >= _role))
+			(chanUser.pseudo !== playerName &&
+				(_role === undefined || (chanUser.role >= _role)))
 		))
 
 		return (

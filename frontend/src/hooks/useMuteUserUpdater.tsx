@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Socket } from "socket.io-client"
 import ClientApi from "../components/ClientApi.class"
 import { API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi"
@@ -10,18 +10,21 @@ export const useMuteUserUpdater = (
 	onMuteUserUpdate?: (payload: IChannelEvMute) => void
 ) => {
 	
+	const [expiration, setExpiration] = useState<Date>();
 	
 	useEffect(() => {
 		if (chanUser?.pseudo) {
 			socket?.on('muteUser', async (payload: IChannelEvMute) => {
-				console.log("(punish) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.target)
-				console.log("(punish) currentChannelId = ", currentChannelId)
+				console.log("(mute) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.target)
+				console.log("(mute) currentChannelId = ", currentChannelId)
 				const daChannel: IChannel | undefined =
 				channels.find(channel => channel.name === payload.channel)
 				if (daChannel) { // impossible que daChannel soit undefined
 					if (chanUser.pseudo === payload.target.pseudo) {
 						if (!(currentChannelId <= -1 || currentChannelId >= channels.length)
 						&& channels[currentChannelId].name === payload.channel) {
+							setExpiration(new Date(payload.expiration))
+							payload.expiration = new Date(payload.expiration)
 							console.log("test ici en mute")
 							if (onMuteUserUpdate)
 								onMuteUserUpdate(payload)
@@ -31,6 +34,7 @@ export const useMuteUserUpdater = (
 						if (!(currentChannelId <= -1 || currentChannelId >= channels.length)
 						&& channels[currentChannelId].name === payload.channel) {
 							console.log("test ici en mute")
+							payload.expiration = new Date(payload.expiration)
 							if (onMuteUserUpdate)
 								onMuteUserUpdate(payload)
 						}
@@ -42,4 +46,5 @@ export const useMuteUserUpdater = (
 			socket?.removeAllListeners('muteUser')
 		}
 	}, [socket, chanUser, currentChannelId])
+	return expiration;
 }

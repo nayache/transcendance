@@ -24,7 +24,7 @@ export const useMessagesListeners = (
 	updateChannel: (channel: IChannel) => void,
 	removeChannel: (channelName: string, genUpdated: IChannel | null) => void,
 	setCurrentChannel: (channelName: string) => void,
-) => {
+): [JSX.Element[], Date?] => {
 
 	const [ messages, setMessages ] = useState<JSX.Element[]>([]);
 	const oldChannelName = useRef<string | undefined>(!(currentChannelId <= -1 || currentChannelId >= channels.length)
@@ -72,15 +72,15 @@ export const useMessagesListeners = (
 		}
 	)
 
-	useMuteUserUpdater(socket, channels, currentChannelId, chanUser,
+	const expiration = useMuteUserUpdater(socket, channels, currentChannelId, chanUser,
 		(payload) => {
 			if (payload.target.pseudo === chanUser?.pseudo)
 				setMessages(oldmessages => [...oldmessages,
-					addMessageBlockUserMuted(payload.author.pseudo, payload.expiration)
+					addMessageBlockUserMuted(payload.author.pseudo, new Date(payload.expiration))
 				])
 			else if (payload.author.pseudo === chanUser?.pseudo)
 				setMessages(oldmessages => [...oldmessages,
-					addMessageBlockUserMute(payload.target.pseudo, payload.expiration)
+					addMessageBlockUserMute(payload.target.pseudo, new Date(payload.expiration))
 				])
 		}
 	)
@@ -187,5 +187,5 @@ export const useMessagesListeners = (
 	}, [socket, chanUser, currentChannelId])
 	
 
-	return messages
+	return [messages, expiration]
 }
