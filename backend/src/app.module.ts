@@ -18,6 +18,7 @@ import { ChannelEntity } from './chat/entity/channel.entity';
 import { Member } from './chat/entity/member.entity';
 import { MessageEntity } from './chat/entity/message.entity';
 import { PrivateMessageEntity } from './chat/entity/privateMessage.entity';
+import { Mute } from './chat/entity/mute.entity';
 
 @Module({
   imports: [AuthModule, UserModule, ChatModule, ConfigModule, ConfigModule.forRoot(),
@@ -29,7 +30,7 @@ import { PrivateMessageEntity } from './chat/entity/privateMessage.entity';
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     entities: [UserEntity, FriendEntity, DataUserEntity, Avatar, BlockedEntity, ChannelEntity, Member,
-      MessageEntity, PrivateMessageEntity],
+      MessageEntity, PrivateMessageEntity, Mute],
     synchronize: true,
   }),
   ],

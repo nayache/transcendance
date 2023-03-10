@@ -121,7 +121,7 @@ export class UserService {
         if (await this.friendShipPending(userId, targetId))
             return Relation.PENDING;
         else
-            return (await this.friendshipExist(userId, targetId)) ? Relation.FRIEND : Relation.UNKNOW;
+            return (await this.friendshipExist(userId, targetId)) ? Relation.FRIEND : Relation.UNKNOWN;
     }
 
     async createFriendship(userId: string, userId2: string) {

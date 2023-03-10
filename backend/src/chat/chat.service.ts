@@ -12,6 +12,10 @@ import { MessageEntity } from './entity/message.entity';
 import { PrivateMessageEntity } from './entity/privateMessage.entity';
 import { UserEntity } from 'src/entity/user.entity';
 import { isAlpha } from 'class-validator';
+import { Mute } from './entity/mute.entity';
+import { Error } from 'src/exceptions/error.interface';
+import { AboutErr, TypeErr } from 'src/enums/error_constants';
+
 
 @Injectable()
 export class ChatService {
@@ -21,6 +25,7 @@ export class ChatService {
         @InjectRepository(Member) private memberRepository: Repository<Member>,
         @InjectRepository(MessageEntity) private messageRepository: Repository<MessageEntity>,
         @InjectRepository(PrivateMessageEntity) private privateMsgRepository: Repository<PrivateMessageEntity>,
+        @InjectRepository(Mute) private muteRepository: Repository<Mute>,
         @Inject(forwardRef(() => ChatGateway))private readonly chatGateway: ChatGateway) {
     }
 
@@ -86,6 +91,7 @@ export class ChatService {
     }
 
     isValidChannelPassword(password: string): boolean {
+        password = password.trim();
         if (password.length < 5 || password.length > 15)
             return false;
         if (password.search(/\s/) != -1)
@@ -98,13 +104,15 @@ export class ChatService {
         return (alphaCount >= 6);
     }
 
-    async channelAccess(userId: string, channelName: string, password?: string): Promise<boolean> {
+    async channelAccess(userId: string, channelName: string, password?: string): Promise<Error> {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
         if (channel.private === true)
-            return false;
+            return new Error(AboutErr.CHANNEL, TypeErr.REJECTED, 'channel is private');
         if (await this.isBanned(channelName, userId))
-            return false;
-        return !(channel.private && channel.password != password);
+            return new Error(AboutErr.USER, TypeErr.REJECTED, 'user is banned');
+        if (channel.password && channel.password != password)
+            return new Error(AboutErr.PASSWORD, TypeErr.INVALID, 'channel password is incorrect');
+        return null;
     }
 
     async setChannelAccess(channelName: string, prv: boolean) {
@@ -121,6 +129,39 @@ export class ChatService {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
         channel.banneds.push(userId);
         await this.channelRepository.update(channel.id, {banneds: channel.banneds});
+    }
+
+    getMuteExpiration(muted: Mute): Date {
+        return new Date(muted.updated_at.getTime() + (muted.duration * 1000));
+    }
+
+    async isMuted(channelName: string, userId: string): Promise<boolean> {
+        const channel: ChannelEntity = await this.getChannelByName(channelName);
+        const muted: Mute = await this.findMute(channel, userId);
+        if (muted) {
+            if (Date.now() >= (muted.updated_at.getTime() + (muted.duration * 1000)))
+                await this.muteRepository.delete(muted.id);
+            else
+                return true;
+        }
+        return false;
+    }
+
+    async findMute(channel: ChannelEntity, userId: string): Promise<Mute> {
+        return this.muteRepository.findOne({where: {
+            channelId: channel.id, userId: userId
+        }});
+    }
+
+    async muteUser(channelName: string, userId: string, duration: number): Promise<Mute> {
+        const channel: ChannelEntity = await this.getChannelByName(channelName);
+        const user: UserEntity = await this.userService.findById(userId);
+        console.log(await this.isMuted(channelName, userId))
+        let muted: Mute = await this.findMute(channel, userId);
+        if (!muted)
+            return this.muteRepository.save(new Mute(channel, user, duration));
+        await this.muteRepository.update(muted.id, { duration: duration } );
+        return this.findMute(channel, userId);
     }
 
     async setRole(channelName: string, userId: string, role: ChannelRole) {
@@ -170,7 +211,7 @@ export class ChatService {
                 const status: Status = this.chatGateway.getStatus(member.userId);
                 return {pseudo: member.user.pseudo, color: member.color, role: member.role, status};
             })
-            return {name: channel.name, users, messages};
+            return {name: channel.name, prv: channel.private, password: !!channel.password, users, messages};
         }));
         return channs;
     }
@@ -208,6 +249,10 @@ export class ChatService {
 
     async createChannel(nameChannel: string, prv: boolean, password?: string) {
         await this.channelRepository.save(new ChannelEntity(nameChannel, prv, password));
+    }
+
+    async deleteChannel(channel: ChannelEntity) {
+        await this.channelRepository.delete(channel.id);
     }
 
     async joinChannel(userId: string, role: ChannelRole, channelName: string): Promise<ChannelEntity> {

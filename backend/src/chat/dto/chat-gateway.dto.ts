@@ -30,3 +30,10 @@ export class kickBanDto {
   target: string;
   action: string;
 }
+
+export class muteDto {
+  channel: string;
+  author: ChannelUserDto;
+  target: ChannelUserDto;
+  expiration: Date;
+}

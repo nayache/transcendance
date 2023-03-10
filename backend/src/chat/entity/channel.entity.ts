@@ -1,6 +1,7 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Member } from "./member.entity";
 import { MessageEntity } from "./message.entity";
+import { Mute } from "./mute.entity";
 
 @Entity()
 export class ChannelEntity {
@@ -32,6 +33,9 @@ export class ChannelEntity {
     
     @Column({type: 'text' ,array: true})
     banneds: string[];
+
+    @OneToOne(() => Mute, (muteds) => (muteds.channel), {cascade: true})
+    muteds: Mute[];
     
     @OneToOne(() => MessageEntity, (messages) => messages.channel, { cascade: true })
     messages: MessageEntity[];

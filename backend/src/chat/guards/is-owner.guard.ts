@@ -14,8 +14,11 @@ export class isOwner implements CanActivate {
     console.log('IN OWNER GUARD')
     const request: Request = context.switchToHttp().getRequest<Request>();
     const args: string[] = Object.values(request.body);
+    const keys: string[] = Object.keys(request.body);
     const authorId: string = request.user as string;
     
+    if (!keys || keys[0] !== 'name' || !args[0])
+        throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.EMPTY, 'empty name argument');
     if (!await this.chatService.channelExistt(args[0]))
         throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'channel not exist');
     if (!await this.chatService.isOwner(authorId, args[0]))
