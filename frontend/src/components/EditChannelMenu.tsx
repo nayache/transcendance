@@ -1,31 +1,36 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import { API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi";
+import { API_CHAT_CHANNEL_PRVACCESS_ROUTE, API_CHAT_CHANNEL_PWDACCESS_ROUTE, API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi";
 import { IChannel, IChannelUser } from "../interface/IChannel";
 import { MAX_CARAC_CHANNEL_NAME, MAX_CARAC_CHANNEL_PWD, MIN_CARAC_CHANNEL_NAME,
 	MIN_CARAC_CHANNEL_PWD } from "./ChannelPart";
 import ClientApi from "./ClientApi.class";
 import { GiPadlock, GiPadlockOpen, GiOpenGate, GiGate } from "react-icons/gi"
 import { RiEyeFill, RiEyeCloseFill } from "react-icons/ri"
+import "../styles/ModalChannelMenu.css"
 import "../styles/EditChannelMenu.css"
 import { AboutErr, IError, TypeErr } from "../constants/EError";
+import { delay } from "../functions/Debug_utils";
 
 interface Props {
 	chanUser: IChannelUser,
 	channelPrv: boolean,
 	channelPassword: boolean,
 	channelName: string,
-	onEdit?: () => void,
+	onEdit?: (props?: any) => void,
 }
+
+type BtnStatus = "idle" | "loading" | "good" | "fail"
 
 const EditChannelMenu = ({ chanUser, channelName, channelPrv, channelPassword, onEdit }: Props) => {
 
 
-	const [errorChanName, setErrorChanName] = useState<string>("")
-	const passwordWritten = useRef<string | undefined>(undefined);
+	const passwordWritten = useRef<string | null>(null);
 	const [showPassword, setShowPassword] = useState<boolean>(false)
 	const [errorPassword, setErrorPassword] = useState<string>("")
 	const inputRef = useRef<HTMLInputElement>(null);
 	const inputPwdRef = useRef<HTMLInputElement>(null);
+	const [btnStatusPrv, setBtnStatusPrv] = useState<BtnStatus>("idle")
+	const [btnStatusPwd, setBtnStatusPwd] = useState<BtnStatus>("idle")
 	const [password, setPassword] = useState<boolean>(channelPassword);
 	const [prv, setPrv] = useState<boolean>(channelPrv);
 	console.log("prv (dans edit channel) = ", prv)
@@ -42,28 +47,54 @@ const EditChannelMenu = ({ chanUser, channelName, channelPrv, channelPassword, o
 			console.log("okay good")
 	}
 
-	const handleValidate = (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		setErrorChanName("")
+	const handleSavePrv = () => {
+		(async () => {
+			try {
+				await ClientApi.patch(API_CHAT_CHANNEL_PRVACCESS_ROUTE, JSON.stringify({
+					name: channelName,
+					prv,
+				}), 'application/json')
+				setBtnStatusPrv("good")
+				setTimeout(() => setBtnStatusPrv("idle"), 2000)
+				if (onEdit)
+					onEdit({
+						channelName,
+						attribute: prv,
+						action: "prv"})
+				passwordWritten.current = ""
+			} catch (err) {
+				console.log("err = ", err);
+				setBtnStatusPrv("fail")
+				setTimeout(() => setBtnStatusPrv("idle"), 2000)
+			}
+		})()
+	}
+
+	const handleSavePassword = () => {
 		setErrorPassword("");
 		(async () => {
 			try {
-				const { channel } = await ClientApi.post(API_CHAT_CHANNEL_ROUTE, JSON.stringify({
-					prv,
-					password: passwordWritten.current
+				console.log("passwordWritten.current = ", passwordWritten.current)
+				await ClientApi.patch(API_CHAT_CHANNEL_PWDACCESS_ROUTE, JSON.stringify({
+					name: channelName,
+					password: passwordWritten.current,
 				}), 'application/json')
+				setBtnStatusPwd("good")
+				setTimeout(() => setBtnStatusPwd("idle"), 2000)
 				if (onEdit)
-					onEdit()
+					onEdit({
+						channelName,
+						attribute: password,
+						action: "pwd"})
 				passwordWritten.current = ""
 			} catch (err) {
 				const _error: IError = err as IError;
 
-				if (_error.about === AboutErr.CHANNEL && _error.type === TypeErr.DUPLICATED) {
-					setErrorChanName("The channel name already exist")
-				}
-				else if ((_error.about === AboutErr.REQUEST ||
+				setBtnStatusPwd("fail")
+				setTimeout(() => setBtnStatusPwd("idle"), 2000)
+				if ((_error.about === AboutErr.REQUEST ||
 					_error.about === AboutErr.CHANNEL) && _error.type === TypeErr.INVALID) {
-					if (password && passwordWritten.current !== undefined) {
+					if (password && passwordWritten.current !== null) {
 						if (passwordWritten.current.length < MIN_CARAC_CHANNEL_PWD)
 							setErrorPassword("Please set a password longer (" + MIN_CARAC_CHANNEL_PWD + " char min)")
 						else if (passwordWritten.current.length > MAX_CARAC_CHANNEL_PWD)
@@ -86,17 +117,88 @@ const EditChannelMenu = ({ chanUser, channelName, channelPrv, channelPassword, o
 		})()
 	}
 
+	const printButtonSave = (btnStatus: BtnStatus,
+		setBtnStatus: React.Dispatch<React.SetStateAction<BtnStatus>>,
+		onClick?: () => void): JSX.Element => {
+		switch (btnStatus) {
+			case "idle":
+				return (
+					<div className="form-btn-container">
+						<button onClick={() => {
+							setBtnStatus("loading")
+							if (onClick)
+								onClick()
+						}}
+						className="form-save-button">Save</button>
+					</div>
+				)
+			case "loading":
+				return (
+					<div className="form-btn-container">
+						<svg id="loading-spinner" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+							<defs>
+								<linearGradient id="spinner-gradient-a" x1="49.892%" x2="55.03%" y1="58.241%" y2="89.889%">
+									<stop offset="0%"/>
+									<stop offset="22.44%" stopOpacity=".59"/>
+									<stop offset="100%" stopOpacity="0"/>
+								</linearGradient>
+							</defs>
+							<g fill="none" transform="translate(-8 -8)">
+								<path d="M32,56 C18.745166,56 8,45.254834 8,32 C8,18.745166 18.745166,8 32,8 C45.254834,8 56,18.745166 56,32 C56,45.254834 45.254834,56 32,56 Z M32,52 C43.045695,52 52,43.045695 52,32 C52,20.954305 43.045695,12 32,12 C20.954305,12 12,20.954305 12,32 C12,43.045695 20.954305,52 32,52 Z"/>
+								<path fill="url(#spinner-gradient-a)" d="M56,32 C56,33.1045695 55.1045695,34 54,34 C52.8954305,34 52,33.1045695 52,32 C52,20.954305 43.045695,12 32,12 C20.954305,12 12,20.954305 12,32 C12,43.045695 20.954305,52 32,52 C33.1045695,52 34,52.8954305 34,54 C34,55.1045695 33.1045695,56 32,56 C18.745166,56 8,45.254834 8,32 C8,18.745166 18.745166,8 32,8 C45.254834,8 56,18.745166 56,32 Z" transform="rotate(45 32 32)"/>
+							</g>
+						</svg>
+					</div>
+				)
+			case "good":
+				return (
+					<div className="form-btn-container">
+						<p>Good</p>
+					</div>
+				)
+			case "fail":
+				return (
+					<div className="form-btn-container">
+
+					</div>
+				)
+			default:
+				return (
+					<div className="form-btn-container">
+						<button onClick={() => {
+							setBtnStatus("loading")
+							if (onClick)
+								onClick()
+						}}
+						className="form-save-button" type="submit">Save</button>
+					</div>
+				)
+		}
+	}
 
 
 
+
+
+
+	useEffect(() => {
+		console.log("channelPassword = ", channelPassword)
+		console.log("channelPrv = ", channelPrv)
+		setPassword(channelPassword);
+		setPrv(channelPrv);
+	}, [channelName, channelPrv, channelPassword])
+
+	useEffect(() => {
+		console.log("btnStatusPrv = ", btnStatusPrv)
+		console.log("btnStatusPwd = ", btnStatusPwd)
+	}, [btnStatusPrv, btnStatusPwd])
 
 	useEffect(() => {
 		if (inputPwdRef.current) {
 			if (!password) {
 				inputPwdRef.current.value = ""
 				setErrorPassword("")
-				passwordWritten.current = undefined
-				setPassword(false);
+				passwordWritten.current = null
 			}
 			else {
 				passwordWritten.current = ""
@@ -110,16 +212,16 @@ const EditChannelMenu = ({ chanUser, channelName, channelPrv, channelPassword, o
 
 	return (
 		<React.Fragment>
-			<div className="createChannel-container">
-				<div className="createChannel-title-container">
-					<h3 className="createChannel-title">Edit the {channelName} channel</h3>
+			<div className="editChannel-container">
+				<div className="editChannel-title-container">
+					<h3 className="editChannel-title">Edit the {channelName} channel</h3>
 					{
 						password && <GiPadlock className="padlock-svg" onClick={() => {setPassword(false)}} /> ||
 						!password && <GiPadlockOpen className="padlock-svg" onClick={() => setPassword(true)} />
 					}
 				</div>
-				<form onSubmit={handleValidate} className="createChannel-form">
-					<div className="createChannel-prv">
+				<form className="editChannel-form">
+					<div className="editChannel-prv">
 						<label>Open to public 
 						{
 							prv && <GiGate className="gate-svg" onClick={() => {setPrv(false)}} /> ||
@@ -130,12 +232,15 @@ const EditChannelMenu = ({ chanUser, channelName, channelPrv, channelPassword, o
 							<span className="slider round"></span>
 						</label>
 					</div>
+					{ printButtonSave(btnStatusPrv, setBtnStatusPrv, () => handleSavePrv()) }
+				</form>
+				<form className="editChannel-form">
 					<div className={(() => {
 						if (!password)
-							return "createChannel-password disabled-div-form"
-						return "createChannel-password"
+							return "editChannel-password disabled-div-form"
+						return "editChannel-password"
 					})()}>
-						<label>Password {
+						<label>New password {
 							password && (
 								showPassword && <RiEyeFill className="eye-svg" onClick={() => setShowPassword(false)}/> ||
 								!showPassword && <RiEyeCloseFill className="eye-svg" onClick={() => setShowPassword(true)}/>
@@ -156,7 +261,7 @@ const EditChannelMenu = ({ chanUser, channelName, channelPrv, channelPassword, o
 						disabled={!password} />
 						{ password && errorPassword && <p className="error-text">{errorPassword}</p> }
 					</div>
-					<button className="form-createChannel-button" type="submit">Validate</button>
+					{ printButtonSave(btnStatusPwd, setBtnStatusPwd, () => handleSavePassword()) }
 				</form>
 			</div>
 		</React.Fragment>

@@ -24,7 +24,7 @@ export const useMessagesListeners = (
 	updateChannel: (channel: IChannel) => void,
 	removeChannel: (channelName: string, genUpdated: IChannel | null) => void,
 	setCurrentChannel: (channelName: string) => void,
-): [JSX.Element[], Date?] => {
+): [JSX.Element[], [string, Date] | undefined] => {
 
 	const [ messages, setMessages ] = useState<JSX.Element[]>([]);
 	const oldChannelName = useRef<string | undefined>(!(currentChannelId <= -1 || currentChannelId >= channels.length)
@@ -130,7 +130,7 @@ export const useMessagesListeners = (
 			{
 				console.log("oldChannelName.current = ", oldChannelName.current)
 				if (scrollBottom >= lowerTopPoint || chanUser?.pseudo === rpseudoSender.current
-				|| oldChannelName.current != channels[currentChannelId].name) {
+				|| (messages.length > 0 && oldChannelName.current != channels[currentChannelId].name)) {
 					console.log("noMessages.current = ", noMessages.current)
 					messagesContainerRef.current?.scrollTo(0, lowerBottomPoint);
 				}

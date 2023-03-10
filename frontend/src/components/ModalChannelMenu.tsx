@@ -36,8 +36,8 @@ interface Props {
 	pointedChannelName?: string,
 	pointedChannelPrv?: boolean,
 	pointedChannelPassword?: boolean,
-	callback?: () => any,
-	callbackFail?: () => any,
+	callback?: (props?: any) => any,
+	callbackFail?: (props?: any) => any,
 }
 
 const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
@@ -48,7 +48,7 @@ const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
 	const [update, setUpdate] = useState<string>("");
 
 
-	const handleClick = (callback?: () => any | undefined, e?: React.MouseEvent) => {
+	const handleClick = (callback?: (props?: any) => any | undefined, e?: React.MouseEvent) => {
 		setUpdate("")
 		if (callback)
 			callback();
@@ -76,8 +76,10 @@ const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
 		setUpdate("CREATECHANNEL")
 	}
 
-	const onEdit = () => {
-		handleClick(callback)
+	const onEdit = (props?: any) => {
+		setUpdate("")
+		if (callback)
+			callback(props);
 	}
 	
 	const onKick = () => {
@@ -140,7 +142,7 @@ const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
 					&& pointedChannelPassword !== undefined && pointedChannelPrv !== undefined
 					&& <EditChannelMenu chanUser={chanUser} channelName={pointedChannelName}
 					channelPrv={pointedChannelPrv} channelPassword={pointedChannelPassword}
-					onEdit={() => onEdit()} /> ||
+					onEdit={(props) => onEdit(props)} /> ||
 					
 					type === ModalChannelType.KICKUSER
 					&& pointedChannelName !== undefined && target !== undefined

@@ -41,7 +41,8 @@ const Chat = ({ socket, channels, currentChannelId, removeChannel,
 	const [ doPrintModal, setDoPrintModal ] = useState<boolean>(false)
 	const users: IChannelUser[] | null = !(currentChannelId <= -1 || currentChannelId >= channels.length)
 	? channels[currentChannelId].users : null
-	const [duration, setDuration] = useState<number>()
+	const [durations, setDurations] = useState<[string, number | null][]>([])
+	const [refresher, setRefresher] = useState<Date>(new Date())
 	const [messages, expiration] = useMessagesListeners(textAreaRef, messagesContainerRef, socket,
 	currentChannelId, channels, chanUser, setAlertModal,
 	updateChannel, removeChannel, setCurrentChannel)
@@ -50,15 +51,21 @@ const Chat = ({ socket, channels, currentChannelId, removeChannel,
 
 
 	const printWarningZone = () => {
-		if (duration && duration > 0)
-			return (
-				<div className="warning-zone-container">
-					<AiOutlineWarning className="warning-svg"/>
-					<p className="warning-zone-text">
-						You are currently muted, try in {duration}sec
-					</p>
-				</div> 
-			)
+		if (!(currentChannelId <= -1 || currentChannelId >= channels.length)) {
+			const index = durations.findIndex(duration => (
+				duration[0] === channels[currentChannelId].name &&
+				duration[1] && duration[1] > 0
+			))
+			if (index !== -1)
+				return (
+					<div className="warning-zone-container">
+						<AiOutlineWarning className="warning-svg"/>
+						<p className="warning-zone-text">
+							You are currently muted
+						</p>
+					</div> 
+				) //, try in {durations[index][1]}sec
+		}
 	}
 
 	const getPage = () => (
@@ -86,7 +93,20 @@ const Chat = ({ socket, channels, currentChannelId, removeChannel,
 							pointedChannelPassword={channels[currentChannelId].password}
 							pointedChannelName={channels[currentChannelId].name}
 							chanUser={chanUser}
-							callback={() => {console.log("wssshhhhhhhhhhhhhhh"); setDoPrintModal(false)}}
+							callback={({channelName, attribute, action}) => {
+								const channel = channels.find(channel => channel.name === channelName)
+
+								if (channel) {
+									if (action === "pwd")
+										channel.password = attribute
+									if (action === "prv")
+										channel.prv = attribute
+									updateChannel(channel)
+								}
+								console.log("channelName = ", channelName)
+								console.log("attribute = ", attribute)
+								console.log("action = ", action)
+							}}
 							callbackFail={() => {console.log("onClose modal"); setDoPrintModal(false)}} />
 						}
 					</h3>
@@ -100,15 +120,22 @@ const Chat = ({ socket, channels, currentChannelId, removeChannel,
 				<div className={(() => (
 				(currentChannelId <= -1 || currentChannelId >= channels.length) ? "textarea-text-container hidden" : "textarea-text-container"
 				))()}>
-					{printWarningZone()}
+					{/* {printWarningZone()} */}
 					<textarea placeholder="Write something..." ref={textAreaRef} className="textarea-text"
 					spellCheck={false} maxLength={MAX_CARAC_CHAT}
 					onChange={(e) => handleChange(e, textAreaRef, msg)}
 					onKeyDown={(e) => handleKeyDown(e, textAreaRef, msg, chanUser, currentChannelId,
 					channels, () => {
+						if (expiration && expiration[1])
+							setDurations(oldDurations => [...oldDurations,
+								[expiration[0], getSecondsRemainingMute(expiration[1])]
+							])
+					}, () => {
 						if (expiration)
-							setDuration(getSecondsRemainingMute(expiration))
-					}, () => setDuration(undefined))} />
+							setDurations(oldDurations => [...oldDurations,
+								[expiration[0], null]
+							])
+					})} />
 				</div>
 			</div>
 		</React.Fragment>

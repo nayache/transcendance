@@ -3,7 +3,6 @@ export interface IError {
 	type: TypeErr,
 	message?: string,
 }
-
 export enum AboutErr {
 	AUTH,
 	TOKEN,
@@ -12,6 +11,7 @@ export enum AboutErr {
 	PSEUDO,
 	AVATAR,
 	CHANNEL,
+	PASSWORD,
 	MESSAGE,
 	REQUEST,
 	TWOFA
