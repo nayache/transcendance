@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { Socket } from "socket.io-client"
-import { IChannel, IChannelEvJoin, IChannelEvLeave, IChannelUser } from "../interface/IChannel"
+import { IChannel, IChannelEvJoin, IChannelUser } from "../interface/IChannel"
 
 export const useJoinRoomUpdater = (
 	socket: Socket | undefined, chanUser: IChannelUser | undefined,

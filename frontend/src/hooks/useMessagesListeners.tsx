@@ -3,11 +3,12 @@ import { Socket } from "socket.io-client"
 import { AlertType } from "../components/ChatPage"
 import ClientApi from "../components/ClientApi.class"
 import { API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi"
-import { addMessageBlock, addMessageBlockUserBan, addMessageBlockUserJoin, addMessageBlockUserKick, addMessageBlockUserLeave, resetMessagesBlock } from "../functions/Chat_utils_messages"
+import { addMessageBlock, addMessageBlockUserBan, addMessageBlockUserJoin, addMessageBlockUserKick, addMessageBlockUserLeave, addMessageBlockUserMute, addMessageBlockUserMuted, resetMessagesBlock } from "../functions/Chat_utils_messages"
 import { IChannel, IChannelEvJoin, IChannelEvPunish, IChannelEvLeave, IChannelUser } from "../interface/IChannel"
 import { IMessage } from "../interface/IMessage"
 import { useJoinRoomUpdater } from "./useJoinRoomUpdater"
 import { useLeaveRoomUpdater } from "./useLeaveRoomUpdater"
+import { useMuteUserUpdater } from "./useMuteUserUpdater"
 import { usePunishUserUpdater } from "./usePunishUserUpdater"
 
 
@@ -67,6 +68,19 @@ export const useMessagesListeners = (
 						addMessageBlockUserBan(payload.author.pseudo, payload.target)
 					])
 			}
+		}
+	)
+
+	useMuteUserUpdater(socket, channels, currentChannelId, chanUser,
+		(payload) => {
+			if (payload.target.pseudo === chanUser?.pseudo)
+				setMessages(oldmessages => [...oldmessages,
+					addMessageBlockUserMuted(payload.author.pseudo, payload.expiration)
+				])
+			else if (payload.author.pseudo === chanUser?.pseudo)
+				setMessages(oldmessages => [...oldmessages,
+					addMessageBlockUserMute(payload.target.pseudo, payload.expiration)
+				])
 		}
 	)
 

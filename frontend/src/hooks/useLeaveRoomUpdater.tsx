@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { Socket } from "socket.io-client"
-import { IChannel, IChannelEvJoin, IChannelEvLeave, IChannelUser } from "../interface/IChannel"
+import { IChannel, IChannelEvLeave, IChannelUser } from "../interface/IChannel"
 
 
 

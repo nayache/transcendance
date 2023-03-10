@@ -82,3 +82,29 @@ export const addMessageBlockUserBan = (author: string, target: string) => {
 	)
 	return newMessage;
 }
+
+export const addMessageBlockUserMute = (target: string, duration: Date) => {
+	const newMessage = (
+		<div className="event-text-container">
+			<p className="event-text">
+				<i>
+					You just muted {target} during {duration.getSeconds()}sec
+				</i>
+			</p>
+		</div>
+	)
+	return newMessage;
+}
+
+export const addMessageBlockUserMuted = (author: string, duration: Date) => {
+	const newMessage = (
+		<div className="event-text-container">
+			<p className="event-text">
+				<i>
+					{author} muted you during {duration.getSeconds()}sec
+				</i>
+			</p>
+		</div>
+	)
+	return newMessage;
+}

@@ -1,9 +1,8 @@
 import { useEffect } from "react"
 import { Socket } from "socket.io-client"
-import { AlertType } from "../components/ChatPage"
 import ClientApi from "../components/ClientApi.class"
 import { API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi"
-import { IChannel, IChannelEvJoin, IChannelEvLeave, IChannelEvPunish, IChannelUser } from "../interface/IChannel"
+import { IChannel, IChannelEvPunish, IChannelUser } from "../interface/IChannel"
 
 export const usePunishUserUpdater = (
 	socket: Socket | undefined, channels: IChannel[],

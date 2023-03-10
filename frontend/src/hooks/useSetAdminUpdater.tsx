@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { Socket } from "socket.io-client"
 import { IChannel, IChannelEvJoin, IChannelEvLeave, IChannelUser } from "../interface/IChannel"
 
-export const useJoinRoomUpdater = (
+export const useSetAdminUpdater = (
 	socket: Socket | undefined, chanUser: IChannelUser | undefined,
 	updateChannel: (channel: IChannel) => void,
 	currentChannelId: number, channels: IChannel[],
@@ -12,9 +12,9 @@ export const useJoinRoomUpdater = (
 	
 	useEffect(() => {
 		if (chanUser?.pseudo) {
-			socket?.on('joinRoom', (payload: IChannelEvJoin) => {
-				console.log("(join) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.user.pseudo)
-				console.log("(join) currentChannelId = ", currentChannelId)
+			socket?.on('setAdmin', (payload: IChannelEvJoin) => {
+				console.log("(setAdmin) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.user.pseudo)
+				console.log("(setAdmin) currentChannelId = ", currentChannelId)
 				if (payload.user.pseudo !== chanUser.pseudo && !(currentChannelId <= -1 || currentChannelId >= channels.length)
 				&& channels[currentChannelId].name === payload.channel) {
 					const users: IChannelUser[] = channels[currentChannelId].users.map(user => user)
@@ -28,14 +28,14 @@ export const useJoinRoomUpdater = (
 						messages: channels[currentChannelId].messages,
 					}
 					updateChannel(channel)
-					console.log("test ici en join")
+					console.log("test ici en setAdmin")
 					if (onJoinRoomUpdate)
 						onJoinRoomUpdate(payload)
 				}
 			})
 		}
 		return () => {
-			socket?.removeAllListeners('joinRoom')
+			socket?.removeAllListeners('setAdmin')
 		}
 	}, [socket, chanUser, currentChannelId])
 }

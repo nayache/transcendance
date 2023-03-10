@@ -1,14 +1,17 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import '../styles/UserPreview.css'
 import { ChannelRole, Status } from "../constants/EMessage"
-import { API_CHAT_CHANNEL_BAN_ROUTE, API_CHAT_CHANNEL_KICK_ROUTE, BASE_URL, PROFILE_EP } from "../constants/RoutesApi"
+import { API_CHAT_CHANNEL_BAN_ROUTE, API_CHAT_CHANNEL_KICK_ROUTE, API_CHAT_CHANNEL_MUTE_ROUTE, BASE_URL, PROFILE_EP } from "../constants/RoutesApi"
 import { IChannel, IChannelUser } from "../interface/IChannel"
 import ClientApi from "./ClientApi.class"
+import ModalChannelMenu, { ModalChannelType } from "./ModalChannelMenu"
+import { AlertType } from "./ChatPage"
 
 interface Props {
 	chanUser: IChannelUser | undefined,
 	player: IChannelUser,
 	channel: IChannel,
+	onMute?: (mutedPseudo: string) => void,
 	onKick?: (kickedPseudo: string) => void,
 	onBan?: (bannedPseudo: string) => void,
 	onClose?: (e?: React.MouseEvent<HTMLSpanElement>) => void,
@@ -21,9 +24,10 @@ interface ButtonProps {
 }
 
 /* to place juste before the element concerned */
-const UserPreview = ({ chanUser, player, channel, onBan, onKick, onClose }: Props) => {
+const UserPreview = ({ chanUser, player, channel, onMute, onBan, onKick, onClose }: Props) => {
 
 	const { pseudo: playerName, status, role } = player
+	const [actionModal, setActionModal] = useState<ModalChannelType | null>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const buttons: ButtonProps[] = [
 		{
@@ -68,38 +72,22 @@ const UserPreview = ({ chanUser, player, channel, onBan, onKick, onClose }: Prop
 		},
 		{
 			content: "Mute",
-			action: () => {
-
+			action: async () => {
+				setActionModal(ModalChannelType.MUTEUSER)
 			},
 			role: ChannelRole.ADMIN,
 		},
 		{
 			content: "Kick",
 			action: async () => {
-				/* PATCH /chat/channel/kick {channel: string, target: string} */
-				const { kicked: pseudoKicked } = await ClientApi.patch(API_CHAT_CHANNEL_KICK_ROUTE,
-					JSON.stringify({
-						channel: channel.name,
-						target: player.pseudo
-					}),
-				'application/json')
-				if (onKick)
-					onKick(pseudoKicked)
+				setActionModal(ModalChannelType.KICKUSER)
 			},
 			role: ChannelRole.ADMIN,
 		},
 		{
 			content: "Ban",
 			action: async () => {
-				/* PATCH /chat/channel/ban {channel: string, target: string} */
-				const { banned: pseudoBanned } = await ClientApi.patch(API_CHAT_CHANNEL_BAN_ROUTE,
-					JSON.stringify({
-						channel: channel.name,
-						target: player.pseudo
-					}),
-				'application/json')
-				if (onBan)
-					onBan(pseudoBanned)
+				setActionModal(ModalChannelType.BANUSER)
 			},
 			role: ChannelRole.ADMIN,
 		},
@@ -156,6 +144,10 @@ const UserPreview = ({ chanUser, player, channel, onBan, onKick, onClose }: Prop
 				</div>
 				<span onClick={onClose} className="close-preview">&times;</span>
 			</div>
+			{actionModal && <ModalChannelMenu active={actionModal ? true : false} type={actionModal}
+			pointedChannelName={channel.name} target={player} callback={() => setActionModal(null)}
+			callbackFail={() => setActionModal(null)} />
+			}
 		</div>
 	)
 }
