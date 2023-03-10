@@ -67,6 +67,7 @@ const UserPreview = ({ chanUser, player, channel, onMute, onBan, onKick, onClose
 		{
 			content: "Name admin",
 			action: () => {
+				setActionModal(ModalChannelType.SETADMIN)
 			},
 			role: ChannelRole.ADMIN,
 		},

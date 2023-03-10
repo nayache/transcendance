@@ -88,7 +88,7 @@ setCurrentChannel, channels, removeChannel, updateChannel, onLeaveFail }: Props)
 
 	return (
 		<React.Fragment>
-			<p className="leave-text">Are you sure you wanna leave the channel <b>{channelName}</b> ?</p>
+			<p className="leave-text">Are you sure you wanna leave the <b>{channelName}</b> channel ?</p>
 			<button type="button" onClick={click}
 			className="continuebtn-channelMenu">Leave</button>
 		</React.Fragment>

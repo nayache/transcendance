@@ -123,7 +123,7 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 			return (
 				<div className="joinChannel-form-container">
 					<div className="joinChannel-title-container">
-						<h3 className="joinChannel-title">Join the channel <b>{channelSelected.name}</b></h3>
+						<h3 className="joinChannel-title">Join the <b>{channelSelected.name} channel</b></h3>
 					</div>
 					<form onSubmit={handleValidate} className="joinChannel-form">
 						{

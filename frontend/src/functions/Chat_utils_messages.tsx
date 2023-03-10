@@ -108,3 +108,42 @@ export const addMessageBlockUserMuted = (author: string, duration: Date) => {
 	)
 	return newMessage;
 }
+
+export const addMessageBlockUserGetAdmin = (author: string) => {
+	const newMessage = (
+		<div className="event-text-container">
+			<p className="event-text">
+				<i>
+					{author} just promoted you to admin
+				</i>
+			</p>
+		</div>
+	)
+	return newMessage;
+}
+
+export const addMessageBlockUserSetAdmin = (target: string) => {
+	const newMessage = (
+		<div className="event-text-container">
+			<p className="event-text">
+				<i>
+					You just promoted {target} to admin
+				</i>
+			</p>
+		</div>
+	)
+	return newMessage;
+}
+
+export const addMessageBlockUserSetAdminInfo = (author: string, target: string) => {
+	const newMessage = (
+		<div className="event-text-container">
+			<p className="event-text">
+				<i>
+					{author} just promoted {target} to admin
+				</i>
+			</p>
+		</div>
+	)
+	return newMessage;
+}

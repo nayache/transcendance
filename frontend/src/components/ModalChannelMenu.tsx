@@ -14,6 +14,7 @@ export enum ModalChannelType {
 	JOINORCREATECHANNEL,
 	LEAVECHANNEL,
 	EDITCHANNEL,
+	SETADMIN,
 	MUTEUSER,
 	KICKUSER,
 	BANUSER,
@@ -147,6 +148,11 @@ const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
 					onBan={() => onBan()} /> ||
 					
 					type === ModalChannelType.MUTEUSER
+					&& pointedChannelName !== undefined && target !== undefined
+					&& <MuteChannelMenu channelName={pointedChannelName} target={target}
+					onMute={() => onMute()} /> ||
+					
+					type === ModalChannelType.SETADMIN
 					&& pointedChannelName !== undefined && target !== undefined
 					&& <MuteChannelMenu channelName={pointedChannelName} target={target}
 					onMute={() => onMute()} />

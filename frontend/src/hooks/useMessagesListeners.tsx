@@ -3,13 +3,14 @@ import { Socket } from "socket.io-client"
 import { AlertType } from "../components/ChatPage"
 import ClientApi from "../components/ClientApi.class"
 import { API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi"
-import { addMessageBlock, addMessageBlockUserBan, addMessageBlockUserJoin, addMessageBlockUserKick, addMessageBlockUserLeave, addMessageBlockUserMute, addMessageBlockUserMuted, resetMessagesBlock } from "../functions/Chat_utils_messages"
+import { addMessageBlock, addMessageBlockUserBan, addMessageBlockUserGetAdmin, addMessageBlockUserJoin, addMessageBlockUserKick, addMessageBlockUserLeave, addMessageBlockUserMute, addMessageBlockUserMuted, addMessageBlockUserSetAdmin, addMessageBlockUserSetAdminInfo, resetMessagesBlock } from "../functions/Chat_utils_messages"
 import { IChannel, IChannelEvJoin, IChannelEvPunish, IChannelEvLeave, IChannelUser } from "../interface/IChannel"
 import { IMessage } from "../interface/IMessage"
 import { useJoinRoomUpdater } from "./useJoinRoomUpdater"
 import { useLeaveRoomUpdater } from "./useLeaveRoomUpdater"
 import { useMuteUserUpdater } from "./useMuteUserUpdater"
 import { usePunishUserUpdater } from "./usePunishUserUpdater"
+import { useSetAdminUpdater } from "./useSetAdminUpdater"
 
 
 
@@ -80,6 +81,23 @@ export const useMessagesListeners = (
 			else if (payload.author.pseudo === chanUser?.pseudo)
 				setMessages(oldmessages => [...oldmessages,
 					addMessageBlockUserMute(payload.target.pseudo, payload.expiration)
+				])
+		}
+	)
+
+	useSetAdminUpdater(socket, chanUser, updateChannel, currentChannelId, channels,
+		(payload) => {
+			if (payload.target.pseudo === chanUser?.pseudo)
+				setMessages(oldmessages => [...oldmessages,
+					addMessageBlockUserGetAdmin(payload.author.pseudo)
+				])
+			else if (payload.author.pseudo === chanUser?.pseudo)
+				setMessages(oldmessages => [...oldmessages,
+					addMessageBlockUserSetAdmin(payload.target.pseudo)
+				])
+			else
+				setMessages(oldmessages => [...oldmessages,
+					addMessageBlockUserSetAdminInfo(payload.author.pseudo, payload.target.pseudo)
 				])
 		}
 	)
