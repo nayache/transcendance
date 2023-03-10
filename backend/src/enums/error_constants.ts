@@ -6,6 +6,7 @@ export enum AboutErr {
 	PSEUDO,
 	AVATAR,
 	CHANNEL,
+	PASSWORD,
 	MESSAGE,
 	REQUEST,
 	TWOFA

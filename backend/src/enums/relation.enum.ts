@@ -1,5 +1,5 @@
 export enum Relation {
-    UNKNOW,
+    UNKNOWN,
     PENDING,
     FRIEND
 }

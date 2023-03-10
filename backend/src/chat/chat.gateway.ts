@@ -56,6 +56,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       await this.joinSocketToRooms(user.id, user.socket);
       this.logger.log(`CONNECTED: ${socket.id} (${user.pseudo})`);
       console.log(this.server.of('/').adapter.sids);
+      console.log(this.server.of('/').adapter.rooms);
     } else {
       this.logger.error(`reject connection: ${socket.id}`);
       this.disconnect(socket);
@@ -96,6 +97,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   channelEvent(channelName: string, info: string) {
     this.server.to(channelName).emit('roomEvent', channelName, info);
+  }
+
+  deleteRoomEvent(channel: string) {
+    this.server.to(channel).emit('deletedRoom', channel);
+    this.server.of('/').adapter.rooms.delete(channel)
   }
 
   async sendMessageToUser(userId: string, targetId: string, target: string, message: string) {

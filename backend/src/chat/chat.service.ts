@@ -13,6 +13,8 @@ import { PrivateMessageEntity } from './entity/privateMessage.entity';
 import { UserEntity } from 'src/entity/user.entity';
 import { isAlpha } from 'class-validator';
 import { Mute } from './entity/mute.entity';
+import { Error } from 'src/exceptions/error.interface';
+import { AboutErr, TypeErr } from 'src/enums/error_constants';
 
 
 @Injectable()
@@ -89,6 +91,7 @@ export class ChatService {
     }
 
     isValidChannelPassword(password: string): boolean {
+        password = password.trim();
         if (password.length < 5 || password.length > 15)
             return false;
         if (password.search(/\s/) != -1)
@@ -101,13 +104,15 @@ export class ChatService {
         return (alphaCount >= 6);
     }
 
-    async channelAccess(userId: string, channelName: string, password?: string): Promise<boolean> {
+    async channelAccess(userId: string, channelName: string, password?: string): Promise<Error> {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
         if (channel.private === true)
-            return false;
+            return new Error(AboutErr.CHANNEL, TypeErr.REJECTED, 'channel is private');
         if (await this.isBanned(channelName, userId))
-            return false;
-        return !(channel.password && channel.password != password);
+            return new Error(AboutErr.USER, TypeErr.REJECTED, 'user is banned');
+        if (channel.password && channel.password != password)
+            return new Error(AboutErr.PASSWORD, TypeErr.INVALID, 'channel password is incorrect');
+        return null;
     }
 
     async setChannelAccess(channelName: string, prv: boolean) {
@@ -244,6 +249,10 @@ export class ChatService {
 
     async createChannel(nameChannel: string, prv: boolean, password?: string) {
         await this.channelRepository.save(new ChannelEntity(nameChannel, prv, password));
+    }
+
+    async deleteChannel(channel: ChannelEntity) {
+        await this.channelRepository.delete(channel.id);
     }
 
     async joinChannel(userId: string, role: ChannelRole, channelName: string): Promise<ChannelEntity> {
