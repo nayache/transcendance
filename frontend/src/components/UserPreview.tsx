@@ -44,29 +44,33 @@ const userSitutation = {
 	canNameAdmin: (chanUser: IChannelUser, target: IChannelUser) => {
 		return (
 			(chanUser.role === ChannelRole.OWNER ||
-				chanUser.role === ChannelRole.ADMIN) &&
-			target.role === ChannelRole.USER
+				chanUser.role === ChannelRole.ADMIN &&
+				target.role === ChannelRole.USER) &&
+				target.role !== ChannelRole.OWNER
 		)
 	},
 	canMute: (chanUser: IChannelUser, target: IChannelUser) => {
 		return (
 			(chanUser.role === ChannelRole.OWNER ||
-				chanUser.role === ChannelRole.ADMIN) &&
-			target.role === ChannelRole.USER
+				chanUser.role === ChannelRole.ADMIN &&
+				target.role === ChannelRole.USER) &&
+				target.role !== ChannelRole.OWNER
 		)
 	},
 	canKick: (chanUser: IChannelUser, target: IChannelUser) => {
 		return (
 			(chanUser.role === ChannelRole.OWNER ||
-				chanUser.role === ChannelRole.ADMIN) &&
-			target.role === ChannelRole.USER
+				chanUser.role === ChannelRole.ADMIN &&
+				target.role === ChannelRole.USER) &&
+				target.role !== ChannelRole.OWNER
 		)
 	},
 	canBan: (chanUser: IChannelUser, target: IChannelUser) => {
 		return (
 			(chanUser.role === ChannelRole.OWNER ||
-				chanUser.role === ChannelRole.ADMIN) &&
-			target.role === ChannelRole.USER
+				chanUser.role === ChannelRole.ADMIN &&
+				target.role === ChannelRole.USER) &&
+				target.role !== ChannelRole.OWNER
 		)
 	},
 }
