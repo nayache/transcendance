@@ -13,7 +13,6 @@ const DM = () => {
 			<div className="DM-container">
 				<DMList />
 				<DMContent />
-				<UserProfileChat />
 			</div>
 		</React.Fragment>
 	)

@@ -108,20 +108,18 @@ const EnableTwoFASettings = () => {
 	return (
 		<React.Fragment>
 			<div className="two-factor-content-container">
-				{
-					<Modal active={clicked && unrolled != undefined && unrolled[0]}
-					title={modalTitle}
-					content={modalContent}
-					callback={() => {
-						if (toggleRef.current && unrolled)
-							toggleRef.current.checked = !unrolled[0]
-						if (unrolled)
-							setUnrolled(unrolled => [!unrolled![0], true])
-						setClicked(false);
-					}} callbackFail={() => {
-						setClicked(false);
-					}} />
-				}
+				<Modal active={clicked && unrolled != undefined && unrolled[0]}
+				title={modalTitle}
+				content={modalContent}
+				callback={() => {
+					if (toggleRef.current && unrolled)
+						toggleRef.current.checked = !unrolled[0]
+					if (unrolled)
+						setUnrolled(unrolled => [!unrolled![0], true])
+					setClicked(false);
+				}} callbackFail={() => {
+					setClicked(false);
+				}} />
 				<div ref={containerActionRef} onClick={handleMouseClick}
 				onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}
 				className="two-factor-clickable">

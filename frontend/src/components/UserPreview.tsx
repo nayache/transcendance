@@ -46,7 +46,7 @@ const userSitutation = {
 			(chanUser.role === ChannelRole.OWNER ||
 				chanUser.role === ChannelRole.ADMIN &&
 				target.role === ChannelRole.USER) &&
-				target.role !== ChannelRole.OWNER
+				target.role === ChannelRole.USER
 		)
 	},
 	canMute: (chanUser: IChannelUser, target: IChannelUser) => {
