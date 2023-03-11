@@ -31,11 +31,11 @@ const DMContent = ({ user, receiver, chatItems, addChatItem }: Props) => {
 
 
 
-	const handleEnter = () => {
+	const handleEnter = async () => {
 		if (msgWritten.current) {
 			
 			addChatItem({
-				srcImg: user?.avatar,
+				avatar: user?.avatar,
 				type: "me",
 				msg: msgWritten.current
 			})
@@ -81,14 +81,13 @@ const DMContent = ({ user, receiver, chatItems, addChatItem }: Props) => {
 
 
 
-
 	return (
 		<div className="main__chatcontent">
 			<div className="content__header">
 				<div className="blocks">
 					<div className="current-chatting-user">
 						<Avatar srcImg={receiver?.avatar} />
-						<p>AlanTiaCapté</p>
+						<p>{receiver?.pseudo}</p>
 					</div>
 				</div>
 				<div className="blocks">

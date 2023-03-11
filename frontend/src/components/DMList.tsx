@@ -10,48 +10,21 @@ import { AiOutlinePlus } from "react-icons/ai"
 import ModalDMMenu, { ModalDMType } from "./ModalDMMenu"
 import { ModalChannelType } from "./ModalChannelMenu"
 import { IUser } from "../interface/IUser"
+import { Discussion } from "../interface/IMessage"
 // import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus';
 // import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 // import { faEllipsisH } from "@fortawesome/free-solid-svg-icons";
 
 
 interface Props {
-	updateReceiver: (receiver: IUser) => void
+	discussions: Discussion[]
+	updateReceiver: (receiver: IUser) => void,
 }
 
-const DMList = ({updateReceiver}: Props) => {
+const DMList = ({discussions, updateReceiver}: Props) => {
 
 	const [ doPrintModal, setDoPrintModal ] = useState<boolean>(false)
-	const [allChats, setAllChats] = useState([
-		{
-			name: "Guillaumedu77",
-			image: <img className="imgid1" src={Logo1}/>,
-			active: false,
-			isOnline: true,
-			id: 1,
-		},
-		{
-			name: "Leodu69",
-			image: <img className="imgid2" src={Logo2}/>,
-			active: false,
-			isOnline: false,
-			id: 2,
-		},
-		{
-			name: "Manondu62",
-			image: <img className="imgid3" src={Logo4}/>,
-			active: false,
-			isOnline: true,
-			id: 3,
-		},
-		{
-			name: "AlanTiaCapté",
-			image: <img className="imgid4" src={Logo3}/>,
-			active: false,
-			isOnline: true,
-			id: 4,
-		},
-	])
+	
 
 
 	return (
@@ -60,9 +33,12 @@ const DMList = ({updateReceiver}: Props) => {
 				<AiOutlinePlus />
 				<span> New conversation</span>
 			</button>
-			{
+			{ doPrintModal &&
 				<ModalDMMenu active={doPrintModal} type={ModalDMType.CHOOSERECEIVER}
-				callback={(userName) => {setDoPrintModal(false); console.log("userName = ", userName)}}
+				callback={(user) => {
+					updateReceiver(user)
+					setDoPrintModal(false);
+				}}
 				callbackFail={() => setDoPrintModal(false)} />
 			}
 			<div className="chatlist__heading">
@@ -72,12 +48,12 @@ const DMList = ({updateReceiver}: Props) => {
 				</button>
 			</div>
 			<div className="chatlist__items">
-				{allChats.map((item: any, index: number) => (
+				{discussions.map((item, index) => (
 					<DMListItems
-						name={item.name}
-						key={item.id}
+						pseudo={item.pseudo}
+						avatar={item.avatar}
+						onClick={() => updateReceiver({pseudo: item.pseudo, avatar: item.avatar})}
 						animationDelay={index + 1}
-						srcImg={item.image}
 					/>
 				))}
 			</div>

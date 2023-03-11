@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from "react"
-import { API_USER_ALL_NAMES } from "../constants/RoutesApi";
+import { API_USER_ALL, API_USER_ALL_NAMES } from "../constants/RoutesApi";
 import { IUser } from "../interface/IUser";
 import { BtnStatus } from "./Button";
 import ClientApi from "./ClientApi.class";
 import '../styles/ChooseReceiverMenu.css'
+import Avatar from "./Avatar";
 
 interface Props {
-	onChooseReceiver?: (userName: string) => void,
-	onChooseReceiverFail?: (userName: string) => void
+	onChooseReceiver?: (user: IUser) => void,
+	onChooseReceiverFail?: () => void
 }
 
 const ChooseReceiverMenu = ({ onChooseReceiver, onChooseReceiverFail }: Props) => {
@@ -15,8 +16,8 @@ const ChooseReceiverMenu = ({ onChooseReceiver, onChooseReceiverFail }: Props) =
 
 	const userWritten = useRef<string>('');
 	const inputRef = useRef<HTMLInputElement>(null);
-	const [userNames, setUserNames] = useState<string[]>([]);
-	const [visibleUserNames, setVisibleUserNames] = useState<string[]>([]);
+	const [users, setUsers] = useState<IUser[]>([]);
+	const [visibleUsers, setVisibleUsers] = useState<IUser[]>([]);
 	const inputPwdRef = useRef<HTMLInputElement>(null);
 	const [btnStatus, setBtnStatus] = useState<BtnStatus>("idle")
 
@@ -25,27 +26,28 @@ const ChooseReceiverMenu = ({ onChooseReceiver, onChooseReceiverFail }: Props) =
 		userWritten.current = e.target.value;
 		
 		if (userWritten.current.trim().length == 0) {
-			setVisibleUserNames(userNames);
+			setVisibleUsers(users);
 			return ;
 		}
-		const returnedItems: string[] = userNames.filter(userName => (
-			userName.toLocaleLowerCase().search(userWritten.current.trim().toLowerCase()) !== -1
+		const returnedItems: IUser[] = users.filter(user => (
+			user.pseudo?.toLocaleLowerCase().search(userWritten.current.trim().toLowerCase()) !== -1
 		))
-		setVisibleUserNames(returnedItems);
+		setVisibleUsers(returnedItems);
 	}
 
 	
 	const printAboutUsers = () => {
 		return (
-			<div className="chooseReceiver-userNames-container">
-				<div className="chooseReceiver-userNames-child">
-					{ visibleUserNames?.map((visibleUserName, i) => (
-						<div className="userbtn-container">
+			<div className="chooseReceiver-users-container">
+				<div className="chooseReceiver-users-child">
+					{ visibleUsers?.map((visibleUser, i) => (
+						<div key={i} className="userbtn-container">
 							<button onClick={() => {
 								if (onChooseReceiver)
-									onChooseReceiver(visibleUserName)
+									onChooseReceiver(visibleUser)
 							}} className="userbtn button_without_style">
-								<p className="userbtn-text">{visibleUserName}</p>
+								<Avatar srcImg={visibleUser.avatar} />
+								<p className="userbtn-text">{visibleUser.pseudo}</p>
 							</button>
 						</div>
 					)) }
@@ -61,16 +63,114 @@ const ChooseReceiverMenu = ({ onChooseReceiver, onChooseReceiverFail }: Props) =
 
 
 	useEffect(() => {
+		console.log("did mount");
 		(async () => {
 			try {
-				const { names }: { names: string[] } = await ClientApi.get(API_USER_ALL_NAMES);
-				console.log("names = ", names)
-				setUserNames(names);
-				setVisibleUserNames(names);
+				console.log("avant le fetch")
+				const { users } = await ClientApi.get(API_USER_ALL);
+				if (!users)
+					throw new Error("salut cv ?")
+				console.log("apres le fetch")
+				console.log("users = ", users)
+				setUsers(users);
+				setVisibleUsers(users);
 			} catch (err) {
 				console.log("err = ", err);
-				setUserNames(["bonsoir", "bsrtgb", "opseptg", "srtgbgrb", "esgvr", "srtgbtj", "qwdeac", "segvgdtyrj", "ergvwewafversgv", "wwwwwwwwwwwwwwwwwwww", "12345678901234567890", "wwwwwwwwwwwwwwwwwwww", "12345678901234567890", "wwwwwwwwwwwwwwwwwwww", "12345678901234567890", "wwwwwwwwwwwwwwwwwwww", "12345678901234567890", "wwwwwwwwwwwwwwwwwwww", "12345678901234567890", "wwwwwwwwwwwwwwwwwwww", "12345678901234567890", "wwwwwwwwwwwwwwwwwwww", "12345678901234567890", "wwwwwwwwwwwwwwwwwwww", "12345678901234567890", "wwwwwwwwwwwwwwwwwwww", "12345678901234567890", "wwwwwwwwwwwwwwwwwwww", "12345678901234567890", "wwwwwwwwwwwwwwwwwwww", "12345678901234567890"])
-				setVisibleUserNames(userNames);
+				setUsers([{
+					pseudo: "bonsoir"
+				},
+				{
+					pseudo: "bsrtgb"
+				},
+				{
+					pseudo: "opseptg"
+				},
+				{
+					pseudo: "srtgbgrb"
+				},
+				{
+					pseudo: "esgvr"
+				},
+				{
+					pseudo: "srtgbtj"
+				},
+				{
+					pseudo: "qwdeac"
+				},
+				{
+					pseudo: "segvgdtyrj"
+				},
+				{
+					pseudo: "ergvwewafversgv"
+				},
+				{
+					pseudo: "wwwwwwwwwwwwwwwwwwww"
+				},
+				{
+					pseudo: "12345678901234567890"
+				},
+				{
+					pseudo: "wwwwwwwwwwwwwwwwwwww"
+				},
+				{
+					pseudo: "12345678901234567890"
+				},
+				{
+					pseudo: "wwwwwwwwwwwwwwwwwwww"
+				},
+				{
+					pseudo: "12345678901234567890"
+				},
+				{
+					pseudo: "wwwwwwwwwwwwwwwwwwww"
+				},
+				{
+					pseudo: "12345678901234567890"
+				},
+				{
+					pseudo: "wwwwwwwwwwwwwwwwwwww"
+				},
+				{
+					pseudo: "12345678901234567890"
+				},
+				{
+					pseudo: "wwwwwwwwwwwwwwwwwwww"
+				},
+				{
+					pseudo: "12345678901234567890"
+				},
+				{
+					pseudo: "wwwwwwwwwwwwwwwwwwww"
+				},
+				{
+					pseudo: "12345678901234567890"
+				},
+				{
+					pseudo: "wwwwwwwwwwwwwwwwwwww"
+				},
+				{
+					pseudo: "12345678901234567890"
+				},
+				{
+					pseudo: "wwwwwwwwwwwwwwwwwwww"
+				},
+				{
+					pseudo: "12345678901234567890"
+				},
+				{
+					pseudo: "wwwwwwwwwwwwwwwwwwww"
+				},
+				{
+					pseudo: "12345678901234567890"
+				},
+				{
+					pseudo: "wwwwwwwwwwwwwwwwwwww"
+				},
+				{
+					pseudo: "12345678901234567890"
+				},
+			])
+			setVisibleUsers(users);
 			}
 		})()
 	}, [])

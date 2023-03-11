@@ -2,23 +2,23 @@ import { Status } from "../constants/EMessage";
 import Avatar from "./Avatar"
 
 interface Props {
-	name: string,
-	key: number,
+	pseudo: string,
 	animationDelay: number,
-	srcImg: string,
+	avatar?: string,
+	onClick?: () => void
 }
 
-const DMListItems = ({name, key, animationDelay, srcImg}: Props) => {
+const DMListItems = ({pseudo, avatar, animationDelay, onClick}: Props) => {
 
 
 	return (
 		<div
 		style={{ animationDelay: `0.${animationDelay}s` }}
-		// onClick={selectChat}
+		onClick={onClick}
 		className={`chatlist__item`}>
-			<Avatar srcImg={srcImg}/>
+			<Avatar srcImg={avatar}/>
 			<div className="userMeta">
-				<p>{name}</p>
+				<p>{pseudo}</p>
 			</div>
 		</div>
 	);

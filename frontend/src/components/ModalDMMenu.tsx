@@ -16,7 +16,6 @@ interface Props {
 const ModalDMMenu = ({ active, type, callback, callbackFail }: Props) => {
 
 	const modalRef = useRef<HTMLDivElement>(null);
-	const [update, setUpdate] = useState<string>("");
 
 
 	const onChooseReceiver = (props?: any) => {

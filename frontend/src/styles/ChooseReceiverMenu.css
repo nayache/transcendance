@@ -82,6 +82,7 @@ div::-webkit-scrollbar-thumb {
 }
 
 .userbtn {
+	display: flex;
 	position: relative;
 	text-align: start;
 	width: 100%;

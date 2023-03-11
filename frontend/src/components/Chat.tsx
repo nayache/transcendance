@@ -5,7 +5,7 @@ import ClientApi from "./ClientApi.class";
 import { API_BASE_CHAT, API_CHAT_CHANNEL_ROUTE, API_CHAT_MESSAGES_CHANNEL_ROUTE, API_CHAT_USER_CHANNELS_ROUTE, API_PSEUDO_ROUTE, API_SOCKET_URL, SIGNIN_ROUTE } from "../constants/RoutesApi";
 import { IChannel, IChannelEvJoin, IChannelEvPunish, IChannelEvLeave, IChannelUser } from "../interface/IChannel";
 import { AboutErr, IError, TypeErr } from "../constants/EError";
-import { IMessage, IOldMessageChannel } from "../interface/IMessage";
+import { IChannelMessage, IOldChannelMessage } from "../interface/IChannelMessage";
 import { Socket } from "socket.io-client";
 import { ChannelRole, Status } from "../constants/EMessage";
 import UserPreview from "./UserPreview";

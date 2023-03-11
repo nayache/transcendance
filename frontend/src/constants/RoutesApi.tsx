@@ -32,9 +32,10 @@ export const API_AVATAR_ROUTE = API_BASE_USER + '/avatar'
 
 export const API_USER_FRIEND_RELATION = API_BASE_USER + '/friends/relation' /* + /:pseudo */
 export const API_USER_ALL_NAMES = API_BASE_USER + '/all/names'
+export const API_USER_ALL = API_BASE_USER + '/all'
 
 export const API_USER_DISCUSSIONS_RELATION = API_BASE_CHAT + '/discussions'
-export const API_USER_DM = API_BASE_CHAT + '/chat/message' /* + '/:pseudo' */
+export const API_USER_DM = API_BASE_CHAT + '/message' /* + '/:pseudo' */
 export const API_CHAT_MESSAGES_CHANNEL_ROUTE = API_BASE_CHAT + '/channel/message'
 export const API_CHAT_USER_CHANNELS_ROUTE = API_BASE_CHAT + '/channels'
 export const API_CHAT_ALL_CHANNELS_ROUTE = API_BASE_CHAT + '/channels/all'

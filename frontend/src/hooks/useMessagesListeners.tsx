@@ -5,7 +5,7 @@ import ClientApi from "../components/ClientApi.class"
 import { API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi"
 import { addMessageBlock, addMessageBlockUserBan, addMessageBlockUserGetAdmin, addMessageBlockUserJoin, addMessageBlockUserKick, addMessageBlockUserLeave, addMessageBlockUserMute, addMessageBlockUserMuted, addMessageBlockUserSetAdmin, addMessageBlockUserSetAdminInfo, resetMessagesBlock } from "../functions/Chat_utils_messages"
 import { IChannel, IChannelEvJoin, IChannelEvPunish, IChannelEvLeave, IChannelUser } from "../interface/IChannel"
-import { IMessage } from "../interface/IMessage"
+import { IChannelMessage } from "../interface/IChannelMessage"
 import { useJoinRoomUpdater } from "./useJoinRoomUpdater"
 import { useLeaveRoomUpdater } from "./useLeaveRoomUpdater"
 import { useMuteUserUpdater } from "./useMuteUserUpdater"
@@ -165,7 +165,7 @@ export const useMessagesListeners = (
 		{
 			console.log("gonna bind messageRoom")
 			console.log("chanUser.pseudo avant bind = ", chanUser.pseudo)
-			socket?.on("messageRoom", (message: IMessage) => {
+			socket?.on("messageRoom", (message: IChannelMessage) => {
 				try {
 					rpseudoSender.current = message.author;
 					console.log("psuudo       =    ", chanUser.pseudo);

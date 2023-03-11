@@ -1,10 +1,10 @@
-import { IMessage, IOldMessageChannel } from "../interface/IMessage";
+import { IChannelMessage, IOldChannelMessage } from "../interface/IChannelMessage";
 
 
 
 /* return the old number of messages */
-export const resetMessagesBlock = (messages: IOldMessageChannel[]): JSX.Element[] => {
-	const formattedMessages: JSX.Element[] = messages.map((oldMessage: IOldMessageChannel, i) => (
+export const resetMessagesBlock = (messages: IOldChannelMessage[]): JSX.Element[] => {
+	const formattedMessages: JSX.Element[] = messages.map((oldMessage: IOldChannelMessage, i) => (
 		<div key={i} className="message-container without-animation">
 			<p className="message-text">
 				<b className="other_pseudo" style={{color: oldMessage.color}}>
@@ -19,7 +19,7 @@ export const resetMessagesBlock = (messages: IOldMessageChannel[]): JSX.Element[
 
 
 
-export const addMessageBlock = ({author, message, color}: IMessage): JSX.Element => {
+export const addMessageBlock = ({author, message, color}: IChannelMessage): JSX.Element => {
 	const newMessage = (
 		<div className="message-container">
 			<p className="message-text">

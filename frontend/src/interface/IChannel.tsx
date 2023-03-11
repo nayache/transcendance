@@ -1,5 +1,5 @@
 import { ChannelRole, Status } from "../constants/EMessage";
-import { IOldMessageChannel } from "./IMessage";
+import { IOldChannelMessage } from "./IChannelMessage";
 
 
 export interface IChannelUser {
@@ -50,5 +50,5 @@ export interface IChannel {
 	password: boolean,
 	prv: boolean,
 	users: IChannelUser[];
-	messages: IOldMessageChannel[];
+	messages: IOldChannelMessage[];
 }
