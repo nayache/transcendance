@@ -41,7 +41,7 @@ export class FriendController {
         if (userId === user2.id)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.INVALID, 'invalid target(himself)');
         if (!await this.userService.friendshipExist(userId, user2.id))
-            throw new HttpException('friendship not exist', HttpStatus.BAD_REQUEST);
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'friendship not exist');
         else
             return this.userService.removeFriendship(userId, user2.id);
     }

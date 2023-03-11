@@ -18,7 +18,7 @@ export class friendDto {
 	status: Status;
 }
 
-@Controller('user')
+@Controller('users')
 export class UserController {
     constructor(
 		private readonly userService: UserService,
@@ -46,6 +46,13 @@ export class UserController {
 
         return { pseudo };
     }
+
+	@Get('all/names')
+	async getUsersNames() {
+		const names: string[] = await this.userService.getUsersNames();
+		return {names};
+	}
+
 
 	@Get()
 	async getUser(@User() userId: string) {

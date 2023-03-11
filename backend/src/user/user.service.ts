@@ -32,6 +32,17 @@ export class UserService {
         return user
     }
     
+    async getUsersNames(): Promise<string[]> {
+        let names: string[] = [];
+        try {
+            const users: UserEntity[] = await this.userRepository.find();
+            names = users.map((user) => user.pseudo);
+        } catch (err) {
+            return names;
+        }
+        return names;
+    }
+
     async findById(id: string) {
         return this.userRepository.findOneBy({id: id});
     }
@@ -86,6 +97,7 @@ export class UserService {
             const user = await this.findById(id);
             if (user && user.pseudo)
                 return user.pseudo 
+            return null;
         } catch {
             return null;
         }

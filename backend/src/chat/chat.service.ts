@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { ChannelRole } from '../enums/channel-role.enum';
-import { ChannelDto, ChannelMessageDto, channelPreviewDto, ChannelUserDto, prvMsgDto } from './chat.controller';
+import { ChannelDto, ChannelMessageDto, channelPreviewDto, ChannelUserDto, Discussion, prvMsgDto } from './chat.controller';
 import { ChatGateway } from './chat.gateway';
 import { Status } from '../enums/status.enum';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,6 +15,7 @@ import { isAlpha } from 'class-validator';
 import { Mute } from './entity/mute.entity';
 import { Error } from 'src/exceptions/error.interface';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
+import { Avatar } from 'src/entity/avatar.entity';
 
 
 @Injectable()
@@ -91,7 +92,6 @@ export class ChatService {
     }
 
     isValidChannelPassword(password: string): boolean {
-        password = password.trim();
         if (password.search(/\s/) != -1)
             return false;
         if (password.length < 6 || password.length > 15)
@@ -297,14 +297,56 @@ export class ChatService {
         //penser a check si throw 500
     }
     
+    async findPrivateMsg(userId: string): Promise<PrivateMessageEntity[]> {
+        try {
+            return await this.privateMsgRepository.find({where: [
+                {authorId: userId},
+                {targetId: userId}
+            ]});
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async getUnreadMessages(authorId: string, targetId: string): Promise<PrivateMessageEntity[]> {
+        try {
+            return await this.privateMsgRepository.find({where:
+                {authorId: authorId, targetId: targetId, read: false},
+            });
+        } catch (e) {
+            return null;
+        }
+        
+    }
+
+    async getDiscussions(userId: string): Promise<Discussion[]> {
+        const messages: PrivateMessageEntity[] = await this.findPrivateMsg(userId);
+        console.log(messages);
+        let users: string[] = [];
+        messages.map((msg) => {
+            if (!users.find((name) => (name) === msg.authorId || (name) === msg.targetId))
+                users.push((msg.authorId === userId) ? msg.targetId : msg.authorId);
+        });
+        const discussions: Discussion[] = await Promise.all(users.map(async (user) => {
+            const pseudo: string = await this.userService.getPseudoById(user);
+            //const avatar: Avatar = await this.userService.getAvatar(user.id);
+            const avatar = null; //============================================================> SAMIIIIII pour toi
+            const unreadMessages: PrivateMessageEntity[] = await this.getUnreadMessages(user, userId);
+            return { pseudo, avatar, unread: (unreadMessages) ? unreadMessages.length : 0 };
+        }))
+        return discussions;
+    }
+
     async getConversation(user1Id: string, user2Id: string): Promise<prvMsgDto[]> {
         const messages: PrivateMessageEntity[] = await this.getPrivateMessages(user1Id, user2Id);
         const user1: string = await this.userService.getPseudoById(user1Id);
         const user2: string = await this.userService.getPseudoById(user2Id);
-        const conversation: prvMsgDto[] = messages.map((message) => {
+        const conversation: prvMsgDto[] = await Promise.all(messages.map(async (message) => {
+            if (message.authorId === user2Id && message.read === false)
+                await this.privateMsgRepository.update(message.id, {read: true});
             const author: string = (message.authorId === user1Id) ? user1 : user2;
             return { author, content: message.content, date: message.created_at };
-        });
+        }));
         return conversation;
     }
 

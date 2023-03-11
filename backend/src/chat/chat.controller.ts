@@ -105,6 +105,12 @@ export class prvMsgDto {
     date: Date;
 }
 
+export class Discussion {
+    pseudo: string;
+    avatar: string;
+    unread: number;
+}
+
 @UsePipes(ValidationPipe)
 @UseFilters(ValidationFilter)
 @Controller('chat')
@@ -181,7 +187,7 @@ export class ChatController {
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'user is already inside channel');
         const error: Error = await this.chatService.channelAccess(userId, channelName, password);
         if (error)
-            throw new HttpException(error, HttpStatus.UNAUTHORIZED);
+            throw new HttpException({error}, HttpStatus.UNAUTHORIZED);
         const chann: ChannelEntity = await this.chatService.joinChannel(userId, ChannelRole.USER, channelName);
         await this.chatGateway.joinRoom(userId, channelName);
         return {channel: (await this.chatService.getChannelDto([chann]))[0]};
@@ -197,7 +203,7 @@ export class ChatController {
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'channel not exist');
         if (!await this.chatService.insideChannel(userId, channelName))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'user is not inside channel');
-        if (await this.chatService.leaveChannel(userId, channelName))
+        if (!await this.chatService.leaveChannel(userId, channelName))
             await this.chatGateway.leaveRoom(userId, channelName);
         else
             this.chatGateway.deleteRoomEvent(channelName);
@@ -289,6 +295,12 @@ export class ChatController {
         await this.chatService.setChannelPassword(channelName, password);
         this.chatGateway.channelAccessEvent(channelName, !!password, 'password');
         return { password: !!password };
+    }
+
+    @Get('discussions')
+    async getDiscussions(@User() userId: string) {
+        const users: Discussion[] = await this.chatService.getDiscussions(userId);
+        return {users}
     }
 
     @Get('message/:pseudo')
