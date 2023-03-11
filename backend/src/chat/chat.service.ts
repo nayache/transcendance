@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { ChannelRole } from '../enums/channel-role.enum';
-import { ChannelDto, ChannelMessageDto, channelPreviewDto, ChannelUserDto, prvMsgDto } from './chat.controller';
+import { ChannelDto, ChannelMessageDto, channelPreviewDto, ChannelUserDto, Discussion, prvMsgDto } from './chat.controller';
 import { ChatGateway } from './chat.gateway';
 import { Status } from '../enums/status.enum';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,6 +15,7 @@ import { isAlpha } from 'class-validator';
 import { Mute } from './entity/mute.entity';
 import { Error } from 'src/exceptions/error.interface';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
+import { Avatar } from 'src/entity/avatar.entity';
 
 
 @Injectable()
@@ -91,10 +92,9 @@ export class ChatService {
     }
 
     isValidChannelPassword(password: string): boolean {
-        password = password.trim();
-        if (password.length < 5 || password.length > 15)
-            return false;
         if (password.search(/\s/) != -1)
+            return false;
+        if (password.length < 6 || password.length > 15)
             return false;
         let alphaCount: number = 0;
         for (var i = 0; i < password.length; i++) {
@@ -134,13 +134,17 @@ export class ChatService {
     getMuteExpiration(muted: Mute): Date {
         return new Date(muted.updated_at.getTime() + (muted.duration * 1000));
     }
-
+    
     async isMuted(channelName: string, userId: string): Promise<boolean> {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
         const muted: Mute = await this.findMute(channel, userId);
         if (muted) {
-            if (Date.now() >= (muted.updated_at.getTime() + (muted.duration * 1000)))
+            if (Date.now() >= (muted.updated_at.getTime() + (muted.duration * 1000))) {
                 await this.muteRepository.delete(muted.id);
+                const member: Member = await this.getMemberByUserId(userId, channel.id);
+                if (member)
+                    await this.memberRepository.update(member.id, {unmuteDate: null});
+            }
             else
                 return true;
         }
@@ -151,6 +155,12 @@ export class ChatService {
         return this.muteRepository.findOne({where: {
             channelId: channel.id, userId: userId
         }});
+    }
+
+    async setUnmuteDate(muted: Mute, unmutedDate: Date) {
+        console.log(unmutedDate, " -.........")
+        const member: Member = await this.getMemberByUserId(muted.userId, muted.channelId);
+        return this.memberRepository.update(member.id, {unmuteDate: unmutedDate});
     }
 
     async muteUser(channelName: string, userId: string, duration: number): Promise<Mute> {
@@ -198,7 +208,8 @@ export class ChatService {
         const member: Member = await this.getMemberByUserId(userId, channel.id);
         const pseudo: string = await this.userService.getPseudoById(member.userId);
         const status: Status = this.chatGateway.getStatus(userId);
-        const user: ChannelUserDto = {pseudo: pseudo, color: member.color, role: member.role, status};
+        const unmuteDate: Date = member.unmuteDate;
+        const user: ChannelUserDto = { pseudo: pseudo, color: member.color, role: member.role, status, unmuteDate };
         return user;
     }
 
@@ -207,10 +218,12 @@ export class ChatService {
             const members: Member[] = await this.getMembersByChannel(channel.id);
             const messagesChannel: MessageEntity[] = await this.getMessagesByChannel(channel.id);
             const messages: ChannelMessageDto[] = messagesChannel.map((msg) => this.messageToDto(msg));
-            const users: ChannelUserDto[] = members.map((member) => {
+            const users: ChannelUserDto[] = await Promise.all(members.map(async (member) => {
                 const status: Status = this.chatGateway.getStatus(member.userId);
-                return {pseudo: member.user.pseudo, color: member.color, role: member.role, status};
-            })
+                const isMuted: boolean = await this.isMuted(member.channel.name, member.user.id);
+                const unmuteDate: Date = (isMuted) ? member.unmuteDate : null;
+                return {pseudo: member.user.pseudo, color: member.color, role: member.role, status, unmuteDate};
+            }))
             return {name: channel.name, prv: channel.private, password: !!channel.password, users, messages};
         }));
         return channs;
@@ -259,7 +272,9 @@ export class ChatService {
         const chann: ChannelEntity = await this.channelRepository.findOneBy({name: channelName});
         chann.visited += 1;
         const colorr: string = this.generateColorr(chann);
-        const member = new Member(await this.userService.findById(userId), chann, colorr, role);
+        const muted: Mute = await this.findMute(chann, userId);
+        const expiration: Date = (muted) ? this.getMuteExpiration(muted) : null;
+        const member = new Member(await this.userService.findById(userId), chann, colorr, role, expiration);
         if (!chann.members)
             chann.members = [member];
         else
@@ -274,10 +289,15 @@ export class ChatService {
         }});
     }
 
-    async leaveChannel(userId: string, channelName: string) {
+    async leaveChannel(userId: string, channelName: string): Promise<boolean> {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
         const member: Member = await this.getMemberByUserId(userId, channel.id);
-        await this.memberRepository.delete({id: member.id});
+        const isOwner: boolean = (member.role === ChannelRole.OWNER);
+        if (member.role === ChannelRole.OWNER)
+            await this.channelRepository.delete(channel.id);
+        else
+            await this.memberRepository.delete({id: member.id});
+        return isOwner;
     }
 
 
@@ -292,14 +312,56 @@ export class ChatService {
         //penser a check si throw 500
     }
     
+    async findPrivateMsg(userId: string): Promise<PrivateMessageEntity[]> {
+        try {
+            return await this.privateMsgRepository.find({where: [
+                {authorId: userId},
+                {targetId: userId}
+            ]});
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async getUnreadMessages(authorId: string, targetId: string): Promise<PrivateMessageEntity[]> {
+        try {
+            return await this.privateMsgRepository.find({where:
+                {authorId: authorId, targetId: targetId, read: false},
+            });
+        } catch (e) {
+            return null;
+        }
+        
+    }
+
+    async getDiscussions(userId: string): Promise<Discussion[]> {
+        const messages: PrivateMessageEntity[] = await this.findPrivateMsg(userId);
+        console.log(messages);
+        let users: string[] = [];
+        messages.map((msg) => {
+            if (!users.find((name) => (name) === msg.authorId || (name) === msg.targetId))
+                users.push((msg.authorId === userId) ? msg.targetId : msg.authorId);
+        });
+        const discussions: Discussion[] = await Promise.all(users.map(async (user) => {
+            const pseudo: string = await this.userService.getPseudoById(user);
+            //const avatar: Avatar = await this.userService.getAvatar(user.id);
+            const avatar = null; //============================================================> SAMIIIIII pour toi
+            const unreadMessages: PrivateMessageEntity[] = await this.getUnreadMessages(user, userId);
+            return { pseudo, avatar, unread: (unreadMessages) ? unreadMessages.length : 0 };
+        }))
+        return discussions;
+    }
+
     async getConversation(user1Id: string, user2Id: string): Promise<prvMsgDto[]> {
         const messages: PrivateMessageEntity[] = await this.getPrivateMessages(user1Id, user2Id);
         const user1: string = await this.userService.getPseudoById(user1Id);
         const user2: string = await this.userService.getPseudoById(user2Id);
-        const conversation: prvMsgDto[] = messages.map((message) => {
+        const conversation: prvMsgDto[] = await Promise.all(messages.map(async (message) => {
+            if (message.authorId === user2Id && message.read === false)
+                await this.privateMsgRepository.update(message.id, {read: true});
             const author: string = (message.authorId === user1Id) ? user1 : user2;
             return { author, content: message.content, date: message.created_at };
-        });
+        }));
         return conversation;
     }
 

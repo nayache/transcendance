@@ -14,6 +14,7 @@ import { Relation } from '../enums/relation.enum';
 import { friendDto } from './user.controller';
 import { ChatGateway } from 'src/chat/chat.gateway';
 import { Status } from 'src/enums/status.enum';
+import { ProfileDto } from 'src/dto/profile.dto';
 
 @Injectable()
 export class UserService {
@@ -31,6 +32,17 @@ export class UserService {
         return user
     }
     
+    async getUsersNames(): Promise<string[]> {
+        let names: string[] = [];
+        try {
+            const users: UserEntity[] = await this.userRepository.find();
+            names = users.map((user) => user.pseudo);
+        } catch (err) {
+            return names;
+        }
+        return names;
+    }
+
     async findById(id: string) {
         return this.userRepository.findOneBy({id: id});
     }
@@ -85,6 +97,7 @@ export class UserService {
             const user = await this.findById(id);
             if (user && user.pseudo)
                 return user.pseudo 
+            return null;
         } catch {
             return null;
         }
@@ -236,6 +249,11 @@ export class UserService {
         return friendListDto;
     }
 
+    async getFriendsSize(userId: string): Promise<number> {
+        const friends: FriendEntity[] = await this.getFriends(userId, true);
+        return (friends) ? friends.length : 0;
+    }
+
     async getFriends(userId: string, value: boolean) : Promise<FriendEntity[]> {
         try {
             const friends : FriendEntity[] = await this.friendRepository.find({where: [
@@ -246,6 +264,24 @@ export class UserService {
         } catch (e) {
             return null //possible better?
            // throw new HttpException('data not found', HttpStatus.NOT_FOUND);
+        }
+    }
+
+    async getProfile(targetId: string, userId?: string): Promise<ProfileDto> {
+        const target: UserEntity = await this.findById(targetId);
+        const avatar = null// Sami rectifie ca stp
+        const pseudo: string = target.pseudo
+        const level: number = target.data.level;
+        const wins: number = target.data.win;
+        const looses: number = target.data.loose;
+        const history = null;
+        if (!userId) {
+            const friends: number = await this.getFriendsSize(targetId);
+            return { avatar, pseudo, friends, level, wins, looses, history };
+        } else {
+            const relation: Relation = await this.getRelation(userId, targetId);
+            const blocked: boolean = await this.blockandauthorExist(userId, targetId);
+            return { avatar, pseudo, level, wins, looses, history, relation, blocked };
         }
     }
 

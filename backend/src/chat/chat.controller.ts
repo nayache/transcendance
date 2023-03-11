@@ -28,7 +28,8 @@ export class ChannelUserDto {
     pseudo: string;
     color: string;
     role: ChannelRole;
-    status?: Status;
+    status: Status;
+    unmuteDate: Date;
 }
 
 export class ChannelDto {
@@ -103,6 +104,12 @@ export class prvMsgDto {
     author: string;
     content: string;
     date: Date;
+}
+
+export class Discussion {
+    pseudo: string;
+    avatar: string;
+    unread: number;
 }
 
 @UsePipes(ValidationPipe)
@@ -181,7 +188,7 @@ export class ChatController {
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'user is already inside channel');
         const error: Error = await this.chatService.channelAccess(userId, channelName, password);
         if (error)
-            throw new HttpException(error, HttpStatus.UNAUTHORIZED);
+            throw new HttpException({error}, HttpStatus.UNAUTHORIZED);
         const chann: ChannelEntity = await this.chatService.joinChannel(userId, ChannelRole.USER, channelName);
         await this.chatGateway.joinRoom(userId, channelName);
         return {channel: (await this.chatService.getChannelDto([chann]))[0]};
@@ -197,8 +204,10 @@ export class ChatController {
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'channel not exist');
         if (!await this.chatService.insideChannel(userId, channelName))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'user is not inside channel');
-        await this.chatService.leaveChannel(userId, channelName);
-        await this.chatGateway.leaveRoom(userId, channelName);
+        if (!await this.chatService.leaveChannel(userId, channelName))
+            await this.chatGateway.leaveRoom(userId, channelName);
+        else
+            this.chatGateway.deleteRoomEvent(channelName);
         const chann: ChannelEntity = await this.chatService.getChannelByName('General');
         return {channel: (await this.chatService.getChannelDto([chann]))[0]};
     }
@@ -222,6 +231,8 @@ export class ChatController {
         const target: UserEntity = await this.userService.findByPseudo(payload.target);
         if (target.id === userId)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant kick himself');
+        if (!await this.chatService.isOwner(userId, payload.channel) && await this.chatService.isAdmin(target.id, payload.channel))
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'target is admin');
         await this.chatService.leaveChannel(target.id, payload.channel);
         await this.chatGateway.punishEvent(payload.channel, userId, target.id, 'kick');
         return {kicked: target.pseudo}
@@ -233,6 +244,8 @@ export class ChatController {
         const target: UserEntity = await this.userService.findByPseudo(payload.target);
         if (target.id === userId)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant ban himself');
+        if (!await this.chatService.isOwner(userId, payload.channel) && await this.chatService.isAdmin(target.id, payload.channel))
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'target is admin');
         if (await this.chatService.isBanned(payload.channel, target.id))
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'target is already banned');
         await this.chatService.banUser(payload.channel, target.id);
@@ -253,10 +266,13 @@ export class ChatController {
         const target: UserEntity = await this.userService.findByPseudo(payload.target);
         if (target.id === userId)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant mute himself');
+        if (!await this.chatService.isOwner(userId, payload.channel) && await this.chatService.isAdmin(target.id, payload.channel))
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'target is admin');
         if (await this.chatService.isBanned(payload.channel, target.id))
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'target is already muted');
         const muted: Mute = await this.chatService.muteUser(payload.channel, target.id, payload.duration);
         const expiration: Date = this.chatService.getMuteExpiration(muted);
+        await this.chatService.setUnmuteDate(muted, expiration);
         await this.chatGateway.muteEvent(payload.channel, userId, target.id, expiration);
         return { muted: target.pseudo, expiration };
     }
@@ -281,6 +297,12 @@ export class ChatController {
         await this.chatService.setChannelPassword(channelName, password);
         this.chatGateway.channelAccessEvent(channelName, !!password, 'password');
         return { password: !!password };
+    }
+
+    @Get('discussions')
+    async getDiscussions(@User() userId: string) {
+        const users: Discussion[] = await this.chatService.getDiscussions(userId);
+        return {users}
     }
 
     @Get('message/:pseudo')

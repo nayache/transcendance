@@ -29,6 +29,9 @@ export class PrivateMessageEntity {
     @Column({default: false})
     content: string;
 
+    @Column({type: 'bool'})
+    read: boolean = false;
+
     @CreateDateColumn()
     created_at: Date;
 }

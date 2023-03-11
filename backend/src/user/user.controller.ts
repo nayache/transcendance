@@ -11,13 +11,14 @@ import { extname } from 'path';
 import { userDto } from 'src/dto/user.dto';
 import { Relation } from '../enums/relation.enum';
 import { Status } from 'src/enums/status.enum';
+import { ProfileDto } from 'src/dto/profile.dto';
 
 export class friendDto {
 	pseudo: string;
 	status: Status;
 }
 
-@Controller('user')
+@Controller('users')
 export class UserController {
     constructor(
 		private readonly userService: UserService,
@@ -46,6 +47,13 @@ export class UserController {
         return { pseudo };
     }
 
+	@Get('all/names')
+	async getUsersNames() {
+		const names: string[] = await this.userService.getUsersNames();
+		return {names};
+	}
+
+
 	@Get()
 	async getUser(@User() userId: string) {
 		const user: UserEntity = await this.userService.findById(userId);
@@ -55,7 +63,7 @@ export class UserController {
 		return { user: data }
 	}
 	
-	@Get('/:pseudo')
+	@Get('lalalal/:pseudo') // route a modifier
 	async getAnUser(@Param('pseudo') pseudo: string) {
 		const user: UserEntity = await this.userService.findByPseudo(pseudo);
 		if (!user)
@@ -71,9 +79,28 @@ export class UserController {
 		const target: UserEntity = await this.userService.findByPseudo(pseudo);
 		if (!target) 
 			throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'target user not found.');
+		if (userId === target.id)
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.INVALID, 'invalid target(himself)');
 		const relation: Relation = await this.userService.getRelation(userId, target.id);
-		const blocked: boolean = await this.userService.blockandauthorExist(userId, target.id);	
+		const blocked: boolean = await this.userService.blockandauthorExist(userId, target.id);
 		return {relation, blocked};
+	}
+
+	@Get('profile')
+	async getMyProfile(@User() userId: string) {
+		const profile: ProfileDto = await this.userService.getProfile(userId);
+		return { profile };
+	}
+	
+	@Get('profile/:pseudo')
+	async getProfile(@User() userId: string, @Param('pseudo') pseudo: string) {
+		const target: UserEntity = await this.userService.findByPseudo(pseudo);
+		if (!target)
+			throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'target not found');
+		if (userId === target.id)
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.INVALID, 'invalid target(himself)');
+		const profile: ProfileDto = await this.userService.getProfile(target.id, userId);
+		return { profile };
 	}
 
     //for test
