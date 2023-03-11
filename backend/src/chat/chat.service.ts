@@ -134,13 +134,17 @@ export class ChatService {
     getMuteExpiration(muted: Mute): Date {
         return new Date(muted.updated_at.getTime() + (muted.duration * 1000));
     }
-
+    
     async isMuted(channelName: string, userId: string): Promise<boolean> {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
         const muted: Mute = await this.findMute(channel, userId);
         if (muted) {
-            if (Date.now() >= (muted.updated_at.getTime() + (muted.duration * 1000)))
+            if (Date.now() >= (muted.updated_at.getTime() + (muted.duration * 1000))) {
                 await this.muteRepository.delete(muted.id);
+                const member: Member = await this.getMemberByUserId(userId, channel.id);
+                if (member)
+                    await this.memberRepository.update(member.id, {unmuteDate: null});
+            }
             else
                 return true;
         }
@@ -151,6 +155,12 @@ export class ChatService {
         return this.muteRepository.findOne({where: {
             channelId: channel.id, userId: userId
         }});
+    }
+
+    async setUnmuteDate(muted: Mute, unmutedDate: Date) {
+        console.log(unmutedDate, " -.........")
+        const member: Member = await this.getMemberByUserId(muted.userId, muted.channelId);
+        return this.memberRepository.update(member.id, {unmuteDate: unmutedDate});
     }
 
     async muteUser(channelName: string, userId: string, duration: number): Promise<Mute> {
@@ -198,7 +208,8 @@ export class ChatService {
         const member: Member = await this.getMemberByUserId(userId, channel.id);
         const pseudo: string = await this.userService.getPseudoById(member.userId);
         const status: Status = this.chatGateway.getStatus(userId);
-        const user: ChannelUserDto = {pseudo: pseudo, color: member.color, role: member.role, status};
+        const unmuteDate: Date = member.unmuteDate;
+        const user: ChannelUserDto = { pseudo: pseudo, color: member.color, role: member.role, status, unmuteDate };
         return user;
     }
 
@@ -207,10 +218,12 @@ export class ChatService {
             const members: Member[] = await this.getMembersByChannel(channel.id);
             const messagesChannel: MessageEntity[] = await this.getMessagesByChannel(channel.id);
             const messages: ChannelMessageDto[] = messagesChannel.map((msg) => this.messageToDto(msg));
-            const users: ChannelUserDto[] = members.map((member) => {
+            const users: ChannelUserDto[] = await Promise.all(members.map(async (member) => {
                 const status: Status = this.chatGateway.getStatus(member.userId);
-                return {pseudo: member.user.pseudo, color: member.color, role: member.role, status};
-            })
+                const isMuted: boolean = await this.isMuted(member.channel.name, member.user.id);
+                const unmuteDate: Date = (isMuted) ? member.unmuteDate : null;
+                return {pseudo: member.user.pseudo, color: member.color, role: member.role, status, unmuteDate};
+            }))
             return {name: channel.name, prv: channel.private, password: !!channel.password, users, messages};
         }));
         return channs;
@@ -259,7 +272,9 @@ export class ChatService {
         const chann: ChannelEntity = await this.channelRepository.findOneBy({name: channelName});
         chann.visited += 1;
         const colorr: string = this.generateColorr(chann);
-        const member = new Member(await this.userService.findById(userId), chann, colorr, role);
+        const muted: Mute = await this.findMute(chann, userId);
+        const expiration: Date = (muted) ? this.getMuteExpiration(muted) : null;
+        const member = new Member(await this.userService.findById(userId), chann, colorr, role, expiration);
         if (!chann.members)
             chann.members = [member];
         else

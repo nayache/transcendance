@@ -28,7 +28,8 @@ export class ChannelUserDto {
     pseudo: string;
     color: string;
     role: ChannelRole;
-    status?: Status;
+    status: Status;
+    unmuteDate: Date;
 }
 
 export class ChannelDto {
@@ -271,6 +272,7 @@ export class ChatController {
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'target is already muted');
         const muted: Mute = await this.chatService.muteUser(payload.channel, target.id, payload.duration);
         const expiration: Date = this.chatService.getMuteExpiration(muted);
+        await this.chatService.setUnmuteDate(muted, expiration);
         await this.chatGateway.muteEvent(payload.channel, userId, target.id, expiration);
         return { muted: target.pseudo, expiration };
     }

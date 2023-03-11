@@ -32,12 +32,13 @@ export class Member {
     color: string;
 
     @Column({default: null})
-    unmuteDate: number;
+    unmuteDate: Date;
 
-    constructor(user: UserEntity, channel: ChannelEntity, color: string, role: ChannelRole) {
+    constructor(user: UserEntity, channel: ChannelEntity, color: string, role: ChannelRole, unmuteDate: Date) {
         this.user = user;
         this.channel = channel;
         this.role = role
         this.color = color;
+        this.unmuteDate = unmuteDate;
     }
 }
