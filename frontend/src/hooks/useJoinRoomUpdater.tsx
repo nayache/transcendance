@@ -31,6 +31,7 @@ export const useJoinRoomUpdater = (
 					console.log("test ici en join")
 					if (onJoinRoomUpdate)
 						onJoinRoomUpdate(payload)
+					console.log("(join) channels.map(channel => channel.name) = ", channels.map(channel => channel.name))
 				}
 			})
 		}

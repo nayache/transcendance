@@ -6,7 +6,7 @@ import Logo4 from "../img/logo4.png"
 import DMListItems from "./DMListItems"
 import { useState } from "react"
 import { Status } from "../constants/EMessage"
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { AiOutlinePlus } from "react-icons/ai"
 // import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus';
 // import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 // import { faEllipsisH } from "@fortawesome/free-solid-svg-icons";
@@ -45,10 +45,11 @@ const DMList = () => {
 		},
 	])
 
+
 	return (
 		<div className="main__chatlist">
 			<button className="btn">
-			{/* <FontAwesomeIcon icon={faPlus} /> */}
+				<AiOutlinePlus />
 				<span> New conversation</span>
 			</button>
 			<div className="chatlist__heading">
@@ -59,7 +60,7 @@ const DMList = () => {
 			</div>
 			<div className="chatList__search">
 				<div className="search_wrap">
-					<input type="text" placeholder="Search Here" required />
+					<input type="text" placeholder="Search Here" />
 						{/* <FontAwesomeIcon icon={faMagnifyingGlass} /> */}
 					<button className="search-btn">
 					

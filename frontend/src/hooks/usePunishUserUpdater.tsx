@@ -19,9 +19,12 @@ export const usePunishUserUpdater = (
 			socket?.on('punishUser', async (payload: IChannelEvPunish) => {
 				console.log("(punish) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.target)
 				console.log("(punish) currentChannelId = ", currentChannelId)
+				console.log("(punish) payload = ", payload)
 				const daChannel: IChannel | undefined =
 				channels.find(channel => channel.name === payload.channel)
+				console.log("(punish) channels.map(channel => channel.name) = ", channels.map(channel => channel.name))
 				if (daChannel) { // impossible que daChannel soit undefined
+					console.log("daChannel = ", daChannel)
 					const users: IChannelUser[] = daChannel.users
 						.filter(user => user.pseudo !== payload.target)
 					const channel: IChannel = {
@@ -58,6 +61,27 @@ export const usePunishUserUpdater = (
 							if (onPunishUserUpdate)
 								onPunishUserUpdate(payload)
 						}
+					}
+				}
+				else { // si c vraiment undefined (et on est encore dans le punishUser) donc le channel du gars est deja remove
+					if (chanUser.pseudo === payload.target) {
+						let genUpdated: IChannel | null = null;
+						if (!(currentChannelId <= -1 || currentChannelId >= channels.length)
+							&& channels[currentChannelId].name === payload.channel) {
+							
+							try {
+								const data: { channel: IChannel } =
+								await ClientApi.get(API_CHAT_CHANNEL_ROUTE + '/General')
+								genUpdated = data.channel
+								console.log("genUpdated (a peine apres) = ", genUpdated);
+							} catch (err) {
+								console.log("err = ", err);
+							}
+						}
+						console.log("genUpdated (apres) = ", genUpdated);
+						removeChannel(payload.channel, genUpdated)
+						if (onPunishUserUpdate)
+							onPunishUserUpdate(payload)
 					}
 				}
 			})

@@ -8,6 +8,7 @@ import { BiArrowBack } from "react-icons/bi"
 import { GiPadlock } from "react-icons/gi";
 import { RiEyeFill, RiEyeCloseFill } from "react-icons/ri";
 import { AboutErr, IError, TypeErr } from "../constants/EError";
+import { BtnStatus, printButton } from "./Button";
 
 
 interface Props {
@@ -34,7 +35,9 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 	const [visibleChannelPrvws, setVisibleChannelPrvws] = useState<IChannelPreview[]>([]);
 	const [showPassword, setShowPassword] = useState<boolean>(false);
 	const [errorPassword, setErrorPassword] = useState<string>("")
+	const [errorChannel, setErrorChannel] = useState<string>("")
 	const inputPwdRef = useRef<HTMLInputElement>(null);
+	const [btnStatus, setBtnStatus] = useState<BtnStatus>("idle")
 	const [channelSelected, setChannelSelected] = useState<IChannelPreview | null>(null);
 
 
@@ -64,9 +67,9 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 		setVisibleChannelPrvws(returnedItems);
 	}
 
-	const handleValidate = (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
+	const handleValidate = () => {
 		setErrorPassword("");
+		setErrorChannel("");
 		(async () => {
 			try {
 				console.log("channelSelected?.name = ", channelSelected?.name, " passwordWritten.current = ", passwordWritten.current)
@@ -77,14 +80,24 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 				passwordWritten.current = ""
 				addChannel(channel)
 				setCurrentChannel(channel.name)
+				setBtnStatus("good")
+				setTimeout(() => setBtnStatus("idle"), 2000)
 				if (onJoin)
 					onJoin()
 			} catch (err) {
 				const _error: IError = err as IError
 
 				console.log("err = ", err);
-				if (_error.about === AboutErr.CHANNEL && _error.type === TypeErr.REJECTED) {
+				setBtnStatus("fail")
+				setTimeout(() => setBtnStatus("idle"), 2000)
+				if (_error.about === AboutErr.PASSWORD && _error.type === TypeErr.INVALID) {
 					setErrorPassword("The password is invalid")
+				}
+				if (_error.about === AboutErr.CHANNEL && _error.type === TypeErr.INVALID) {
+					setErrorChannel("You can't enter this channel. Reason: You are already inside")
+				}
+				else if (_error.about === AboutErr.USER && _error.type === TypeErr.REJECTED) {
+					setErrorChannel("You can't enter this channel. Reason: You are banned")
 				}
 			}
 			channelWritten.current = ""
@@ -125,7 +138,7 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 					<div className="joinChannel-title-container">
 						<h3 className="joinChannel-title">Join the <b>{channelSelected.name} channel</b></h3>
 					</div>
-					<form onSubmit={handleValidate} className="joinChannel-form">
+					<form className="joinChannel-form">
 						{
 							channelSelected.password &&
 							<div className="joinChannel-password-container">
@@ -153,8 +166,16 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 								{ errorPassword && <p className="error-text">{errorPassword}</p> }
 							</div>
 						}
-						<button className="form-joinChannel-button"
-						type="submit">Enter</button>
+						{ errorChannel && <p className="error-text">{errorChannel}</p> }
+						{ printButton({
+							status: btnStatus,
+							content: "Enter",
+							className: "form-joinChannel-button",
+							onClick: () => {
+								setBtnStatus("loading")
+								handleValidate()
+							}})
+						}
 					</form>
 				</div>
 			)
@@ -194,6 +215,7 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 			if (inputRef.current)
 				inputRef.current.value = channelWritten.current			
 			setErrorPassword("");
+			setErrorChannel("");
 		}
 	}, [channelSelected])
 

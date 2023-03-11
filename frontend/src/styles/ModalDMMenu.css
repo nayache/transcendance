@@ -30,7 +30,6 @@
 	width: 50%; /* Could be more or less, depending on screen size */
 }
 
-
 /* Add Animation - Zoom in the Modal */
 .modalChannelMenu-content, #captionImgModal {
 	animation-name: zoom;
@@ -121,13 +120,5 @@
 @keyframes fill {
 	100% {
 		box-shadow: inset 0px 0px 0px 30px #7ac142
-	}
-}
-
-@media screen and (max-width: 900px) {
-	.modalChannelMenu-content {
-		position: relative;
-		left: 0 !important;
-		width: 90% !important;
 	}
 }
