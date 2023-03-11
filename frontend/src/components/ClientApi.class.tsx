@@ -73,7 +73,7 @@ class ClientApi {
 		return (
 			(err.about == AboutErr.TOKEN && err.type == TypeErr.TIMEOUT)
 			|| (err.about == AboutErr.HEADER && err.type == TypeErr.INVALID)
-			|| (err.about == AboutErr.USER && err.type == TypeErr.NOT_FOUND)
+			|| (err.about == AboutErr.SELFUSER && err.type == TypeErr.NOT_FOUND)
 		)
 	}
 

@@ -9,7 +9,7 @@ import avatar from "../img/avatar2.jpeg"
 // import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import person from "../img/logo3.png"
 import { Status } from "../constants/EMessage";
-import { ChatItem } from "./DM";
+import { ChatItem, MessageStatus } from "./DM";
 import { IUser } from "../interface/IUser";
 import { IoPaperPlaneOutline } from "react-icons/io5"
 
@@ -37,6 +37,7 @@ const DMContent = ({ user, receiver, chatItems, addChatItem }: Props) => {
 			addChatItem({
 				avatar: user?.avatar,
 				type: "me",
+				status: MessageStatus.LOADING,
 				msg: msgWritten.current
 			})
 			msgWritten.current = ""

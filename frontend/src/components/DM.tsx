@@ -13,10 +13,17 @@ import Navbar from "./Navbar";
 import { API_USER_DM } from "../constants/RoutesApi";
 
 
+export enum MessageStatus {
+	SENT,
+	LOADING,
+	FAILED
+}
+
 export interface ChatItem
 {
 	type: "me" | "other",
 	msg: string,
+	status: MessageStatus,
 	avatar?: string,
 }
 
@@ -67,39 +74,46 @@ const DM = () => {
 	useEffect(() => {
 		setChatItems([
 			{
-				avatar: undefined,
 				type: "me",
 				msg: "Hi Timhjdglkjdlrgkmldkbmdlkznfbxkldjnhklcfmb,mclfdkjimhjdglkjdlrgkmldkbmdlkznfbxkldjnhklcfmb,mclfdkjimhjdglkjdlrgkmldkbmdlkznfbxkldjnhklcfmb,mclfdkjimhjdglkjdlrgkmldkbmdlkznfbxkldjnhklcfmb,mclfdkjimhjdglkjdlrgkmldkbmdlkznfbxkldjnhklcfmb,mclfdkjimhjdglkjdlrgkmldkbmdlkznfbxkldjnhklcfmb,mclfdkjimhjdglkjdlrgkmldkbmdlkznfbxkldjnhklcfmb,mclfdkjimhjdglkjdlrgkmldkbmdlkznfbxkldjnhklcfmb,mclfdkjimhjdglkjdlrgkmldkbmdlkznfbxkldjnhklcfmb,mclfdkjimhjdglkjdlrgkmldkbmdlkznfbxkldjnhklcfmb,mclfdkjimhjdglkjdlrgkmldkbmdlkznfbxkldjnhklcfmb,mclfdkjimhjdglkjdlrgkmldkbmdlkznfbxkldjnhklcfmb,mclfdkjimhjdglkjdlrgkmldkbmdlkznfbxkldjnhklcfmb,mclfdkjimhjdglkjdlrgkmldkbmdlkznfbxkldjnhklcfmb,mclfdkjimhjdglkjdlrgkmldkbmdlkznfbxkldjnhklcfmb,mclfdkjimhjdglkjdlrgkmldkbmdlkznfbxkldjnhklcfmb,mclfdkjimhjdglkjdlrgkmldkbmdlkznfbxkldjnh klcfmb,mclfdkjimhjdglkjdlrgkmldkbmdlkznfbxkldjnhklcfmb,mclfdkjb, How are you?",
+				status: MessageStatus.SENT,
+				avatar: undefined,
 			},
 			{
-				avatar: undefined,
 				type: "other",
 				msg: "I am fine.",
+				status: MessageStatus.SENT,
+				avatar: undefined,
 			},
 			{
-				avatar: undefined,
 				type: "other",
 				msg: "What about you?",
+				status: MessageStatus.SENT,
+				avatar: undefined,
 			},
 			{
-				avatar: undefined,
 				type: "me",
 				msg: "Awesome these days.",
+				status: MessageStatus.SENT,
+				avatar: undefined,
 			},
 			{
-				avatar: undefined,
 				type: "other",
 				msg: "Finally. What's the plan?",
+				status: MessageStatus.SENT,
+				avatar: undefined,
 			},
 			{
-				avatar: undefined,
 				type: "me",
 				msg: "what plan mate?",
+				status: MessageStatus.SENT,
+				avatar: undefined,
 			},
 			{
-				avatar: undefined,
 				type: "other",
 				msg: "I'm taliking about the tutorial",
+				status: MessageStatus.SENT,
+				avatar: undefined,
 			},
 		])
 		setDiscussions([
@@ -137,14 +151,15 @@ const DM = () => {
 		(async () => {
 			if (receiver && pseudo) {
 				try {
-					// const { messages }: { messages: IMessage[] } =
-					// 	await ClientApi.get(API_USER_DM + '/' + receiver.pseudo)
-					// const chatItems: ChatItem[] = messages.map(message => ({
-					// 	type: (pseudo === message.author) ? "me" : "other",
-					// 	msg: message.content,
-					// 	avatar: (pseudo === message.author) ? avatar : receiver.avatar,
-					// }))
-					// setChatItems(chatItems)
+					const { messages }: { messages: IMessage[] } =
+						await ClientApi.get(API_USER_DM + '/' + receiver.pseudo)
+					const chatItems: ChatItem[] = messages.map(message => ({
+						type: (pseudo === message.author) ? "me" : "other",
+						msg: message.content,
+					 status: MessageStatus.SENT,
+						avatar: (pseudo === message.author) ? avatar : receiver.avatar,
+					}))
+					setChatItems(chatItems)
 				} catch (err) {
 					console.log("err = ", err);
 				}
