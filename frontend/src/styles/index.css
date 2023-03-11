@@ -36,7 +36,8 @@ code {
 }
 
 .offline {
-	background: grey;
+	box-sizing: border-box;
+	border: 2px solid grey;
 }
 
 .ingame {

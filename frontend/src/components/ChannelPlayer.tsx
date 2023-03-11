@@ -21,6 +21,11 @@ const ChannelPlayer = ({ chanUser, player, channel, doDisplayPreview, onClick, o
 
 	const { pseudo: playerName, role, status } = player
 	const playerTextRef = useResizeText(useRef<HTMLParagraphElement>(null))
+	const statusMap = new Map<Status, string>([
+		[Status.OFFLINE, "offline"],
+		[Status.ONLINE, "online"],
+		[Status.INGAME, "ingame"],
+	]);
 
 
 	return (
@@ -35,7 +40,7 @@ const ChannelPlayer = ({ chanUser, player, channel, doDisplayPreview, onClick, o
 						role === ChannelRole.ADMIN && <img className='logo-role' src={ModoLogo} />
 					}
 					<p ref={playerTextRef} className='playerName-text'>{playerName}</p>
-					<div className='circle custom-on-circle online' />
+					<div className={'circle custom-on-circle ' + statusMap.get(player.status)} />
 				</button>
 			</div>
 		</React.Fragment>
