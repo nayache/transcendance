@@ -3,13 +3,12 @@ import Avatar from "./Avatar";
 
 interface Props {
 	animationDelay: number,
-	key: string
 	sender: string,
 	msg: string
-	image: string
+	srcImg: string
 }
 
-const DMItem = ({ animationDelay, key, sender, msg, image }: Props) => {
+const DMItem = ({ animationDelay, sender, msg, srcImg }: Props) => {
 	
 	return (
 		<div
@@ -23,7 +22,7 @@ const DMItem = ({ animationDelay, key, sender, msg, image }: Props) => {
 					<span>Seen 1.03PM</span>
 				</div>
 			</div>
-			<Avatar status={Status.INGAME} image={image} />
+			<Avatar srcImg={srcImg} />
 		</div>
 	);
 }

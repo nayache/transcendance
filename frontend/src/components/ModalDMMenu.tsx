@@ -19,15 +19,10 @@ const ModalDMMenu = ({ active, type, callback, callbackFail }: Props) => {
 	const [update, setUpdate] = useState<string>("");
 
 
-	const handleClick = (callback?: (props?: any) => any | undefined, e?: React.MouseEvent) => {
-		setUpdate("")
-		if (callback)
-			callback();
-	}
-
-	const onChooseReceiver = () => {
+	const onChooseReceiver = (props?: any) => {
 		console.log("onChooseReceiver")
-		handleClick(callback)
+		if (callback)
+			callback(props)
 	}
 
 	useEffect(() => {
@@ -42,11 +37,11 @@ const ModalDMMenu = ({ active, type, callback, callbackFail }: Props) => {
 		<div id="myDMModal-channelMenu"
 		ref={modalRef} className="DMmodalChannelMenu">
 			<div className="DMmodalChannelMenu-content">
-				<span onClick={(e) => handleClick(callbackFail)}
+				<span onClick={callbackFail}
 				className="closeDM-channelMenu">&times;</span>
 				{
 					type === ModalDMType.CHOOSERECEIVER &&
-					<ChooseReceiverMenu onChooseReceiver={() => onChooseReceiver()} />
+					<ChooseReceiverMenu onChooseReceiver={onChooseReceiver} />
 				}
 			</div>
 		</div>

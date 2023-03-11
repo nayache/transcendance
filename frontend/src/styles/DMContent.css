@@ -174,3 +174,9 @@ div::-webkit-scrollbar-thumb {
 	background-color: #3b5bfe;
 	color: #fff;
 }
+
+.paper-svg {
+	display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+}

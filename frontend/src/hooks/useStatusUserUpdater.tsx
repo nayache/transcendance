@@ -4,6 +4,7 @@ import ClientApi from "../components/ClientApi.class"
 import { API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi"
 import { IChannel, IChannelEvMute, IChannelUser } from "../interface/IChannel"
 
+/* peut etre faire un setinterval toutes les 3min */
 export const useStatusUserUpdater = (
 	socket: Socket | undefined, channels: IChannel[],
 	currentChannelId: number, chanUser: IChannelUser | undefined,

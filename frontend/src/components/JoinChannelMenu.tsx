@@ -213,7 +213,7 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 	useEffect(() => {
 		if (!channelSelected) {
 			if (inputRef.current)
-				inputRef.current.value = channelWritten.current			
+				inputRef.current.value = channelWritten.current
 			setErrorPassword("");
 			setErrorChannel("");
 		}

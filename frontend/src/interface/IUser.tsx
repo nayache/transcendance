@@ -6,5 +6,5 @@ export enum Relation {
 
 export interface IUser {
 	pseudo?: string,
-	avatar?: File
+	avatar?: string
 }

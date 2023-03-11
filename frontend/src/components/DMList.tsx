@@ -7,13 +7,21 @@ import DMListItems from "./DMListItems"
 import { useState } from "react"
 import { Status } from "../constants/EMessage"
 import { AiOutlinePlus } from "react-icons/ai"
+import ModalDMMenu, { ModalDMType } from "./ModalDMMenu"
+import { ModalChannelType } from "./ModalChannelMenu"
+import { IUser } from "../interface/IUser"
 // import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus';
 // import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 // import { faEllipsisH } from "@fortawesome/free-solid-svg-icons";
 
 
-const DMList = () => {
+interface Props {
+	updateReceiver: (receiver: IUser) => void
+}
 
+const DMList = ({updateReceiver}: Props) => {
+
+	const [ doPrintModal, setDoPrintModal ] = useState<boolean>(false)
 	const [allChats, setAllChats] = useState([
 		{
 			name: "Guillaumedu77",
@@ -48,24 +56,20 @@ const DMList = () => {
 
 	return (
 		<div className="main__chatlist">
-			<button className="btn">
+			<button className="btn" onClick={() => setDoPrintModal(true)}>
 				<AiOutlinePlus />
 				<span> New conversation</span>
 			</button>
+			{
+				<ModalDMMenu active={doPrintModal} type={ModalDMType.CHOOSERECEIVER}
+				callback={(userName) => {setDoPrintModal(false); console.log("userName = ", userName)}}
+				callbackFail={() => setDoPrintModal(false)} />
+			}
 			<div className="chatlist__heading">
 				<h2>Chats</h2>
 				<button className="btn-nobg">
 					{/* <FontAwesomeIcon icon={faEllipsisH} /> */}
 				</button>
-			</div>
-			<div className="chatList__search">
-				<div className="search_wrap">
-					<input type="text" placeholder="Search Here" />
-						{/* <FontAwesomeIcon icon={faMagnifyingGlass} /> */}
-					<button className="search-btn">
-					
-					</button>
-				</div>
 			</div>
 			<div className="chatlist__items">
 				{allChats.map((item: any, index: number) => (
@@ -73,9 +77,7 @@ const DMList = () => {
 						name={item.name}
 						key={item.id}
 						animationDelay={index + 1}
-						active={item.active ? "active" : ""}
-						status={item.isOnline ? Status.ONLINE : Status.OFFLINE}
-						image={item.image}
+						srcImg={item.image}
 					/>
 				))}
 			</div>
