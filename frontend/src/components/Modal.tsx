@@ -22,12 +22,12 @@ const Modal = ({ active, title, content, callback, callbackFail }: Props) => {
 	}
 
 	
-	useEffect(() => {
+	{
 		console.log("active (dans modal) = ", active)
 		if (modalRef.current) {
 			modalRef.current.style.display = active ? "block" : "none";
 		}
-	}, [active])
+	}
 
 	return (
 		<div id="myModal" onClick={(e) => {

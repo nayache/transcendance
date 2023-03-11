@@ -108,7 +108,7 @@ const EnableTwoFASettings = () => {
 	return (
 		<React.Fragment>
 			<div className="two-factor-content-container">
-				{ clicked && unrolled != undefined && unrolled[0] &&
+				{
 					<Modal active={clicked && unrolled != undefined && unrolled[0]}
 					title={modalTitle}
 					content={modalContent}
