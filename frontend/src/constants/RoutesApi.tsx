@@ -30,6 +30,8 @@ export const API_VERIFY_TOKEN_ROUTE = API_BASE_AUTH + '/verify'
 export const API_PSEUDO_ROUTE = API_BASE_USER + '/pseudo'
 export const API_AVATAR_ROUTE = API_BASE_USER + '/avatar'
 
+export const API_USER_FRIEND_RELATION = API_BASE_USER + '/user/friends/relation' /* + /:pseudo */
+
 export const API_CHAT_MESSAGES_CHANNEL_ROUTE = API_BASE_CHAT + '/channel/message'
 export const API_CHAT_USER_CHANNELS_ROUTE = API_BASE_CHAT + '/channels'
 export const API_CHAT_ALL_CHANNELS_ROUTE = API_BASE_CHAT + '/channels/all'
