@@ -79,7 +79,7 @@ export class UserService {
     }
 
     async getUser(user: UserEntity) : Promise<userDto> {
-        const avatar: StreamableFile = (user.avatar?.datafile) ? this.avatarService.toStreamableFile(user.avatar.datafile): null;
+        const avatar: string = (user.avatar?.datafile) ? this.avatarService.toStreamableFile(user.avatar): null;
         let friendlist: string[] = null;
         let blockedlist: string[] = null;
         
@@ -207,18 +207,17 @@ export class UserService {
         }
     }
 
-	async setAvatar(userId: string, file: Express.Multer.File, number?: number): Promise<void> {
+	async setAvatar(userId: string, file: Express.Multer.File): Promise<void> {
 		if (!file)
 		  throw new HttpException('File required', HttpStatus.BAD_REQUEST);
 		const filename = file.originalname;
 		const datafile = file.buffer;
-		if (await this.avatarService.exist(userId, filename))
-			throw new HttpException('Avatar Filename is already in database for this user', HttpStatus.CONFLICT);
+		const mimetype = file.mimetype;
 		const user: UserEntity = await this.findById(userId);
 		const curr_avatar: Avatar = await this.avatarService.getCurrentAvatar(userId);
-		await this.avatarService.createAvatar(filename, datafile, user, number);
+		await this.avatarService.createAvatar(filename, datafile, mimetype, user);
 		if (curr_avatar)
-			await this.avatarService.disabled(curr_avatar.id);
+			await this.avatarService.deleteAvatar(curr_avatar.id);
 	  }
 	
 	async getAvatar(userId: string): Promise<Avatar> {

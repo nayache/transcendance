@@ -6,8 +6,6 @@ import {
   } from '@nestjs/common';
   import { InjectRepository } from '@nestjs/typeorm';
 import { catchError } from 'rxjs';
-import { AboutErr, TypeErr } from 'src/enums/error_constants';
-import { ErrorException } from 'src/exceptions/error.exception';
   import { Readable } from 'stream';
   import { Repository } from 'typeorm';
   import { Avatar } from '../entity/avatar.entity';
@@ -21,31 +19,10 @@ import { UserService } from './user.service';
 	async createAvatar(
 	  file: string,
 	  datafile: Buffer,
+	  mimetype: string,
 	  user: UserEntity,
-	  number?: number
 	): Promise<Avatar> {
-	  let highestNumber = 0;
-
-	  if (!number) {
-	    const avatars = await this.avatarRepository.find({
-	  	  where: { userId: user.id },
-		  });
-		  for (const avatar of avatars) {
-			if (avatar.number > highestNumber) {
-			  highestNumber = avatar.number;
-			}
-		  }
-		  highestNumber++;
-		} else {
-			const existingAvatar = await this.avatarRepository.findOne({
-			  where: { userId: user.id, number },
-			});
-			if (existingAvatar) {
-			  throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.DUPLICATED ,`Avatar with number ${number} already exists`);
-			}
-			highestNumber = number;
-		  }
-	  const avatar = this.avatarRepository.create({file, datafile, user, number: highestNumber});
+	  const avatar = this.avatarRepository.create({file, datafile, user, mimetype});
   
 	  try {
 		await this.avatarRepository.save(avatar);
@@ -63,21 +40,19 @@ import { UserService } from './user.service';
 	  }
 	}
   
-	toStreamableFile(data: Buffer): StreamableFile {
-	  return new StreamableFile(Readable.from(data));
-	}
-
-	toStreamableFiles(avatar_array: Avatar[]): StreamableFile[] {
-		let avatar_data : StreamableFile[] = [];
-		for (let i = 0; i < avatar_array.length; i++)
-			avatar_data.push(this.toStreamableFile(avatar_array[i].datafile));
-		return avatar_data;
+	toStreamableFile(avatar: Avatar): string {
+		const type = avatar.mimetype;
+		const dataImagePrefix = 'data:';
+		const dataImageSuffix = ';base64,';
+		console.log(dataImagePrefix.concat(type));
+	  const final: string = dataImagePrefix.concat(type).concat(dataImageSuffix).concat(avatar.datafile.toString('base64'));
+	  return final;
 	}
 
 	async getCurrentAvatar(userId: string): Promise<Avatar> {
 		try {
-			const avatars: Avatar[] = await this.avatarRepository.find({where: {userId: userId, Current: true}});
-			return avatars[0];
+			const avatar: Avatar[] = await this.avatarRepository.find({where: {userId: userId}});
+			return avatar[0];
 		}
 		catch(e)
 		{
@@ -85,34 +60,9 @@ import { UserService } from './user.service';
 		}
 	}
 
-	async exist(userId: string, filename: string): Promise<boolean> {
-		const res: boolean = await this.avatarRepository.exist({where: [{userId: userId, file: filename}]})
-		return (res);
-	}
-
-	async disabled(avatarId: string): Promise<void> {
+	async getavatarId(userId:string, filename: string): Promise<string> {
 		try {
-			await this.avatarRepository.update(avatarId, {Current: false});
-		}
-		catch (e)
-		{
-			throw new HttpException('Cannot update turnoff current avatar', HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-	
-	async getAllAvatars(userId: string): Promise<Avatar[]> {
-		try {
-			const avatars: Avatar[] = await this.avatarRepository.find({where: {userId: userId}, select: {datafile: true}});
-			return avatars;
-		} catch(error)
-		{
-			return (null);
-		}
-	}
-
-	async getavatarId(userId:string, number: number): Promise<string> {
-		try {
-			const avatar: Avatar[] = await this.avatarRepository.find({where: {userId: userId, number}});
+			const avatar: Avatar[] = await this.avatarRepository.find({where: {userId: userId}});
 			return avatar[0].id;
 		}
 		catch (error)
@@ -120,10 +70,4 @@ import { UserService } from './user.service';
 			return (null);
 		}
 	}
-
-	async countavatar(userId: string): Promise<number> {
-		const num: number = await this.avatarRepository.count({where: {userId: userId}});
-		return num;
-	}
-
   }

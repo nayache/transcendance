@@ -1,14 +1,14 @@
 import { StreamableFile } from "@nestjs/common";
 
 export class userDto {
-    constructor(p: string, a: StreamableFile, f: string[], b: string[]) {
+    constructor(p: string, a: string, f: string[], b: string[]) {
         this.pseudo = p;
         this.avatar = a;
         this.friends = f;
         this.blockeds = b;
     }
     pseudo: string;
-    avatar: StreamableFile;
+    avatar: string;
     friends: string[];
     blockeds: string[];
 }
