@@ -104,7 +104,7 @@ export class UserService {
     }
 
     async getUser(user: UserEntity) : Promise<userDto> {
-        const avatar: StreamableFile = (user.avatar?.datafile) ? this.avatarService.toStreamableFile(user.avatar.datafile): null;
+        const avatar: string = (user.avatar) ? this.avatarService.toStreamableFile(user.avatar): null;
         let friendlist: friendDto[] = null;
         let blockedlist: string[] = null;
         
@@ -285,22 +285,23 @@ export class UserService {
         }
     }
 
-	async setAvatar(userId: string, file: Express.Multer.File, number?: number): Promise<void> {
+	async setAvatar(userId: string, file: Express.Multer.File): Promise<void> {
 		if (!file)
 		  throw new HttpException('File required', HttpStatus.BAD_REQUEST);
 		const filename = file.originalname;
 		const datafile = file.buffer;
+		const mimetype = file.mimetype;
 		const user: UserEntity = await this.findById(userId);
 		const curr_avatar: Avatar = await this.avatarService.getCurrentAvatar(userId);
-		await this.avatarService.createAvatar(filename, datafile, user, number);
+		await this.avatarService.createAvatar(filename, datafile, mimetype, user);
 		if (curr_avatar)
-			await this.avatarService.disabled(curr_avatar.id);
+			await this.avatarService.deleteAvatar(curr_avatar.id);
 	  }
-	
+
 	async getAvatar(userId: string): Promise<Avatar> {
 		const avatar: Avatar = await this.avatarService.getCurrentAvatar(userId);
-		/* if (!avatar)
-		  throw new HttpException('Avatar not found', HttpStatus.NOT_FOUND); */
+		if (!avatar)
+		  throw new HttpException('Avatar not found', HttpStatus.NOT_FOUND);
 		return avatar;
 	}
 

@@ -13,13 +13,13 @@ export class Avatar {
 	id: string;
 
 	@Column()
-	number: number;
-
-	@Column()
 	file: string;
 
 	@Column({type: 'bytea'})
 	datafile: Buffer;
+
+	@Column()
+	mimetype: string;
 
 	@ManyToOne(() => UserEntity, { onDelete: 'CASCADE'})
 	@JoinColumn({name: 'userId'})
@@ -27,8 +27,5 @@ export class Avatar {
 
 	@Column()
 	userId: string;
-
-	@Column({ type: "bool", default: true })
-	Current: boolean;
 }
 
