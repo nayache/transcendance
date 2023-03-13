@@ -16,6 +16,11 @@ import { ChatGateway } from 'src/chat/chat.gateway';
 import { Status } from 'src/enums/status.enum';
 import { ProfileDto } from 'src/dto/profile.dto';
 
+export class UserPreview {
+    pseudo: string;
+    avatar: string;
+}
+
 @Injectable()
 export class UserService {
     constructor(@InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
@@ -32,15 +37,20 @@ export class UserService {
         return user
     }
     
-    async getUsersNames(): Promise<string[]> {
-        let names: string[] = [];
+    async getUsersPreview(): Promise<UserPreview[]> {
+        let previews: UserPreview[] = [];
         try {
             const users: UserEntity[] = await this.userRepository.find();
-            names = users.map((user) => user.pseudo);
+            previews = await Promise.all(users.map(async (user) => {
+                if (user.pseudo) {
+                    const avatar: string = await this.getAvatarfile(user.id);
+                    return { pseudo: user.pseudo, avatar };
+                }
+            }));
         } catch (err) {
-            return names;
+            return previews;
         }
-        return names;
+        return previews;
     }
 
     async findById(id: string) {
@@ -321,7 +331,7 @@ export class UserService {
 		try {
 			await this.blockedRepository.save(blocked);
 		} catch (error) {
-			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.TIMEOUT, 'Could not save blocked entity');
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.DATABASE, TypeErr.TIMEOUT, 'Could not save blocked entity');
 		}
 		return blocked;
 	}
@@ -336,7 +346,7 @@ export class UserService {
 			{authorId: userId, user2Id: user2Id}
 		]});
 	} catch (error) {
-		throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.USER, TypeErr.TIMEOUT);
+		throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
 	}
 	}
 

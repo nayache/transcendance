@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Query, S
 import { User } from 'src/decorators/user.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserEntity } from 'src/entity/user.entity';
-import { UserService } from './user.service';
+import { UserPreview, UserService } from './user.service';
 import { AvatarService } from './avatar.service';
 import { Avatar } from 'src/entity/avatar.entity';
 import { ErrorException } from 'src/exceptions/error.exception';
@@ -47,13 +47,14 @@ export class UserController {
         return { pseudo };
     }
 
-	@Get('all/names')
+	@Get('all')
 	async getUsersNames() {
-		const names: string[] = await this.userService.getUsersNames();
-		return {names};
+		const users: UserPreview[] = await this.userService.getUsersPreview();
+		return {users};
 	}
 
-
+	// A SUPP???? 
+	/*
 	@Get()
 	async getUser(@User() userId: string) {
 		const user: UserEntity = await this.userService.findById(userId);
@@ -70,7 +71,7 @@ export class UserController {
 			throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found');
 		const data: userDto = await this.userService.getUser(user);
 		return { user: data }
-	}
+	}*/
 
 	@Get('friends/relation/:pseudo')
 	async getRelation(@User() userId: string, @Param('pseudo') pseudo: string) {
@@ -104,10 +105,10 @@ export class UserController {
 	}
 
     //for test
-    @Get('all')
+/*    @Get('all')
     async getAll() : Promise<UserEntity[]> {
         return this.userService.getUsers();
-    }
+    }*/
 
     //for test
     @Post('add')
