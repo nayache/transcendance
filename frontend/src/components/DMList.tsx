@@ -50,6 +50,7 @@ const DMList = ({discussions, updateReceiver}: Props) => {
 			<div className="chatlist__items">
 				{discussions.map((item, index) => (
 					<DMListItems
+						key={index}
 						pseudo={item.pseudo}
 						avatar={item.avatar}
 						onClick={() => updateReceiver({pseudo: item.pseudo, avatar: item.avatar})}

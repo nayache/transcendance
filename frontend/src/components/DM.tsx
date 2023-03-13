@@ -16,12 +16,13 @@ import { API_USER_DM } from "../constants/RoutesApi";
 export enum MessageStatus {
 	SENT,
 	LOADING,
-	FAILED
+	FAIL
 }
 
 export interface ChatItem
 {
 	type: "me" | "other",
+	id?: number,
 	msg: string,
 	status: MessageStatus,
 	avatar?: string,
@@ -47,6 +48,14 @@ const DM = () => {
 		setChatItems(oldItems => [...oldItems,
 			newChatItem
 		])
+	}
+
+	const updateChatItem = (id: number, updatedChatItem: ChatItem) => {
+		setChatItems(oldItems => oldItems.map(oldItem => {
+			if (oldItem.id === id)
+				return (updatedChatItem)
+			return (oldItem)
+		}))
 	}
 
 	const updateImgChatItems = ([userImg, receiverImg]: [string?, string?]) => {
@@ -175,7 +184,8 @@ const DM = () => {
 			<Navbar />
 			<div className="DM-container">
 				<DMList updateReceiver={updateReceiver} discussions={discussions} />
-				<DMContent user={{pseudo, avatar}} chatItems={chatItems} receiver={receiver} addChatItem={addChatItem}/>
+				<DMContent user={{pseudo, avatar}} chatItems={chatItems}
+				receiver={receiver} addChatItem={addChatItem} updateChatItem={updateChatItem}/>
 			</div>
 		</React.Fragment>
 	)

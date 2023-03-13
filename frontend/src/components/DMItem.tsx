@@ -1,28 +1,47 @@
 import { Status } from "../constants/EMessage";
 import Avatar from "./Avatar";
+import { ChatItem, MessageStatus } from "./DM";
+import '../styles/DMItem.css'
+import { AiOutlineExclamationCircle } from "react-icons/ai"
 
 interface Props {
 	animationDelay: number,
-	sender: string,
-	msg: string
-	srcImg: string
+	chatItem: ChatItem,
+	tryAgain?: () => void
 }
 
-const DMItem = ({ animationDelay, sender, msg, srcImg }: Props) => {
+const DMItem = ({ animationDelay, chatItem, tryAgain }: Props) => {
 	
+
+	const statusClassNames = new Map<MessageStatus, string>([
+		[MessageStatus.FAIL, "dm_failed"],
+		[MessageStatus.LOADING, "dm_loading"],
+		[MessageStatus.SENT, ""],
+	])
+
+
 	return (
 		<div
 			style={{ animationDelay: `0.8s` }}
-			className={`chat__item ${sender ? sender : ""}`}
+			className={`chat__item ${chatItem.type ? chatItem.type : ""} ${statusClassNames.get(chatItem.status)}`}
 		>
-			<div className="chat__item__content">
-				<div className="chat__msg">{msg}</div>
-				<div className="chat__meta">
-					<span>16 mins ago</span>
-					<span>Seen 1.03PM</span>
+			<div className="chat__item__content-container">
+				<div className="chat__item__content">
+					<div className="chat__msg">{chatItem.msg}</div>
+					<div className="chat__meta">
+						<span>16 mins ago</span>
+						<span>Seen 1.03PM</span>
+					</div>
 				</div>
+				{chatItem.status === MessageStatus.FAIL &&
+				<span className="retry-span" onClick={() => {
+					if (tryAgain)
+						tryAgain()
+				}}>
+					<AiOutlineExclamationCircle />Try to send again
+				</span> }
 			</div>
-			<Avatar srcImg={srcImg} />
+			<Avatar srcImg={chatItem.avatar} />
 		</div>
 	);
 }

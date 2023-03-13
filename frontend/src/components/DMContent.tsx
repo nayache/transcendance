@@ -12,39 +12,85 @@ import { Status } from "../constants/EMessage";
 import { ChatItem, MessageStatus } from "./DM";
 import { IUser } from "../interface/IUser";
 import { IoPaperPlaneOutline } from "react-icons/io5"
+import { IError } from "../constants/EError";
+import ClientApi from "./ClientApi.class";
+import { API_USER_DM } from "../constants/RoutesApi";
 
 interface Props {
 	user: IUser | undefined,
 	receiver: IUser | undefined,
 	chatItems: ChatItem[],
 	addChatItem: (newChatItem: ChatItem) => void,
+	updateChatItem: (id: number, updateChatItem: ChatItem) => void,
 }
 
 
-const DMContent = ({ user, receiver, chatItems, addChatItem }: Props) => {
+const DMContent = ({ user, receiver, chatItems, addChatItem, updateChatItem }: Props) => {
 
 	const messagesContainerRef = useRef<HTMLDivElement>(null)
 	const inputRef = useRef<HTMLInputElement>(null);
 	const msgWritten = useRef<string | null>(null);
 	const noMessages = useRef<number>(0)
+	const currMsgId = useRef<number>(0)
+
 	
 
 
-
-	const handleEnter = async () => {
-		if (msgWritten.current) {
-			
+	const realPushMsg = async (id: number, msg: string | null) => {
+		if (msg) {
 			addChatItem({
 				avatar: user?.avatar,
+				id,
 				type: "me",
 				status: MessageStatus.LOADING,
-				msg: msgWritten.current
+				msg: msg
 			})
-			msgWritten.current = ""
+			msg = ""
 			if (inputRef.current)
 				inputRef.current.value = ""
+			try {
+				id = await ClientApi.post(API_USER_DM, JSON.stringify({
+					target: receiver?.pseudo,
+					msg: msg,
+					id
+				}), 'application/json')
+				updateChatItem(id, {
+					avatar: user?.avatar,
+					id: id++,
+					type: "me",
+					status: MessageStatus.SENT,
+					msg: msg
+				})
+			} catch (err) {
+				const _error: IError = err as IError
+
+				console.log("err = ", err)
+				updateChatItem(id, {
+					avatar: user?.avatar,
+					id,
+					type: "me",
+					status: MessageStatus.FAIL,
+					msg: msg
+				})
+			}
 		}
+		return id
 	}
+
+	const handleEnter = async () => {
+		currMsgId.current = await realPushMsg(currMsgId.current, msgWritten.current)
+	}
+
+	// const tryAgain = () => {
+		
+	// 	updateChatItem(id, {
+	// 		avatar: user?.avatar,
+	// 		id,
+	// 		type: "me",
+	// 		status: MessageStatus.SENT,
+	// 		msg: msgWritten.current
+	// 	})
+	// }
 
 
 
@@ -100,13 +146,13 @@ const DMContent = ({ user, receiver, chatItems, addChatItem }: Props) => {
 				</div>
 			</div>
 			<div className="content__body" ref={messagesContainerRef}>
-				{chatItems.map((itm: any, index: number) => {
+				{chatItems.map((itm, index) => {
 					return (
 						<DMItem
+							key={index}
 							animationDelay={index + 2}
-							sender={itm.type ? itm.type : "me"}
-							msg={itm.msg}
-							srcImg={itm.image}
+							chatItem={itm}
+							// tryAgain={}
 						/>
 					);
 				})}
