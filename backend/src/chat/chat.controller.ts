@@ -8,14 +8,14 @@ import { ChannelRole } from '../enums/channel-role.enum';
 import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
 import { Status } from '../enums/status.enum';
-import { IsBoolean, isNotEmpty, IsNotEmpty, IsNumber, IsOptional, isString, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { ValidationFilter } from './filter/validation-filter';
 import { isAdmin } from './guards/is-admin.guard';
 import { ChannelEntity } from './entity/channel.entity';
-import { Transform, Type } from 'class-transformer';
 import { isOwner } from './guards/is-owner.guard';
 import { Mute } from './entity/mute.entity';
 import { Error } from 'src/exceptions/error.interface';
+import { PrivateMessageEntity } from './entity/privateMessage.entity';
 
 export class ChannelMessageDto {
     author: string;
@@ -216,6 +216,8 @@ export class ChatController {
     @Patch('channel/setAdmin')
     async setAdmin(@User() userId: string, @Body() payload: adminActionDto) {
         const target: UserEntity = await this.userService.findByPseudo(payload.target);
+        if (!target)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
         if (target.id === userId)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant set/unset admin himself');
         if (await this.chatService.isAdmin(target.id, payload.channel))
@@ -229,6 +231,8 @@ export class ChatController {
     @Patch('channel/kick')
     async kickUser(@User() userId: string, @Body() payload: adminActionDto) {
         const target: UserEntity = await this.userService.findByPseudo(payload.target);
+        if (!target)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
         if (target.id === userId)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant kick himself');
         if (!await this.chatService.isOwner(userId, payload.channel) && await this.chatService.isAdmin(target.id, payload.channel))
@@ -242,6 +246,8 @@ export class ChatController {
     @Patch('channel/ban')
     async banUser(@User() userId: string, @Body() payload: adminActionDto) {
         const target: UserEntity = await this.userService.findByPseudo(payload.target);
+        if (!target)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
         if (target.id === userId)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant ban himself');
         if (!await this.chatService.isOwner(userId, payload.channel) && await this.chatService.isAdmin(target.id, payload.channel))
@@ -257,6 +263,8 @@ export class ChatController {
     @Get('channel/ismute/:pseudo')
     async ismuteUser(@User() userId: string, @Param('pseudo') pseudo: string) {
         const user = await this.userService.findByPseudo(pseudo);
+        if (!user)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
         return this.chatService.isMuted('testchann', user.id)
     }
 
@@ -264,13 +272,15 @@ export class ChatController {
     @Patch('channel/mute')
     async muteUser(@User() userId: string, @Body() payload: muteActionDto) {
         const target: UserEntity = await this.userService.findByPseudo(payload.target);
+        if (!target)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
         if (target.id === userId)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'cant mute himself');
         if (!await this.chatService.isOwner(userId, payload.channel) && await this.chatService.isAdmin(target.id, payload.channel))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.INVALID, 'target is admin');
         if (await this.chatService.isBanned(payload.channel, target.id))
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.CHANNEL, TypeErr.REJECTED, 'target is already muted');
-        const muted: Mute = await this.chatService.muteUser(payload.channel, target.id, payload.duration);
+        const muted: Mute = await this.chatService.muteUser(payload.channel, target, payload.duration);
         const expiration: Date = this.chatService.getMuteExpiration(muted);
         await this.chatService.setUnmuteDate(muted, expiration);
         await this.chatGateway.muteEvent(payload.channel, userId, target.id, expiration);
@@ -301,19 +311,19 @@ export class ChatController {
 
     @Get('discussions')
     async getDiscussions(@User() userId: string) {
-        const users: Discussion[] = await this.chatService.getDiscussions(userId);
-        return {users}
+        const discussions: Discussion[] = await this.chatService.getDiscussions(userId);
+        return {discussions}
     }
 
     @Get('message/:pseudo')
     async getPrivateConversation(@User() userId: string, @Param('pseudo') pseudo: string) {
         if (!pseudo)
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.EMPTY, 'argument empty');
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'argument empty');
         const target: UserEntity = await this.userService.findByPseudo(pseudo);
         if (!target)
-            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'target not found');
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
         if (target.id === userId)
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.INVALID, 'target must different than user');
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'target must different than user');
         const messages: prvMsgDto[] = await this.chatService.getConversation(userId, target.id);
         return {messages};
     }
@@ -327,8 +337,8 @@ export class ChatController {
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.MESSAGE, TypeErr.INVALID, 'cant send himself message');
         if (this.chatService.isBlocked(target.id, userId))
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.MESSAGE, TypeErr.INVALID, 'user is blocked by target');
-        this.chatService.messageToUser(userId, target.id, payload.msg);
-        await this.chatGateway.sendMessageToUser(userId, target.id, target.pseudo, payload.msg);
+        const message: PrivateMessageEntity = await this.chatService.messageToUser(userId, target.id, payload.msg);
+        await this.chatGateway.sendMessageToUser(userId, target.id, target.pseudo, message.content, message.created_at);
         return {}
     }
 

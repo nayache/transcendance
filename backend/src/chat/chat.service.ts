@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { ChannelRole } from '../enums/channel-role.enum';
 import { ChannelDto, ChannelMessageDto, channelPreviewDto, ChannelUserDto, Discussion, prvMsgDto } from './chat.controller';
@@ -17,6 +17,7 @@ import { Error } from 'src/exceptions/error.interface';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { Avatar } from 'src/entity/avatar.entity';
 import { AvatarService } from 'src/user/avatar.service';
+import { ErrorException } from 'src/exceptions/error.exception';
 
 
 @Injectable()
@@ -165,15 +166,18 @@ export class ChatService {
         return this.memberRepository.update(member.id, {unmuteDate: unmutedDate});
     }
 
-    async muteUser(channelName: string, userId: string, duration: number): Promise<Mute> {
+    async muteUser(channelName: string, target: UserEntity, duration: number): Promise<Mute> {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
-        const user: UserEntity = await this.userService.findById(userId);
-        console.log(await this.isMuted(channelName, userId))
-        let muted: Mute = await this.findMute(channel, userId);
-        if (!muted)
-            return this.muteRepository.save(new Mute(channel, user, duration));
-        await this.muteRepository.update(muted.id, { duration: duration } );
-        return this.findMute(channel, userId);
+        console.log(await this.isMuted(channelName, target.id))
+        let muted: Mute = await this.findMute(channel, target.id);
+        try {
+            if (!muted)
+                return await this.muteRepository.save(new Mute(channel, target, duration));
+            await this.muteRepository.update(muted.id, { duration: duration } );
+            return await this.findMute(channel, target.id);
+        } catch (e) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT)
+        }
     }
 
     async setRole(channelName: string, userId: string, role: ChannelRole) {
@@ -371,14 +375,24 @@ export class ChatService {
     async messageToUser(userId: string, targetId: string, content: string) {
         const author: UserEntity = await this.userService.findById(userId);
         const target: UserEntity = await this.userService.findById(targetId);
+        if (!author || !target)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'pseudo not found');
         const message: PrivateMessageEntity = new PrivateMessageEntity(author, target, content);
-        await this.privateMsgRepository.save(message);
+        try {
+            return await this.privateMsgRepository.save(message);
+        } catch(e) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+        }
     }
     
     async messageToChannel(userId: string, channelName: string, text: string): Promise<string> {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
+        if (!channel)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.CHANNEL, TypeErr.NOT_FOUND, 'channel not found');
         const member: Member = await this.getMemberByUserId(userId, channel.id);
         const pseudo: string = await this.userService.getPseudoById(member.userId);
+        if (!pseudo)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'pseudo not found');
         await this.messageRepository.save(new MessageEntity(channel, pseudo, member.color, text));
         return member.color;
     }

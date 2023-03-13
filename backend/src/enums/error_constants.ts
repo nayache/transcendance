@@ -3,13 +3,15 @@ export enum AboutErr {
 	TOKEN,
 	HEADER,
 	USER,
+	TARGET,
 	PSEUDO,
 	AVATAR,
 	CHANNEL,
 	PASSWORD,
 	MESSAGE,
 	REQUEST,
-	TWOFA
+	TWOFA,
+	DATABASE
 }
 
 export enum TypeErr {
