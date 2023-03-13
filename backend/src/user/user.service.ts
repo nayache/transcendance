@@ -31,26 +31,30 @@ export class UserService {
 	private readonly avatarService: AvatarService) {}
     
     async saveUser(login: string) {
-        const user : UserEntity = await this.userRepository.save(new UserEntity(login))
-        const data : DataUserEntity = await this.dataUserRepository.save(new DataUserEntity(user))
-        await this.userRepository.update(user.id, {data: data})
-        return user
+        try {
+            const user : UserEntity = await this.userRepository.save(new UserEntity(login))
+            const data : DataUserEntity = await this.dataUserRepository.save(new DataUserEntity(user))
+            await this.userRepository.update(user.id, {data: data})
+            return user;
+        } catch (e) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+        }
     }
     
     async getUsersPreview(): Promise<UserPreview[]> {
         let previews: UserPreview[] = [];
         try {
             const users: UserEntity[] = await this.userRepository.find();
-            previews = await Promise.all(users.map(async (user) => {
+            await Promise.all(users.map(async (user) => {
                 if (user.pseudo) {
                     const avatar: string = await this.getAvatarfile(user.id);
-                    return { pseudo: user.pseudo, avatar };
+                    previews.push({ pseudo: user.pseudo, avatar });
                 }
             }));
-        } catch (err) {
             return previews;
+        } catch (err) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT)
         }
-        return previews;
     }
 
     async findById(id: string) {
@@ -78,6 +82,8 @@ export class UserService {
 
     async addPseudo(id: string, pseudo: string) {
         const user = await this.findById(id);
+        if (!user)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found')
         if (user.pseudo && await this.pseudoExist(pseudo))
             return null;
        
@@ -94,11 +100,15 @@ export class UserService {
 
     async getTwoFa(id: string): Promise<boolean> {
         const user = await this.findById(id);
+        if (!user)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found')
         return user.twoFaEnabled;
     }
     
     async getTwoFaSecret(id: string): Promise<string> {
         const user = await this.findById(id);
+        if (!user)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found')
         return user.TwoFaSecret;
     }
 
@@ -137,7 +147,13 @@ export class UserService {
     
     async removeUser(login: string) {
         const user = await this.findByLogin(login);
-        return this.userRepository.delete(user.id);
+        if (!user)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found')
+        try {
+            return await this.userRepository.delete(user.id);
+        } catch(e) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT)
+        }
     }
 
     async getRelation(userId: string, targetId: string): Promise<Relation> {
@@ -152,9 +168,15 @@ export class UserService {
         const author : UserEntity = await this.findById(userId);
         const user1 : UserEntity = (userId < userId2) ? await this.findById(userId) : await this.findById(userId2);
         const user2 : UserEntity = (user1.id == userId) ? await this.findById(userId2) : await this.findById(userId);
+        if (!user1 || !user2)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found')
         console.log(userId, userId2);
         console.log(user1.id, user2.id);
-        return this.friendRepository.save(new FriendEntity(author, user1, user2));
+        try {
+            return await this.friendRepository.save(new FriendEntity(author, user1, user2));
+        } catch(e) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT)
+        }
     }
 
     async removeFriendship(userId: string, userId2: string) {
@@ -167,15 +189,19 @@ export class UserService {
             return await this.friendRepository.remove(friendship[0]);
         }
         catch(err) {
-            throw new HttpException('data not found or database error', HttpStatus.NOT_FOUND);
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT)
         }
     }
 
     async getFriendshipInWaiting(userId: string) : Promise<FriendEntity[]> {
-        return this.friendRepository.find({where: [
-            {authorId: Not(userId), user1Id: userId, accepted: false},
-            {authorId: Not(userId), user2Id: userId, accepted: false}
-        ]});
+        try {
+            return await this.friendRepository.find({where: [
+                {authorId: Not(userId), user1Id: userId, accepted: false},
+                {authorId: Not(userId), user2Id: userId, accepted: false}
+            ]});
+        } catch(e) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT)            
+        }
     }
 
     async frienshipWaiting(userId: string, userId2: string) : Promise<boolean> {
@@ -211,11 +237,15 @@ export class UserService {
     }
 
     async getFriendshipPending(userId: string, userId2: string) : Promise<FriendEntity> {
-        const friendship = await this.friendRepository.find({where: [
-            {authorId: userId2, user1Id: userId2, user2Id: userId, accepted: false},
-            {authorId: userId2, user1Id: userId, user2Id: userId2, accepted: false}
-        ]});
-        return friendship[0];
+        try {
+            const friendship = await this.friendRepository.find({where: [
+                {authorId: userId2, user1Id: userId2, user2Id: userId, accepted: false},
+                {authorId: userId2, user1Id: userId, user2Id: userId2, accepted: false}
+            ]});
+            return friendship[0];
+        } catch(e) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT)            
+        }
     }
     
     async acceptFriendship(userId: string, userId2: string) {
@@ -223,7 +253,7 @@ export class UserService {
             const friendship : FriendEntity = await this.getFriendshipPending(userId, userId2);
             return await this.friendRepository.update(friendship.id, {accepted: true})
         } catch (e) {
-            throw new HttpException('error friend database', HttpStatus.INTERNAL_SERVER_ERROR)
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT)            
         }
     }
     
@@ -234,6 +264,8 @@ export class UserService {
         
         blockedList = await Promise.all( blockedList.map(async (id) => {
             const user = await this.findById(id);
+            if (!user)
+                throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND);
             return user.pseudo
         }))
         return blockedList;
@@ -253,6 +285,8 @@ export class UserService {
         
         const friendListDto: friendDto[] = await Promise.all( friendList.map(async (id) => {
             const user: UserEntity = await this.findById(id);
+            if (!user)
+                throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found')  
             const status: Status = await this.chatGateway.getStatus(user.id);
             return { pseudo: user.pseudo, status };
         }))
@@ -279,7 +313,9 @@ export class UserService {
 
     async getProfile(targetId: string, userId?: string): Promise<ProfileDto> {
         const target: UserEntity = await this.findById(targetId);
-        const avatar: string = await this.avatarService.toStreamableFile(await this.getAvatar(userId))// Sami rectifie ca stp
+        if (!target)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND);
+        const avatar: string = this.avatarService.toStreamableFile(await this.getAvatar(userId))// Sami rectifie ca stp
         const pseudo: string = target.pseudo
         const level: number = target.data.level;
         const wins: number = target.data.win;
@@ -310,13 +346,13 @@ export class UserService {
 
 	async getAvatar(userId: string): Promise<Avatar> {
 		const avatar: Avatar = await this.avatarService.getCurrentAvatar(userId);
-		if (!avatar)
-		  throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.AVATAR, TypeErr.NOT_FOUND);
 		return avatar;
 	}
 
 	async getAvatarfile(userId: string): Promise<string> {
 		const avatar: Avatar = await this.getAvatar(userId);
+        if (!avatar)
+            return null;
 		return this.avatarService.toStreamableFile(avatar);
 	}
 
@@ -327,6 +363,8 @@ export class UserService {
 		const author : UserEntity = await this.findById(userId);
 		const user1 : UserEntity = await this.findById(userId);
 		const user2 : UserEntity = await this.findById(user2Id);
+        if (!author || !user1 || !user2)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND);
 		const blocked = this.blockedRepository.create({author, user1, user2});
 		try {
 			await this.blockedRepository.save(blocked);
@@ -354,14 +392,10 @@ export class UserService {
 		userId: string,
 		user2Id: string
 	): Promise <boolean> {
-		try {
-		return await this.blockedRepository.exist({where: [
+		return this.blockedRepository.exist({where: [
 			{user1Id: user2Id, user2Id: userId, authorId: userId},
 			{user1Id: userId, user2Id: user2Id, authorId: userId}
 		]});
-		} catch(error) {
-			return null;
-		}
 	}
 
 	async deleteBlock(userId: string, id: string): Promise<void> {
