@@ -3,6 +3,7 @@ export enum AboutErr {
 	TOKEN,
 	HEADER,
 	USER,
+	TARGET,
 	PSEUDO,
 	AVATAR,
 	CHANNEL,

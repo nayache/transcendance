@@ -372,7 +372,7 @@ export class ChatService {
         const author: UserEntity = await this.userService.findById(userId);
         const target: UserEntity = await this.userService.findById(targetId);
         const message: PrivateMessageEntity = new PrivateMessageEntity(author, target, content);
-        await this.privateMsgRepository.save(message);
+        return this.privateMsgRepository.save(message);
     }
     
     async messageToChannel(userId: string, channelName: string, text: string): Promise<string> {
