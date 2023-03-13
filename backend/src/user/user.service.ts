@@ -301,7 +301,7 @@ export class UserService {
 	async getAvatar(userId: string): Promise<Avatar> {
 		const avatar: Avatar = await this.avatarService.getCurrentAvatar(userId);
 		if (!avatar)
-		  throw new HttpException('Avatar not found', HttpStatus.NOT_FOUND);
+		  throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.AVATAR, TypeErr.NOT_FOUND);
 		return avatar;
 	}
 
@@ -328,11 +328,10 @@ export class UserService {
 	): Promise <boolean> {
 		try {
 		return await this.blockedRepository.exist({where: [
-			{user1Id: user2Id, user2Id: userId},
-			{user1Id: userId, user2Id: user2Id}
+			{authorId: userId, user2Id: user2Id}
 		]});
 	} catch (error) {
-		throw new HttpException('Error Database', HttpStatus.NOT_FOUND);
+		throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.USER, TypeErr.TIMEOUT);
 	}
 	}
 
@@ -346,7 +345,7 @@ export class UserService {
 			{user1Id: userId, user2Id: user2Id, authorId: userId}
 		]});
 		} catch(error) {
-			throw new HttpException('Error database', HttpStatus.NOT_FOUND);
+			return null;
 		}
 	}
 

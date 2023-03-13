@@ -42,11 +42,12 @@ import { UserService } from './user.service';
   
 	toStreamableFile(avatar: Avatar): string {
 		const type = avatar.mimetype;
-		const dataImagePrefix = 'data:';
-		const dataImageSuffix = ';base64,';
-		console.log(dataImagePrefix.concat(type));
-	  const final: string = dataImagePrefix.concat(type).concat(dataImageSuffix).concat(avatar.datafile.toString('base64'));
-	  return final;
+		const dataImagePrefix = 'data:'.concat(type);
+		const dataImageSuffix = dataImagePrefix.concat(';base64,');
+		console.log(dataImageSuffix);
+		let base = avatar.datafile.toString('base64');
+		let final= dataImageSuffix.concat(base);
+		return final;
 	}
 
 	async getCurrentAvatar(userId: string): Promise<Avatar> {
