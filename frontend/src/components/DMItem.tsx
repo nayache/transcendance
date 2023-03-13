@@ -34,13 +34,13 @@ const DMItem = ({ animationDelay, chatItem, tryAgain }: Props) => {
 						<span>Seen 1.03PM</span>
 					</div>}
 				</div>
-				{chatItem.status === MessageStatus.FAIL &&
+				{/* {chatItem.status === MessageStatus.FAIL &&
 				<span className="retry-span" onClick={() => {
 					if (tryAgain)
 						tryAgain()
 				}}>
 					<AiOutlineExclamationCircle />Try to send again
-				</span> }
+				</span> } */}
 			</div>
 			<Avatar srcImg={chatItem.avatar} />
 		</div>

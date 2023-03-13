@@ -7,11 +7,12 @@ import '../styles/ChooseReceiverMenu.css'
 import Avatar from "./Avatar";
 
 interface Props {
+	user: IUser | undefined,
 	onChooseReceiver?: (user: IUser) => void,
 	onChooseReceiverFail?: () => void
 }
 
-const ChooseReceiverMenu = ({ onChooseReceiver, onChooseReceiverFail }: Props) => {
+const ChooseReceiverMenu = ({ user, onChooseReceiver, onChooseReceiverFail }: Props) => {
 
 
 	const userWritten = useRef<string>('');
@@ -66,14 +67,17 @@ const ChooseReceiverMenu = ({ onChooseReceiver, onChooseReceiverFail }: Props) =
 		console.log("did mount");
 		(async () => {
 			try {
-				console.log("avant le fetch")
-				const { users } = await ClientApi.get(API_USER_ALL);
-				if (!users)
-					throw new Error("salut cv ?")
-				console.log("apres le fetch")
-				console.log("users = ", users)
-				setUsers(users);
-				setVisibleUsers(users);
+				if (user?.pseudo) {
+					console.log("avant le fetch")
+					const { users: usersRes }: {users: IUser[]} = await ClientApi.get(API_USER_ALL)
+					if (!usersRes)
+						throw new Error("salut cv ?")
+					const users = usersRes.filter((userRes: IUser) => userRes.pseudo !== user.pseudo)
+					console.log("apres le fetch")
+					console.log("users = ", users)
+					setUsers(users);
+					setVisibleUsers(users);
+				}
 			} catch (err) {
 				console.log("err = ", err);
 				setUsers([{
@@ -173,7 +177,7 @@ const ChooseReceiverMenu = ({ onChooseReceiver, onChooseReceiverFail }: Props) =
 			setVisibleUsers(users);
 			}
 		})()
-	}, [])
+	}, [user])
 
 
 

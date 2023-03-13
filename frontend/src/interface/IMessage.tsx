@@ -5,6 +5,12 @@ export interface IMessage {
     date: Date;
 }
 
+export interface IMessageEvRecv {
+    target: string;
+    message: string;
+    // date: Date;
+}
+
 export interface Discussion {
     pseudo: string;
     avatar: string | undefined;

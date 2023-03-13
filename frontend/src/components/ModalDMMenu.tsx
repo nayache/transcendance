@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { IUser } from '../interface/IUser';
 import '../styles/ModalDMMenu.css'
 import ChooseReceiverMenu from './ChooseReceiverMenu';
 
@@ -9,11 +10,12 @@ export enum ModalDMType {
 interface Props {
 	active: boolean,
 	type: ModalDMType,
+	user: IUser | undefined,
 	callback?: (props?: any) => any,
 	callbackFail?: (props?: any) => any,
 }
 
-const ModalDMMenu = ({ active, type, callback, callbackFail }: Props) => {
+const ModalDMMenu = ({ active, type, user, callback, callbackFail }: Props) => {
 
 	const modalRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +42,7 @@ const ModalDMMenu = ({ active, type, callback, callbackFail }: Props) => {
 				className="closeDM-channelMenu">&times;</span>
 				{
 					type === ModalDMType.CHOOSERECEIVER &&
-					<ChooseReceiverMenu onChooseReceiver={onChooseReceiver} />
+					<ChooseReceiverMenu user={user} onChooseReceiver={onChooseReceiver} />
 				}
 			</div>
 		</div>

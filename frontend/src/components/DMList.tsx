@@ -17,11 +17,12 @@ import { Discussion } from "../interface/IMessage"
 
 
 interface Props {
+	user: IUser | undefined,
 	discussions: Discussion[]
 	updateReceiver: (receiver: IUser) => void,
 }
 
-const DMList = ({discussions, updateReceiver}: Props) => {
+const DMList = ({user, discussions, updateReceiver}: Props) => {
 
 	const [ doPrintModal, setDoPrintModal ] = useState<boolean>(false)
 	
@@ -35,6 +36,7 @@ const DMList = ({discussions, updateReceiver}: Props) => {
 			</button>
 			{ doPrintModal &&
 				<ModalDMMenu active={doPrintModal} type={ModalDMType.CHOOSERECEIVER}
+				user={user}
 				callback={(user) => {
 					updateReceiver(user)
 					setDoPrintModal(false);

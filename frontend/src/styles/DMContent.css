@@ -34,7 +34,7 @@
 
 .content__body {
 	position: relative;
-	max-height: 70%;
+	height: 70%;
 	overflow: auto;
 	scrollbar-width: thin;
 

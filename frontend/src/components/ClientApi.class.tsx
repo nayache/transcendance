@@ -28,7 +28,7 @@ class ClientApi {
 		const cleanUrlParameters: URLSearchParams = new URLSearchParams(rawUrlParameters);
 		
 		if (ClientApi.redirect.href == redirect.href
-		|| (redirect.pathname.includes(ClientApi.registerEndpoint)
+		|| (redirect.pathname.indexOf(ClientApi.registerEndpoint) === 0
 		&& cleanUrlParameters.has('code')))
 			return;
 		window.location.href = redirect.href;

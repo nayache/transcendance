@@ -15,8 +15,11 @@ import { IoPaperPlaneOutline } from "react-icons/io5"
 import { IError } from "../constants/EError";
 import ClientApi from "./ClientApi.class";
 import { API_USER_DM } from "../constants/RoutesApi";
+import { useDMListener } from "../hooks/useDMListener";
+import { Socket } from "socket.io-client";
 
 interface Props {
+	socket?: Socket,
 	user: IUser | undefined,
 	receiver: IUser | undefined,
 	chatItems: ChatItem[],
@@ -25,14 +28,13 @@ interface Props {
 }
 
 
-const DMContent = ({ user, receiver, chatItems, addChatItem, updateChatItem }: Props) => {
+const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatItem }: Props) => {
 
 	const messagesContainerRef = useRef<HTMLDivElement>(null)
 	const inputRef = useRef<HTMLInputElement>(null);
 	const msgWritten = useRef<string | null>(null);
 	const noMessages = useRef<number>(0)
 	const currMsgId = useRef<number>(0)
-
 	
 
 
@@ -80,13 +82,32 @@ const DMContent = ({ user, receiver, chatItems, addChatItem, updateChatItem }: P
 	}
 
 	const handleEnter = async () => {
+		if (inputRef.current)
+			inputRef.current.value = ""
 		if (msgWritten.current) {
-			const idToPush: number = currMsgId.current
-			currMsgId.current = addLocalMsg(idToPush, msgWritten.current)
-			if (inputRef.current)
-				inputRef.current.value = ""
-			currMsgId.current = await realPushMsg(idToPush, msgWritten.current)
-			msgWritten.current = ""
+			try {
+				console.log("receiver?.pseudo ? receiver?.pseudo : null = ", receiver?.pseudo ? receiver?.pseudo : null)
+				await ClientApi.post(API_USER_DM, JSON.stringify({
+					target: receiver?.pseudo ? receiver?.pseudo : null,
+					msg: msgWritten.current,
+				}), 'application/json')
+				addChatItem({
+					avatar: user?.avatar,
+					type: "me",
+					status: MessageStatus.SENT,
+					msg: msgWritten.current
+				})
+			} catch (err) {
+				const _error: IError = err as IError
+	
+				console.log("err = ", err)
+				addChatItem({
+					avatar: user?.avatar,
+					type: "me",
+					status: MessageStatus.FAIL,
+					msg: msgWritten.current
+				})
+			}
 		}
 	}
 	

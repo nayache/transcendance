@@ -50,7 +50,7 @@
 	position: relative;
 }
 
-.chooseReceiver-userNames-container {
+.chooseReceiver-users-container {
 	position: relative;
 	box-sizing: border-box;
 	overflow-y: scroll;
@@ -62,7 +62,7 @@
 	scrollbar-width: thin;
 }
 
-.chooseReceiver-userNames-container::-webkit-scrollbar {
+.chooseReceiver-users-container::-webkit-scrollbar {
 	width: var(--scrollbar-width);
 }
 
@@ -71,7 +71,7 @@ div::-webkit-scrollbar-thumb {
 	background: #c5c5c5;
 }
 
-.chooseReceiver-userNames-child {
+.chooseReceiver-users-child {
 	position: relative;
 	left: var(--scrollbar-width);
 	width: calc(100% - var(--scrollbar-width) * 2);
