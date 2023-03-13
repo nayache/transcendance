@@ -341,6 +341,19 @@ export class ChatController {
         await this.chatGateway.sendMessageToUser(userId, target.id, target.pseudo, message.content, message.created_at);
         return {}
     }
+    
+    @Patch('message/read/:pseudo')
+    async markedRead(@User() userId: string, @Param('pseudo') pseudo: string) {
+        if (!pseudo)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'argument empty');
+        const target: UserEntity = await this.userService.findByPseudo(pseudo);
+        if (!target)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
+        if (target.id === userId)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'target must different than user');
+        await this.chatService.markRead(target.id, userId);
+        return {};
+    }
 
     @Post('channel/message')
     async sendChannelMessage(@User() userId: string, @Body() payload: messageDto) {

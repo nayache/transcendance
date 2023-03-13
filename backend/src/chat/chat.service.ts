@@ -382,6 +382,19 @@ export class ChatService {
         
     }
 
+    async markRead(authorId: string, targetId: string) {
+        const messages: PrivateMessageEntity[] = await this.getUnreadMessages(authorId, targetId);
+        if (messages) {
+            try {
+                messages.forEach(async (msg) => {
+                    await this.privateMsgRepository.update(msg.id, { read: true });
+                })
+            } catch(e) {
+                throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+            }
+        }
+    }
+
     async getDiscussions(userId: string): Promise<Discussion[]> {
         const messages: PrivateMessageEntity[] = await this.findPrivateMsg(userId);
         console.log(messages);
@@ -392,8 +405,7 @@ export class ChatService {
         });
         const discussions: Discussion[] = await Promise.all(users.map(async (user) => {
             const pseudo: string = await this.userService.getPseudoById(user);
-            const avatars: Avatar = await this.userService.getAvatar(user);
-			const avatar: string = await this.avatarService.toStreamableFile(avatars);
+            const avatar: string = await this.userService.getAvatarfile(user);
             //const avatar = null; //============================================================> SAMIIIIII pour toi
             const unreadMessages: PrivateMessageEntity[] = await this.getUnreadMessages(user, userId);
             return { pseudo, avatar, unread: (unreadMessages) ? unreadMessages.length : 0 };
