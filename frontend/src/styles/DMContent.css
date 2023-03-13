@@ -3,8 +3,6 @@
 	--whole-scrollbar-gap-height: 10px;
 	flex-grow: 1;
 	padding: 0;
-	max-width: 58%;
-	border-right: 1px solid #ebe7fb;
 	word-break: break-all;
 }
 

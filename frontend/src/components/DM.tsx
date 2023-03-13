@@ -11,6 +11,7 @@ import DMList from "./DMList";
 import UserProfileChat from "./DMUserProfile";
 import Navbar from "./Navbar";
 import { API_USER_DM } from "../constants/RoutesApi";
+import { useSocket } from "../hooks/useSocket";
 
 
 export enum MessageStatus {
@@ -34,6 +35,7 @@ const DM = () => {
 	const pseudo = usePseudo();
 	const avatar = useAvatar();
 	const oldAvatar = useRef<string>()
+	const socket = useSocket()
 	const [chatItems, setChatItems] = useState<ChatItem[]>([])
 	const [receiver, setReceiver] = useState<IUser | undefined>(undefined);
 	const oldReceiverImg = useRef<string>()

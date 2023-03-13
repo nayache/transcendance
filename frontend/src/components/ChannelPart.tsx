@@ -27,9 +27,6 @@ const ChannelPart = ({ socket, updateChannel, setCurrentChannel, removeChannel,
 	addChannel, chanUser, channels, currentChannelId  }: Props) => {
 
 	console.log("channels (channelPart) = ", channels)
-	const [visibleChannels, setVisibleChannels] = useState<string[] | undefined>(
-		channels.map(channel => channel.name)
-	)
 	const [doPrintChannelMenu, setDoPrintChannelMenu] = useState<boolean>(false);
 
 
@@ -38,10 +35,6 @@ const ChannelPart = ({ socket, updateChannel, setCurrentChannel, removeChannel,
 		setDoPrintChannelMenu(false);
 	}, [])
 
-	useEffect(() => {
-		console.log("visibleChannels = ", visibleChannels)
-		setVisibleChannels(channels.map(channel => channel.name))
-	}, [channels])
 
 
 
@@ -54,7 +47,7 @@ const ChannelPart = ({ socket, updateChannel, setCurrentChannel, removeChannel,
 					onClick={() => setDoPrintChannelMenu(true)} />
 					<div className="channels-container">
 						<div className="channels-child">
-							{ chanUser && visibleChannels?.map((visibleChannel, i) => (
+							{ chanUser && channels.map((channel, i) => (
 								<React.Fragment key={i}>
 									<Channel channels={channels}
 									addChannel={addChannel}
@@ -62,7 +55,7 @@ const ChannelPart = ({ socket, updateChannel, setCurrentChannel, removeChannel,
 									updateChannel={updateChannel}
 									setCurrentChannel={setCurrentChannel}
 									currentChannelId={currentChannelId}
-									chanUser={chanUser} channelName={visibleChannel}/>
+									chanUser={chanUser} channelName={channel.name}/>
 								</React.Fragment>
 							)) }
 						</div>

@@ -36,65 +36,60 @@ const DMContent = ({ user, receiver, chatItems, addChatItem, updateChatItem }: P
 	
 
 
-	const realPushMsg = async (id: number, msg: string | null) => {
-		if (msg) {
-			addChatItem({
+	const addLocalMsg = (id: number, msg: string) => {
+		addChatItem({
+			avatar: user?.avatar,
+			id,
+			type: "me",
+			status: MessageStatus.LOADING,
+			msg
+		})
+		return ++id;
+	}
+
+	const realPushMsg = async (id: number, msg: string) => {
+		try {
+			console.log("receiver?.pseudo ? receiver?.pseudo : null = ", receiver?.pseudo ? receiver?.pseudo : null)
+			const { id: _id } = await ClientApi.post(API_USER_DM, JSON.stringify({
+				target: receiver?.pseudo ? receiver?.pseudo : null,
+				msg: msg,
+				id
+			}), 'application/json')
+			id = _id
+			console.log("ici l'id vaut ", id)
+			updateChatItem(id, {
+				avatar: user?.avatar,
+				id: id++,
+				type: "me",
+				status: MessageStatus.SENT,
+				msg: msg
+			})
+		} catch (err) {
+			const _error: IError = err as IError
+
+			console.log("err = ", err)
+			updateChatItem(id, {
 				avatar: user?.avatar,
 				id,
 				type: "me",
-				status: MessageStatus.LOADING,
+				status: MessageStatus.FAIL,
 				msg: msg
 			})
-			try {
-				console.log("receiver?.pseudo ? receiver?.pseudo : null = ", receiver?.pseudo ? receiver?.pseudo : null)
-				const { id: _id } = await ClientApi.post(API_USER_DM, JSON.stringify({
-					target: receiver?.pseudo ? receiver?.pseudo : null,
-					msg: msg,
-					id
-				}), 'application/json')
-				id = id
-				console.log("ici l'id vaut ", id)
-				updateChatItem(id, {
-					avatar: user?.avatar,
-					id: id++,
-					type: "me",
-					status: MessageStatus.SENT,
-					msg: msg
-				})
-			} catch (err) {
-				const _error: IError = err as IError
-
-				console.log("err = ", err)
-				updateChatItem(id, {
-					avatar: user?.avatar,
-					id,
-					type: "me",
-					status: MessageStatus.FAIL,
-					msg: msg
-				})
-			}
 		}
 		return id
 	}
 
 	const handleEnter = async () => {
-		currMsgId.current = await realPushMsg(currMsgId.current, msgWritten.current)
-		msgWritten.current = ""
-		if (inputRef.current)
-			inputRef.current.value = ""
+		if (msgWritten.current) {
+			const idToPush: number = currMsgId.current
+			currMsgId.current = addLocalMsg(idToPush, msgWritten.current)
+			if (inputRef.current)
+				inputRef.current.value = ""
+			currMsgId.current = await realPushMsg(idToPush, msgWritten.current)
+			msgWritten.current = ""
+		}
 	}
-
-	// const tryAgain = () => {
-		
-	// 	updateChatItem(id, {
-	// 		avatar: user?.avatar,
-	// 		id,
-	// 		type: "me",
-	// 		status: MessageStatus.SENT,
-	// 		msg: msgWritten.current
-	// 	})
-	// }
-
+	
 
 
 	
@@ -113,14 +108,10 @@ const DMContent = ({ user, receiver, chatItems, addChatItem, updateChatItem }: P
 			const scrollBottom: number = messagesContainerRef.current.scrollTop
 			+ messagesContainerRef.current.getBoundingClientRect().height;
 
-			if (chatItems.length > noMessages.current)
-			{
-				console.log("here 3")
-				if (scrollBottom >= lowerTopPoint || chatItems.length > 0) {
-					console.log("here 4")
-					console.log("noMessages.current = ", noMessages.current)
-					messagesContainerRef.current?.scrollTo(0, lowerBottomPoint);
-				}
+			if (scrollBottom >= lowerTopPoint || chatItems.length > 0) {
+				console.log("here 4")
+				console.log("noMessages.current = ", noMessages.current)
+				messagesContainerRef.current?.scrollTo(0, lowerBottomPoint);
 			}
 			noMessages.current = chatItems.length;
 		}
@@ -155,7 +146,18 @@ const DMContent = ({ user, receiver, chatItems, addChatItem, updateChatItem }: P
 							key={index}
 							animationDelay={index + 2}
 							chatItem={itm}
-							// tryAgain={}
+							tryAgain={() => {
+								updateChatItem(currMsgId.current, {
+									avatar: user?.avatar,
+									id: itm.id,
+									type: "me",
+									status: MessageStatus.LOADING,
+									msg: itm.msg
+								})
+								console.log("itm.id = ", itm.id)
+								if (itm.id)
+									realPushMsg(itm.id, itm.msg)
+							}}
 						/>
 					);
 				})}
