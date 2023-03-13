@@ -29,7 +29,7 @@ import { UserService } from './user.service';
 	  try {
 		await this.avatarRepository.save(avatar);
 	  } catch (error) {
-		throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+		throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
 	  }
 	  return avatar;
 	}

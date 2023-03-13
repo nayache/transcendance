@@ -120,18 +120,33 @@ export class ChatService {
 
     async setChannelAccess(channelName: string, prv: boolean) {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
+		try {
         await this.channelRepository.update(channel.id, {private: prv});
-    }
+    	} catch (e)
+		{
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
+	}
 
     async setChannelPassword(channelName: string, password: string) {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
+		try {
         await this.channelRepository.update(channel.id, {password: password});
+		} catch (e)
+		{
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
     }
 
     async banUser(channelName: string, userId: string) {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
+		try {
         channel.banneds.push(userId);
         await this.channelRepository.update(channel.id, {banneds: channel.banneds});
+		} catch (e)
+		{
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
     }
 
     getMuteExpiration(muted: Mute): Date {
@@ -141,16 +156,21 @@ export class ChatService {
     async isMuted(channelName: string, userId: string): Promise<boolean> {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
         const muted: Mute = await this.findMute(channel, userId);
-        if (muted) {
-            if (Date.now() >= (muted.updated_at.getTime() + (muted.duration * 1000))) {
-                await this.muteRepository.delete(muted.id);
-                const member: Member = await this.getMemberByUserId(userId, channel.id);
-                if (member)
-                    await this.memberRepository.update(member.id, {unmuteDate: null});
-            }
-            else
-                return true;
-        }
+		try {
+        	if (muted) {
+        	    if (Date.now() >= (muted.updated_at.getTime() + (muted.duration * 1000))) {
+        	        await this.muteRepository.delete(muted.id);
+        	        const member: Member = await this.getMemberByUserId(userId, channel.id);
+        	        if (member)
+        	            await this.memberRepository.update(member.id, {unmuteDate: null});
+        	    }
+        	    else
+        	        return true;
+        	}
+		} catch (e)
+		{
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
         return false;
     }
 
@@ -163,7 +183,12 @@ export class ChatService {
     async setUnmuteDate(muted: Mute, unmutedDate: Date) {
         console.log(unmutedDate, " -.........")
         const member: Member = await this.getMemberByUserId(muted.userId, muted.channelId);
-        return this.memberRepository.update(member.id, {unmuteDate: unmutedDate});
+		try {
+        	return await this.memberRepository.update(member.id, {unmuteDate: unmutedDate});
+		} catch (e)
+		{
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
     }
 
     async muteUser(channelName: string, target: UserEntity, duration: number): Promise<Mute> {
@@ -183,7 +208,11 @@ export class ChatService {
     async setRole(channelName: string, userId: string, role: ChannelRole) {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
         const member: Member = await this.getMemberByUserId(userId, channel.id);
+		try {
         await this.memberRepository.update(member.id, {role: role});
+		} catch (e) {
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
     }
 
     async getMemberColor(channelName: string, userId: string): Promise<string> {
@@ -193,15 +222,25 @@ export class ChatService {
     }
 
     async getMembersByChannel(channelId: string): Promise<Member[]> {
-        return this.memberRepository.find({relations: ['channel'],
+		try {
+        return await this.memberRepository.find({relations: ['channel'],
             where: { channelId: channelId }
         });
+		} catch (e)
+		{
+			return null;
+		}
     }
 
     async getMessagesByChannel(channelId: string): Promise<MessageEntity[]> {
-        return this.messageRepository.find({relations: ['channel'],
-            where: { channelId: channelId }    
-        })
+		try {
+        	return this.messageRepository.find({relations: ['channel'],
+        	    where: { channelId: channelId }    
+        	})
+		} catch (e)
+		{
+			return null;
+		}
     }
 
     messageToDto(msg: MessageEntity): ChannelMessageDto {
@@ -280,7 +319,10 @@ export class ChatService {
         const colorr: string = this.generateColorr(chann);
         const muted: Mute = await this.findMute(chann, userId);
         const expiration: Date = (muted) ? this.getMuteExpiration(muted) : null;
-        const member = new Member(await this.userService.findById(userId), chann, colorr, role, expiration);
+		const user: UserEntity = await this.userService.findById(userId);
+		if (!user)
+			throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND);
+        const member = new Member(user, chann, colorr, role, expiration);
         if (!chann.members)
             chann.members = [member];
         else

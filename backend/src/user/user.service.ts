@@ -86,16 +86,30 @@ export class UserService {
             throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found')
         if (user.pseudo && await this.pseudoExist(pseudo))
             return null;
-       
-        return this.userRepository.update(id ,{pseudo: pseudo})
+        try {
+        	return await this.userRepository.update(id ,{pseudo: pseudo});
+		} catch (e)
+		{
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
     }
 
     async updateTwoFa(id: string, value: boolean) {
-        return this.userRepository.update(id, {twoFaEnabled: value});
+		try {
+        	return await this.userRepository.update(id, {twoFaEnabled: value});
+		} catch (e)
+		{
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
     }
 
     async updateTwoFaSecret(id: string, value: string) {
-        return this.userRepository.update(id, { TwoFaSecret: value });
+		try {
+        	return await this.userRepository.update(id, { TwoFaSecret: value });
+		} catch (e)
+		{
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
     }
 
     async getTwoFa(id: string): Promise<boolean> {
@@ -379,13 +393,9 @@ export class UserService {
 		userId: string,
 		user2Id: string
 	): Promise <boolean> {
-		try {
-		return await this.blockedRepository.exist({where: [
+		return this.blockedRepository.exist({where: [
 			{authorId: userId, user2Id: user2Id}
 		]});
-	} catch (error) {
-		throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
-	}
 	}
 
 	async blockandauthorExist(
@@ -409,6 +419,7 @@ export class UserService {
 	}
 
 	async getBlock(userId: string): Promise<UserEntity[]> {
+		try {
 		const block: BlockedEntity[] = await this.blockedRepository.find({where: {authorId: userId},relations: ['user2']});
 		let user: UserEntity[] = [];
 		for (let i = 0; i < block.length; i++)
@@ -416,5 +427,8 @@ export class UserService {
 			user.push(await this.findById(block[i].user2Id));
 		}
 		return user;
+		} catch(e) {
+			return null;
+		}
 	}
 }
