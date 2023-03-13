@@ -30,7 +30,7 @@
 }
 
 .dm_failed {
-	background-color: rgb(255, 58, 58);
+	background-color: rgb(255, 58, 58) !important;
 }
 
 .chat__item .avatar {

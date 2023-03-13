@@ -23,10 +23,10 @@ const DMItem = ({ animationDelay, chatItem, tryAgain }: Props) => {
 	return (
 		<div
 			style={{ animationDelay: `0.8s` }}
-			className={`chat__item ${chatItem.type ? chatItem.type : ""} ${statusClassNames.get(chatItem.status)}`}
+			className={`chat__item ${chatItem.type ? chatItem.type : ""}`}
 		>
 			<div className="chat__item__content-container">
-				<div className="chat__item__content">
+				<div className={`chat__item__content ${statusClassNames.get(chatItem.status)}`}>
 					<div className="chat__msg">{chatItem.msg}</div>
 					<div className="chat__meta">
 						<span>16 mins ago</span>

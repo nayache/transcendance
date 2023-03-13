@@ -45,15 +45,15 @@ const DMContent = ({ user, receiver, chatItems, addChatItem, updateChatItem }: P
 				status: MessageStatus.LOADING,
 				msg: msg
 			})
-			msg = ""
-			if (inputRef.current)
-				inputRef.current.value = ""
 			try {
-				id = await ClientApi.post(API_USER_DM, JSON.stringify({
-					target: receiver?.pseudo,
+				console.log("receiver?.pseudo ? receiver?.pseudo : null = ", receiver?.pseudo ? receiver?.pseudo : null)
+				const { id: _id } = await ClientApi.post(API_USER_DM, JSON.stringify({
+					target: receiver?.pseudo ? receiver?.pseudo : null,
 					msg: msg,
 					id
 				}), 'application/json')
+				id = id
+				console.log("ici l'id vaut ", id)
 				updateChatItem(id, {
 					avatar: user?.avatar,
 					id: id++,
@@ -79,6 +79,9 @@ const DMContent = ({ user, receiver, chatItems, addChatItem, updateChatItem }: P
 
 	const handleEnter = async () => {
 		currMsgId.current = await realPushMsg(currMsgId.current, msgWritten.current)
+		msgWritten.current = ""
+		if (inputRef.current)
+			inputRef.current.value = ""
 	}
 
 	// const tryAgain = () => {
