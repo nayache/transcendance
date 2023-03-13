@@ -125,17 +125,9 @@ export class UserController {
 	@Get('avatar')
 	async getAvatar(
 	  @User() userId: string,
-	): Promise<{avatar: StreamableFile}> {
+	): Promise<{avatar: string}> {
 	  const avatar = await this.userService.getAvatar(userId);
-	  return ({avatar: this.avatarService.toStreamableFile(avatar.datafile)});
-	}
-
-	@Get('avatar/all')
-	async getAllAvatar(
-		@User() userId: string,
-	): Promise <{avatars: StreamableFile[]}> {
-		const avatar_array : Avatar[] = await this.avatarService.getAllAvatars(userId);
-		return ({avatars: this.avatarService.toStreamableFiles(avatar_array)});
+	  return ({avatar: this.avatarService.toStreamableFile(avatar)});
 	}
 	
 	@Post('')
@@ -166,53 +158,40 @@ export class UserController {
 		  const avatar = await this.userService.getAvatar(userId);
 		  if (!avatar)
 		  	return {pseudo: pseudo, avatar: null}
-		  return {pseudo: pseudo, avatar: this.avatarService.toStreamableFile(avatar.datafile)}
+		  return {pseudo: pseudo, avatar: this.avatarService.toStreamableFile(avatar)}
 	}
 
 	@Patch('avatar')
       @UseInterceptors(FileInterceptor('file', {fileFilter: (req: any, file: any, cb: any) => {
         //console.log(file.mimetype.split('/')[1])
-		if (file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+		if (file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
             // Allow storage of file
 			//if (file.mimetype.split('/')[1] != extname(file.originalname))
 			//	cb(new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID,`File Type does not match file extension ${file.mimetype}, ${extname(file.originalname)}`), false);
             cb(null, true);
         } else {
             // Reject file
-            cb(new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID,`Unsupported file type ${extname(file.originalname)}`), false);
+            cb(new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID,`Unsupported file type ${file.mimetype}`), false);
         }
     }}))
       async updateAvatar(
          @User() userId: string,
-         @UploadedFile('file') file?: Express.Multer.File,
-		 @Body('number') number?: number
+         @UploadedFile('file') file?: Express.Multer.File
       ): Promise<any> {
-		const num = await this.avatarService.countavatar(userId);
-		if (num < 10) {
-        	await this.userService.setAvatar(userId, file, number);
+        	await this.userService.setAvatar(userId, file);
 			const avatar = await this.userService.getAvatar(userId);
-       		 console.log('avatar:', this.avatarService.toStreamableFile(avatar.datafile));
 			if (!avatar)
 				return {};
        		return {
-            	avatar: this.avatarService.toStreamableFile(avatar.datafile)
-        	}
-		}
-		throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.DUPLICATED,'Already 10 avatars');
-    }
+            	avatar: this.avatarService.toStreamableFile(avatar)}
+			}
 
-	@Delete('avatar/:id')
-	  async deleteAvatar(
-		 @User() userId: string,
-		 @Body('number') number?: number
-	  ) {
-			if (!number)
-				throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.EMPTY, 'number for delete is not provided');
-			const avatarId = await this.avatarService.getavatarId(userId, number);
-			if (!avatarId)
-				throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.NOT_FOUND, `number ${number} is not used by ${userId}`);
-			if (avatarId == (await this.avatarService.getCurrentAvatar(userId)).id)
-				throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID, 'cannot delete current avatar');
-			return this.avatarService.deleteAvatar(avatarId);
-	  }
+	@Delete('avatar')
+		async deleteAvatar(@User() userId: string) 
+		{
+			const avatar = await this.avatarService.getCurrentAvatar(userId);
+			if (!avatar)
+				throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.NOT_FOUND, `No avatar for user`);
+			return this.avatarService.deleteAvatar(avatar.id);
+		}
 }

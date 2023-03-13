@@ -1,7 +1,7 @@
 import { Relation } from "src/enums/relation.enum";
 
 export class ProfileDto {
-    avatar: Buffer = null;
+    avatar: string;
     pseudo: string;
     friends?: number;
     level: number;

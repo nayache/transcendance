@@ -104,7 +104,7 @@ export class UserService {
     }
 
     async getUser(user: UserEntity) : Promise<userDto> {
-        const avatar: StreamableFile = (user.avatar?.datafile) ? this.avatarService.toStreamableFile(user.avatar.datafile): null;
+        const avatar: string = (user.avatar) ? this.avatarService.toStreamableFile(user.avatar): null;
         let friendlist: friendDto[] = null;
         let blockedlist: string[] = null;
         
@@ -269,7 +269,7 @@ export class UserService {
 
     async getProfile(targetId: string, userId?: string): Promise<ProfileDto> {
         const target: UserEntity = await this.findById(targetId);
-        const avatar = null// Sami rectifie ca stp
+        const avatar: string = await this.avatarService.toStreamableFile(await this.getAvatar(userId))// Sami rectifie ca stp
         const pseudo: string = target.pseudo
         const level: number = target.data.level;
         const wins: number = target.data.win;
@@ -285,23 +285,29 @@ export class UserService {
         }
     }
 
-	async setAvatar(userId: string, file: Express.Multer.File, number?: number): Promise<void> {
+	async setAvatar(userId: string, file: Express.Multer.File): Promise<void> {
 		if (!file)
 		  throw new HttpException('File required', HttpStatus.BAD_REQUEST);
 		const filename = file.originalname;
 		const datafile = file.buffer;
+		const mimetype = file.mimetype;
 		const user: UserEntity = await this.findById(userId);
 		const curr_avatar: Avatar = await this.avatarService.getCurrentAvatar(userId);
-		await this.avatarService.createAvatar(filename, datafile, user, number);
+		await this.avatarService.createAvatar(filename, datafile, mimetype, user);
 		if (curr_avatar)
-			await this.avatarService.disabled(curr_avatar.id);
+			await this.avatarService.deleteAvatar(curr_avatar.id);
 	  }
-	
+
 	async getAvatar(userId: string): Promise<Avatar> {
 		const avatar: Avatar = await this.avatarService.getCurrentAvatar(userId);
-		/* if (!avatar)
-		  throw new HttpException('Avatar not found', HttpStatus.NOT_FOUND); */
+		if (!avatar)
+		  throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.AVATAR, TypeErr.NOT_FOUND);
 		return avatar;
+	}
+
+	async getAvatarfile(userId: string): Promise<string> {
+		const avatar: Avatar = await this.getAvatar(userId);
+		return this.avatarService.toStreamableFile(avatar);
 	}
 
 	async create_block(
@@ -327,11 +333,10 @@ export class UserService {
 	): Promise <boolean> {
 		try {
 		return await this.blockedRepository.exist({where: [
-			{user1Id: user2Id, user2Id: userId},
-			{user1Id: userId, user2Id: user2Id}
+			{authorId: userId, user2Id: user2Id}
 		]});
 	} catch (error) {
-		throw new HttpException('Error Database', HttpStatus.NOT_FOUND);
+		throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.USER, TypeErr.TIMEOUT);
 	}
 	}
 
@@ -345,7 +350,7 @@ export class UserService {
 			{user1Id: userId, user2Id: user2Id, authorId: userId}
 		]});
 		} catch(error) {
-			throw new HttpException('Error database', HttpStatus.NOT_FOUND);
+			return null;
 		}
 	}
 
