@@ -269,7 +269,7 @@ export class UserService {
 
     async getProfile(targetId: string, userId?: string): Promise<ProfileDto> {
         const target: UserEntity = await this.findById(targetId);
-        const avatar = null// Sami rectifie ca stp
+        const avatar: string = await this.avatarService.toStreamableFile(await this.getAvatar(userId))// Sami rectifie ca stp
         const pseudo: string = target.pseudo
         const level: number = target.data.level;
         const wins: number = target.data.win;

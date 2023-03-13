@@ -16,12 +16,14 @@ import { Mute } from './entity/mute.entity';
 import { Error } from 'src/exceptions/error.interface';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { Avatar } from 'src/entity/avatar.entity';
+import { AvatarService } from 'src/user/avatar.service';
 
 
 @Injectable()
 export class ChatService {
     constructor(
         @Inject(forwardRef(() => UserService)) private userService: UserService,
+		@Inject(forwardRef(() => UserService)) private avatarService: AvatarService,
         @InjectRepository(ChannelEntity) private channelRepository: Repository<ChannelEntity>,
         @InjectRepository(Member) private memberRepository: Repository<Member>,
         @InjectRepository(MessageEntity) private messageRepository: Repository<MessageEntity>,
@@ -344,8 +346,9 @@ export class ChatService {
         });
         const discussions: Discussion[] = await Promise.all(users.map(async (user) => {
             const pseudo: string = await this.userService.getPseudoById(user);
-            //const avatar: Avatar = await this.userService.getAvatar(user.id);
-            const avatar = null; //============================================================> SAMIIIIII pour toi
+            const avatars: Avatar = await this.userService.getAvatar(user);
+			const avatar: string = await this.avatarService.toStreamableFile(avatars);
+            //const avatar = null; //============================================================> SAMIIIIII pour toi
             const unreadMessages: PrivateMessageEntity[] = await this.getUnreadMessages(user, userId);
             return { pseudo, avatar, unread: (unreadMessages) ? unreadMessages.length : 0 };
         }))

@@ -164,14 +164,14 @@ export class UserController {
 	@Patch('avatar')
       @UseInterceptors(FileInterceptor('file', {fileFilter: (req: any, file: any, cb: any) => {
         //console.log(file.mimetype.split('/')[1])
-		if (file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+		if (file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
             // Allow storage of file
 			//if (file.mimetype.split('/')[1] != extname(file.originalname))
 			//	cb(new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID,`File Type does not match file extension ${file.mimetype}, ${extname(file.originalname)}`), false);
             cb(null, true);
         } else {
             // Reject file
-            cb(new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID,`Unsupported file type ${extname(file.originalname)}`), false);
+            cb(new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID,`Unsupported file type ${file.mimetype}`), false);
         }
     }}))
       async updateAvatar(
