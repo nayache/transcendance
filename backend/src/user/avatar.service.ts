@@ -6,6 +6,8 @@ import {
   } from '@nestjs/common';
   import { InjectRepository } from '@nestjs/typeorm';
 import { catchError } from 'rxjs';
+import { AboutErr, TypeErr } from 'src/enums/error_constants';
+import { ErrorException } from 'src/exceptions/error.exception';
   import { Readable } from 'stream';
   import { Repository } from 'typeorm';
   import { Avatar } from '../entity/avatar.entity';
@@ -36,7 +38,7 @@ import { UserService } from './user.service';
 	  try {
 		await this.avatarRepository.delete(avatarId);
 	  } catch (error) {
-		throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+		throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
 	  }
 	}
   

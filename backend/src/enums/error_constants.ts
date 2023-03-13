@@ -10,7 +10,8 @@ export enum AboutErr {
 	PASSWORD,
 	MESSAGE,
 	REQUEST,
-	TWOFA
+	TWOFA,
+	DATABASE
 }
 
 export enum TypeErr {
