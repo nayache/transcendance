@@ -305,6 +305,11 @@ export class UserService {
 		return avatar;
 	}
 
+	async getAvatarfile(userId: string): Promise<string> {
+		const avatar: Avatar = await this.getAvatar(userId);
+		return this.avatarService.toStreamableFile(avatar);
+	}
+
 	async create_block(
 		userId: string,
 		user2Id: string
