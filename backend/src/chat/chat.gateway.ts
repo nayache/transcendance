@@ -104,12 +104,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.server.of('/').adapter.rooms.delete(channel)
   }
 
-  async sendMessageToUser(userId: string, targetId: string, target: string, message: string, date: Date) {
+  async sendMessageToUser(userId: string, targetId: string, message: string, date: Date) {
     if (!this.users.get(targetId))
       return
     
+    const author: string = await this.userService.getPseudoById(userId);
     this.users.get(targetId).forEach((socket) => {
-      this.server.to(socket.id).emit('message', {target, message, date});
+      this.server.to(socket.id).emit('message', {author, message, date});
     });
   }
 

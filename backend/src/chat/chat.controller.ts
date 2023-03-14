@@ -314,6 +314,15 @@ export class ChatController {
         const discussions: Discussion[] = await this.chatService.getDiscussions(userId);
         return {discussions}
     }
+    @Get('discussions/:pseudo')
+    async getDiscussion(@User() userId: string, @Param('pseudo') pseudo: string) {
+        if (!pseudo)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'empty param');
+        const discussions: Discussion = await this.chatService.getDiscussion(userId, pseudo);
+        if (!discussions)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
+        return {discussions}
+    }
 
     @Get('message/:pseudo')
     async getPrivateConversation(@User() userId: string, @Param('pseudo') pseudo: string) {
@@ -338,7 +347,7 @@ export class ChatController {
         if (this.chatService.isBlocked(target.id, userId))
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.MESSAGE, TypeErr.INVALID, 'user is blocked by target');
         const message: PrivateMessageEntity = await this.chatService.messageToUser(userId, target.id, payload.msg);
-        await this.chatGateway.sendMessageToUser(userId, target.id, target.pseudo, message.content, message.created_at);
+        await this.chatGateway.sendMessageToUser(userId, target.id, message.content, message.created_at);
         return {}
     }
     

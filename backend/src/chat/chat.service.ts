@@ -395,6 +395,15 @@ export class ChatService {
         }
     }
 
+    async getDiscussion(userId: string, pseudo: string): Promise<Discussion> {
+        const target: UserEntity = await this.userService.findByPseudo(pseudo);
+        if (!target)
+            return null;
+        const avatar: string = await this.userService.getAvatarfile(target.id);
+        const unreadMessages: PrivateMessageEntity[] = await this.getUnreadMessages(target.id, userId);
+        return { pseudo, avatar, unread: (unreadMessages) ? unreadMessages.length : 0 };
+    }
+
     async getDiscussions(userId: string): Promise<Discussion[]> {
         const messages: PrivateMessageEntity[] = await this.findPrivateMsg(userId);
         console.log(messages);
@@ -406,7 +415,6 @@ export class ChatService {
         const discussions: Discussion[] = await Promise.all(users.map(async (user) => {
             const pseudo: string = await this.userService.getPseudoById(user);
             const avatar: string = await this.userService.getAvatarfile(user);
-            //const avatar = null; //============================================================> SAMIIIIII pour toi
             const unreadMessages: PrivateMessageEntity[] = await this.getUnreadMessages(user, userId);
             return { pseudo, avatar, unread: (unreadMessages) ? unreadMessages.length : 0 };
         }))
