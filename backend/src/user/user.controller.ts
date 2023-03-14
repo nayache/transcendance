@@ -13,8 +13,7 @@ import { Relation } from '../enums/relation.enum';
 import { Status } from 'src/enums/status.enum';
 import { ProfileDto } from 'src/dto/profile.dto';
 import sizeOf from 'image-size';
-import {sharp} from 'sharp';
-import fs from 'fs';
+import * as sharp from 'sharp';
 
 export class friendDto {
 	pseudo: string;
@@ -177,11 +176,8 @@ async postpseudoAvatar(
     if (await this.userService.pseudoExist(pseudo))
         throw new ErrorException(HttpStatus.CONFLICT, AboutErr.PSEUDO, TypeErr.DUPLICATED, 'pseudo already used')
     if (file) {
-		const size = sizeOf(file.buffer);
-		console.log(size.width, size.height)
-		if (size.width > 1200 || size.height > 600) {
-			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID, 'Image dimensions must be <= 1200x600');
-		}
+		const resize = await sharp(file.buffer).resize(200, 200).toBuffer();
+		file.buffer = resize;
         await this.userService.setAvatar(userId, file);
     }
     const avatar = await this.userService.getAvatar(userId);
@@ -203,15 +199,24 @@ async postpseudoAvatar(
             // Reject file
             cb(new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID,`Unsupported file type ${file.mimetype}`), false);
         }
+    },
+    limits: {
+        files: 1,
+        fileSize: 10 * 10 * 10 * 10 * 10 * 10  // 10 mb in bytes
     }}))
       async updateAvatar(
          @User() userId: string,
          @UploadedFile('file') file?: Express.Multer.File
       ): Promise<any> {
-        	await this.userService.setAvatar(userId, file);
+			if (file)
+			{
+				const resize = await sharp(file.buffer).resize(200, 200).toBuffer();
+				file.buffer = resize;
+        		await this.userService.setAvatar(userId, file);
+			}
 			const avatar = await this.userService.getAvatar(userId);
 			if (!avatar)
-				return {};
+				return {avatar: null};
        		return {
             	avatar: this.avatarService.toStreamableFile(avatar)}
 			}
