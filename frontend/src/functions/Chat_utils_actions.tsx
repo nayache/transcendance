@@ -43,7 +43,7 @@ const click = async (chanUser: IChannelUser | undefined, currentChannelId: numbe
 			const _error: IError = err as IError;
 			
 			console.log("err = ", err);
-			if (_error.about === AboutErr.SELFUSER && _error.type === TypeErr.REJECTED) {
+			if (_error.about === AboutErr.USER && _error.type === TypeErr.REJECTED) {
 				console.log("patch _errorrrr = ", _error)
 				if (refreshSetter)
 					refreshSetter()

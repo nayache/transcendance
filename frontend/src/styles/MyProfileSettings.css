@@ -1,0 +1,14 @@
+
+.input-profile-settings {
+	margin-left: 15px;
+	margin-top: 10px;
+	width: 30%;
+	border-radius: 4px;
+	background-color: white;
+	border: 1px grey;
+	padding: 3px;
+	font-size: medium;
+	border: 0;
+	box-sizing: border-box;
+	outline: none;
+}

@@ -138,7 +138,7 @@ const UserPreview = ({ chanUser, player, channel, onMute, onBan, onKick, onClose
 					{
 						content: "See the profile",
 						action: () => {
-							ClientApi.redirect = new URL(BASE_URL + '/profile/' + playerName)
+							ClientApi.redirect = new URL(BASE_URL + PROFILE_EP + playerName)
 						},
 						role: undefined,
 						canPrint: true,

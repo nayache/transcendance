@@ -6,9 +6,9 @@ export interface IMessage {
 }
 
 export interface IMessageEvRecv {
-    target: string;
+    author: string,
     message: string;
-    // date: Date;
+    date: Date;
 }
 
 export interface Discussion {

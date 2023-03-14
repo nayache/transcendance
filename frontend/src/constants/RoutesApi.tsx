@@ -34,8 +34,9 @@ export const API_USER_FRIEND_RELATION = API_BASE_USER + '/friends/relation' /* +
 export const API_USER_ALL_NAMES = API_BASE_USER + '/all/names'
 export const API_USER_ALL = API_BASE_USER + '/all'
 
-export const API_USER_DISCUSSIONS_RELATION = API_BASE_CHAT + '/discussions'
-export const API_USER_DM = API_BASE_CHAT + '/message' /* + '/:pseudo' */
+export const API_CHAT_DISCUSSIONS_RELATION = API_BASE_CHAT + '/discussions'
+export const API_CHAT_DM = API_BASE_CHAT + '/message' /* + '/:pseudo' */
+export const API_CHAT_MARK_READ = API_BASE_CHAT + '/message/read' /* + /:pseudo */
 export const API_CHAT_MESSAGES_CHANNEL_ROUTE = API_BASE_CHAT + '/channel/message'
 export const API_CHAT_USER_CHANNELS_ROUTE = API_BASE_CHAT + '/channels'
 export const API_CHAT_ALL_CHANNELS_ROUTE = API_BASE_CHAT + '/channels/all'
@@ -85,14 +86,15 @@ export const CHAT_ROUTE = BASE_URL + CHAT_EP
 export const MYPROFILE_EP = '/me/profile'
 export const MYPROFILE_ROUTE = BASE_URL + MYPROFILE_EP
 
-export const PROFILE_EP = '/profile/:pseudo'
-export const PROFILE_ROUTE = BASE_URL + PROFILE_EP
+//'/profile' /* + /:pseudo */
+export const PROFILE_EP = '/profile' /* + /:pseudo */
+export const PROFILE_ROUTE = BASE_URL + PROFILE_EP /* + '/:pseudo' */
 
 export const MYFRIENDS_EP = '/me/friends'
 export const MYFRIENDS_ROUTE = BASE_URL + MYFRIENDS_EP
 
-export const FRIENDS_EP = '/:pseudo/friends'
-export const FRIENDS_ROUTE = BASE_URL + FRIENDS_EP
+// export const FRIENDS_EP = /* /:pseudo + */ '/friends'
+// export const FRIENDS_ROUTE = BASE_URL + '/:pseudo' + FRIENDS_EP
 
 
 export const SETTINGS_EP = '/settings'

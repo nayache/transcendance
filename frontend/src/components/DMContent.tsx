@@ -2,19 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import "../styles/DMContent.css"
 import Avatar from "./Avatar";
 import DMItem from "./DMItem";
-import avatar from "../img/avatar2.jpeg"
 // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 // import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 // import { faCog } from "@fortawesome/free-solid-svg-icons";
 // import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import person from "../img/logo3.png"
 import { Status } from "../constants/EMessage";
 import { ChatItem, MessageStatus } from "./DM";
 import { IUser } from "../interface/IUser";
 import { IoPaperPlaneOutline } from "react-icons/io5"
 import { IError } from "../constants/EError";
 import ClientApi from "./ClientApi.class";
-import { API_USER_DM } from "../constants/RoutesApi";
+import { API_CHAT_DM, PROFILE_EP, PROFILE_ROUTE } from "../constants/RoutesApi";
 import { useDMListener } from "../hooks/useDMListener";
 import { Socket } from "socket.io-client";
 
@@ -52,7 +50,7 @@ const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatI
 	const realPushMsg = async (id: number, msg: string) => {
 		try {
 			console.log("receiver?.pseudo ? receiver?.pseudo : null = ", receiver?.pseudo ? receiver?.pseudo : null)
-			const { id: _id } = await ClientApi.post(API_USER_DM, JSON.stringify({
+			const { id: _id } = await ClientApi.post(API_CHAT_DM, JSON.stringify({
 				target: receiver?.pseudo ? receiver?.pseudo : null,
 				msg: msg,
 				id
@@ -87,7 +85,7 @@ const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatI
 		if (msgWritten.current) {
 			try {
 				console.log("receiver?.pseudo ? receiver?.pseudo : null = ", receiver?.pseudo ? receiver?.pseudo : null)
-				await ClientApi.post(API_USER_DM, JSON.stringify({
+				await ClientApi.post(API_CHAT_DM, JSON.stringify({
 					target: receiver?.pseudo ? receiver?.pseudo : null,
 					msg: msgWritten.current,
 				}), 'application/json')
@@ -108,6 +106,7 @@ const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatI
 					msg: msgWritten.current
 				})
 			}
+			msgWritten.current = ""
 		}
 	}
 	
@@ -147,10 +146,15 @@ const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatI
 		<div className="main__chatcontent">
 			<div className="content__header">
 				<div className="blocks">
-					<div className="current-chatting-user">
-						<Avatar srcImg={receiver?.avatar} />
-						<p>{receiver?.pseudo}</p>
-					</div>
+					{ receiver?.pseudo &&
+						<div className="current-chatting-user" onClick={() => {
+							if (receiver?.pseudo)
+								ClientApi.redirect = new URL(PROFILE_ROUTE + '/' + receiver.pseudo)
+						}}>
+							<Avatar srcImg={receiver?.avatar} />
+							<p>{receiver?.pseudo}</p>
+						</div>
+					}
 				</div>
 				<div className="blocks">
 					<div className="settings">

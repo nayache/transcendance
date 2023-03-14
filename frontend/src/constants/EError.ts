@@ -8,15 +8,16 @@ export enum AboutErr {
 	AUTH,
 	TOKEN,
 	HEADER,
-	SELFUSER,
 	USER,
+	TARGET,
 	PSEUDO,
 	AVATAR,
 	CHANNEL,
 	PASSWORD,
 	MESSAGE,
 	REQUEST,
-	TWOFA
+	TWOFA,
+	DATABASE,
 }
 
 export enum TypeErr {

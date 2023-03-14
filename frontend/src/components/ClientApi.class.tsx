@@ -73,8 +73,12 @@ class ClientApi {
 		return (
 			(err.about == AboutErr.TOKEN && err.type == TypeErr.TIMEOUT)
 			|| (err.about == AboutErr.HEADER && err.type == TypeErr.INVALID)
-			|| (err.about == AboutErr.SELFUSER && err.type == TypeErr.NOT_FOUND)
+			|| (err.about == AboutErr.USER && err.type == TypeErr.NOT_FOUND)
 		)
+	}
+
+	private static doRedirectToSignin(err: IError) {
+		return (err.about == AboutErr.PSEUDO && err.type == TypeErr.NOT_FOUND)
 	}
 
 	private static async fetchEndpoint(url: string, init?: RequestInit | undefined): Promise<any> {
@@ -89,6 +93,11 @@ class ClientApi {
 			if (this.doRedirectToRegister(data.error))
 			{
 				ClientApi.redirect = new URL(ClientApi.registerRoute)
+				throw err;
+			}
+			else if (this.doRedirectToSignin(data.error))
+			{
+				ClientApi.redirect = new URL(ClientApi.signinRoute)
 				throw err;
 			}
 			else if (err.about == AboutErr.TOKEN && err.type == TypeErr.EXPIRED)
@@ -192,7 +201,7 @@ class ClientApi {
 	}
 
 	
-	public static async patch(url: string, body: BodyInit | null | undefined, contentType?: string): Promise<any> {
+	public static async patch(url: string, body?: BodyInit | null, contentType?: string): Promise<any> {
 
 		const method: string = 'PATCH'
 		const headers: HeadersInit = {};
@@ -208,7 +217,7 @@ class ClientApi {
 		return (data);
 	}
 	
-	public static async post(url: string, body: BodyInit | null | undefined, contentType?: string): Promise<any> {
+	public static async post(url: string, body?: BodyInit | null, contentType?: string): Promise<any> {
 		
 		const method: string = 'POST'
 		let headers: HeadersInit = {};

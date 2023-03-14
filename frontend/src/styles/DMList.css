@@ -1,6 +1,7 @@
 .main__chatlist {
 	border-right: 1px solid #ebe7fb;
 	padding: 0 20px 0 0px;
+	min-width: 20em;
 }
 
 .chatlist__heading {
@@ -144,6 +145,13 @@
 	object-fit: cover;
 }
 
+.chatlist__item .userMeta {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: flex-start;
+}
+
 .chatlist__item .userMeta p {
 	margin: 0;
 	padding: 0;
@@ -159,6 +167,17 @@
 	font-weight: 400;
 	font-size: 12px;
 	display: block;
+}
+
+.unread-div {
+	width: fit-content;
+	align-self: flex-end;
+	transform: translate(80%, -40%);
+}
+
+.unread-div p {
+	color: red !important;
+	font-style: italic;
 }
 
 .chatlist__item:hover,

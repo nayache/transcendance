@@ -13,7 +13,8 @@
 	animation-direction: normal; 
 	animation-timing-function: cubic-bezier(0.88, 0.19, 0.37, 1.11); 
 	animation-fill-mode: both; 
-	animation-delay: 0.2s; 
+	animation-delay: 0.2s;
+	margin-right: 10px;
 }
 
 @keyframes showIn {
@@ -75,10 +76,11 @@
 .chat__item.other {
 	flex-direction: row-reverse;
 	transform-origin: left;
+	margin-left: 10px;
 }
 
 .chat__item.other .chat__item__content {
-	background-color: #fff;
+	background-color: #ebebeb;
 	color: #000;
 	border-radius: 10px 10px 10px 0;
 }

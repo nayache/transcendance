@@ -1,8 +1,4 @@
 import "../styles/DMList.css"
-import Logo1 from "../img/logo1.png"
-import Logo2 from "../img/logo2.png"
-import Logo3 from "../img/logo3.png"
-import Logo4 from "../img/logo4.png"
 import DMListItems from "./DMListItems"
 import { useState } from "react"
 import { Status } from "../constants/EMessage"
@@ -18,11 +14,12 @@ import { Discussion } from "../interface/IMessage"
 
 interface Props {
 	user: IUser | undefined,
-	discussions: Discussion[]
+	discussions: Discussion[],
+	updateDiscussions: (pseudo: string, position: number, unread: number, avatar?: string) => void,
 	updateReceiver: (receiver: IUser) => void,
 }
 
-const DMList = ({user, discussions, updateReceiver}: Props) => {
+const DMList = ({user, discussions, updateDiscussions, updateReceiver}: Props) => {
 
 	const [ doPrintModal, setDoPrintModal ] = useState<boolean>(false)
 	
@@ -39,6 +36,7 @@ const DMList = ({user, discussions, updateReceiver}: Props) => {
 				user={user}
 				callback={(user) => {
 					updateReceiver(user)
+					updateDiscussions(user.pseudo, 0, 0, user.avatar)
 					setDoPrintModal(false);
 				}}
 				callbackFail={() => setDoPrintModal(false)} />
@@ -50,11 +48,13 @@ const DMList = ({user, discussions, updateReceiver}: Props) => {
 				</button>
 			</div>
 			<div className="chatlist__items">
-				{discussions.map((item, index) => (
+				{ discussions &&
+				discussions.map((item, index) => (
 					<DMListItems
 						key={index}
 						pseudo={item.pseudo}
 						avatar={item.avatar}
+						unread={item.unread}
 						onClick={() => updateReceiver({pseudo: item.pseudo, avatar: item.avatar})}
 						animationDelay={index + 1}
 					/>
