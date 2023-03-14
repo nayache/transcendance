@@ -94,7 +94,6 @@ export class UserController {
 	
 	@Post('')
 	  @UseInterceptors(FileInterceptor('file', {fileFilter: (req: any, file: any, cb: any) => {
-        console.log(file.mimetype.split('/')[1])
 		if (file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
             // Allow storage of file
 			//if (file.mimetype.split('/')[1] != extname(file.originalname))
@@ -116,7 +115,6 @@ export class UserController {
             throw new ErrorException(HttpStatus.CONFLICT, AboutErr.PSEUDO, TypeErr.DUPLICATED, 'pseudo already used')
 		  if (file) {
 			//console.log(await fileTypeFromBuffer(file.buffer))
-			console.log('here')
 		    await this.userService.setAvatar(userId, file);
 		  }
 		  const avatar = await this.userService.getAvatar(userId);

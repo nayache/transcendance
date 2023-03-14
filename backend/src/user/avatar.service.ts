@@ -50,7 +50,7 @@ import { UserService } from './user.service';
 	  try {
 		await this.avatarRepository.save(avatar);
 	  } catch (error) {
-		throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+		throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.REJECTED);
 	  }
 	  return avatar;
 	}
@@ -59,7 +59,7 @@ import { UserService } from './user.service';
 	  try {
 		await this.avatarRepository.delete(avatarId);
 	  } catch (error) {
-		throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+		throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.REJECTED);
 	  }
 	}
   
@@ -96,7 +96,7 @@ import { UserService } from './user.service';
 		}
 		catch (e)
 		{
-			throw new HttpException('Cannot update turnoff current avatar', HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.REJECTED);
 		}
 	}
 	

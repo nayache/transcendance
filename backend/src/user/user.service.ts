@@ -219,8 +219,6 @@ export class UserService {
 		  throw new HttpException('File required', HttpStatus.BAD_REQUEST);
 		const filename = file.originalname;
 		const datafile = file.buffer;
-		if (await this.avatarService.exist(userId, filename))
-			throw new HttpException('Avatar Filename is already in database for this user', HttpStatus.CONFLICT);
 		const user: UserEntity = await this.findById(userId);
 		const curr_avatar: Avatar = await this.avatarService.getCurrentAvatar(userId);
 		await this.avatarService.createAvatar(filename, datafile, user, number);

@@ -1,15 +1,55 @@
 version: '3.9'
 services:
+  frontend:
+    container_name: frontend
+    build:
+      context: ./docker
+      dockerfile: ./frontend.dockerfile
+    ports:
+      - 3000:3000
+    networks:
+      - server
+    volumes:
+      - ./frontend:/app
+    env_file:
+      - ./docker/frontend.env
+    restart: unless-stopped
+    depends_on:
+      - postgres
+
+  backend:
+    container_name: backend
+    build: 
+      context: ./docker
+      dockerfile: ./backend.dockerfile
+    ports:
+      - 3042:3042
+    networks:
+      - server
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+    depends_on:
+      - postgres
+
   postgres:
+    container_name: postgres
     image: postgres:latest
     env_file:
       - ./docker/postgres.env
     environment:
       TZ: "Europe/Paris"
     restart: unless-stopped
+    networks:
+      - server
     volumes:
       - data:/var/lib/postgresql/data
     ports:
       - 5432:5432
+
 volumes:
   data:
+networks:
+  server:

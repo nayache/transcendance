@@ -38,16 +38,16 @@ export class FriendController {
             return this.userService.removeFriendship(userId, user2.id);
     }
 
-    @Get('/:value')
+   /*  @Get('/:value')
     async getFriendList(@User() userId: string, @Param('value') value: boolean) {
         if (value != true && value != false)
             throw new HttpException('invalid param set ` true or false `', HttpStatus.BAD_REQUEST);
         const friends = await this.userService.getFriends(userId, value);
         const friendList : string[] = await this.userService.makeFriendList(userId, friends);
         return { friends: friendList }
-    }
+    } */
 
-    @Get('/:pseudo/:value')
+   /*  @Get('/:pseudo/:value')
     async getUserFriendList(@Param('value') value: boolean, @Param('pseudo') pseudo: string) {
         if (value != true && value != false)
             throw new HttpException('invalid param set ` true or false `', HttpStatus.BAD_REQUEST);
@@ -57,7 +57,7 @@ export class FriendController {
         const friends = await this.userService.getFriends(user.id, value);
         const friendList : string[] = await this.userService.makeFriendList(user.id, friends);
         return { friends: friendList }
-    }
+    } */
    
     //for test
     @Get('list')
