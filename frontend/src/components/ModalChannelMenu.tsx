@@ -54,8 +54,10 @@ const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
 			callback();
 	}
 	
-	const onLeave = () => {
-		handleClick(callback)
+	const onLeave = (props?: any) => {
+		setUpdate("")
+		if (callback)
+			callback(props);
 	}
 
 	const onJoin = () => {

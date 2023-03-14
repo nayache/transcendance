@@ -21,7 +21,7 @@ export enum Side {
 	Left
 }
 
-abstract class CanvasObject {
+abstract class CanvasObjectDisplayer {
 
 	private _startingSpeed?: Vector2D;
 
@@ -29,13 +29,24 @@ abstract class CanvasObject {
 		private _dimensions?: Dimensions,
 		private _pos?: Point,
 		private _color?: string,
+		private _context?: CanvasRenderingContext2D,
 		private _canvasWidth?: number,
 		private _canvasHeight?: number,
 		private _canvasPosY?: number,
 	) {
-		console.log("CanvasObject creation")
+		console.log("CanvasObjectDisplayer creation")
 	}
 
+
+	protected get context() {
+		if (!this._context)
+			throw new Error('The context have not been set up')
+		return this._context;
+	}
+
+	protected set context(ctx: CanvasRenderingContext2D) {
+		this._context = ctx;
+	}
 
 	protected get canvasWidth() {
 		if (!this._canvasWidth)
@@ -107,7 +118,8 @@ abstract class CanvasObject {
 		this._startingSpeed = startingSpeed;
 	}
 
-	protected setUp(canvasWidth: number, canvasHeight: number, canvasPosY?: number): void {
+	protected setUp(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, canvasPosY?: number): void {
+		this.context = ctx;
 		this.canvasWidth = canvasWidth;
 		this.canvasHeight = canvasHeight;
 		if (canvasPosY)
@@ -126,12 +138,12 @@ abstract class CanvasObject {
 
 	protected static randomIntFrom2Intervals(interval1: [number, number], interval2: [number, number]): number {
 		if (Math.random() > 0.5)
-			return CanvasObject.randomIntFromInterval(interval1[0], interval1[1])
+			return CanvasObjectDisplayer.randomIntFromInterval(interval1[0], interval1[1])
 		else
-			return CanvasObject.randomIntFromInterval(interval2[0], interval2[1])
+			return CanvasObjectDisplayer.randomIntFromInterval(interval2[0], interval2[1])
 	}
 
-	public isInsideX(solidObject: CanvasObject): boolean {
+	public isInsideX(solidObject: CanvasObjectDisplayer): boolean {
 		if (
 			(this.pos.x - this.dimensions.width <= solidObject.pos.x + solidObject.dimensions.width &&
 			this.pos.x + this.dimensions.width >= solidObject.pos.x) &&
@@ -146,7 +158,7 @@ abstract class CanvasObject {
 	
 	// !!! DEPRECATED !!! //
 	/*
-	protected isInsideY(solidObject: CanvasObject): Side {
+	protected isInsideY(solidObject: CanvasObjectDisplayer): Side {
 		const absDistanceUp: number = Math.abs(this.pos.y - solidObject.pos.y);
 		const absDistanceDown: number = Math.abs(this.pos.y - (solidObject.pos.y + solidObject.dimensions.height));
 		
@@ -168,7 +180,12 @@ abstract class CanvasObject {
 	}
 	*/
 
+	display(): void {
+		this.context.beginPath();
+		this.context.fillStyle = this.color;
+	}
+
 	//collision, etc..
 	//base class of paddle, ball, etc.. 
 }
-export default CanvasObject;
+export default CanvasObjectDisplayer;

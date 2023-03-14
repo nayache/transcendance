@@ -1,11 +1,12 @@
 import React from 'react'
-import CanvasObject, { Point, Dimensions, Vector2D, Side } from './CanvasObject.class';
+import CanvasObjectDisplayer, { Point, Dimensions, Vector2D, Side } from './CanvasObjectDisplayer.class';
 
-class Ball extends CanvasObject {
+class BallDisplayer extends CanvasObjectDisplayer {
 
 	constructor(
 		radius: number = 10,
 		color: string = 'grey',
+		context?: CanvasRenderingContext2D,
 		canvasWidth?: number,
 		canvasHeight?: number,
 		canvasPosY?: number,
@@ -14,6 +15,7 @@ class Ball extends CanvasObject {
 			{ width: radius, height: radius },
 			undefined,
 			color,
+			context,
 			canvasWidth,
 			canvasHeight,
 			canvasPosY,
@@ -32,7 +34,7 @@ class Ball extends CanvasObject {
 
 
 	// 
-	public isInsideX(solidObject: CanvasObject): boolean {
+	public isInsideX(solidObject: CanvasObjectDisplayer): boolean {
 		if (
 			(this.pos.x - this.radius <= solidObject.pos.x + solidObject.dimensions.width &&
 			this.pos.x + this.radius >= solidObject.pos.x) &&
@@ -46,24 +48,25 @@ class Ball extends CanvasObject {
 	}
 
 	public setUp(
+		ctx: CanvasRenderingContext2D,
 		canvasWidth: number,
 		canvasHeight: number,
 		canvasPosY?: number,
 		startingSpeed?: Vector2D
 	): void {
-		super.setUp(canvasWidth, canvasHeight, canvasPosY);
+		super.setUp(ctx, canvasWidth, canvasHeight, canvasPosY);
 		if (startingSpeed)
 			this.startingSpeed = startingSpeed;
 		else
 			this.startingSpeed = {
-				x: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5]),
-				y: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5])
+				x: CanvasObjectDisplayer.randomIntFrom2Intervals([-5, -3], [3, 5]),
+				y: CanvasObjectDisplayer.randomIntFrom2Intervals([-5, -3], [3, 5])
 			}
 		this.pos = { x: canvasWidth / 2, y: canvasHeight / 2 }
 		//set une vitesse ou un bail comme ca
 	}
 
-	public updatePos(solidObjects?: CanvasObject[]): void {
+	public updatePos(solidObjects?: CanvasObjectDisplayer[]): void {
 		let startingSpeed: Vector2D;
 		let sideTouched: Side;
 
@@ -129,6 +132,18 @@ class Ball extends CanvasObject {
 			y: this.pos.y + this.startingSpeed.y,
 		}
 	}
+
+	display(): void {
+		super.display();
+		this.context.arc(
+			this.pos.x,
+			this.pos.y,
+			this.radius,
+			0,
+			2 * Math.PI
+		)
+		this.context.fill();
+	}
 }
 
-export default Ball;
+export default BallDisplayer;

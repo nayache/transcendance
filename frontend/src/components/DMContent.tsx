@@ -23,10 +23,11 @@ interface Props {
 	chatItems: ChatItem[],
 	addChatItem: (newChatItem: ChatItem) => void,
 	updateChatItem: (id: number, updateChatItem: ChatItem) => void,
+	updateDiscussions: (pseudo: string, position: number, unread: number, avatar?: string) => void
 }
 
 
-const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatItem }: Props) => {
+const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatItem, updateDiscussions }: Props) => {
 
 	const messagesContainerRef = useRef<HTMLDivElement>(null)
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -95,6 +96,8 @@ const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatI
 					status: MessageStatus.SENT,
 					msg: msgWritten.current
 				})
+				if (receiver?.pseudo)
+					updateDiscussions(receiver.pseudo, 0, 0, receiver.avatar)
 			} catch (err) {
 				const _error: IError = err as IError
 	

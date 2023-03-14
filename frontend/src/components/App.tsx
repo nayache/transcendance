@@ -61,6 +61,10 @@ const router = createBrowserRouter([
 		element: <ChatPage />
 	},
 	{
+		path: MESSAGES_EP + '/:pseudo',
+		element: <DM />
+	},
+	{
 		path: MESSAGES_EP,
 		element: <DM />
 	},

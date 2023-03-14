@@ -1,16 +1,17 @@
-import CanvasObject, { Point, Dimensions } from "./CanvasObject.class";
+import CanvasObjectDisplayer, { Point, Dimensions } from "./CanvasObjectDisplayer.class";
 import Player, { PlayerSide } from "./Player.class";
 
 const PADDLE_WIDTH: number = 20;
 const PADDLE_XSPACE: number = 10;
 
 
-class Paddle extends CanvasObject {
+class PaddleDisplayer extends CanvasObjectDisplayer {
 
-	constructor(	
+	constructor(
 		private _player?: Player,
 		height: number = 100,
 		color: string = 'black',
+		context?: CanvasRenderingContext2D,
 		canvasWidth?: number,
 		canvasHeight?: number,
 		canvasPosY?: number,
@@ -19,10 +20,12 @@ class Paddle extends CanvasObject {
 			{ width: PADDLE_WIDTH, height },
 			undefined,
 			color,
+			context,
 			canvasWidth,
 			canvasHeight,
 			canvasPosY,
 		);
+		document.addEventListener('mousemove', this.onMouseMove.bind(this));
 	}
 
 	public bindToplayer(player: Player) {
@@ -44,13 +47,14 @@ class Paddle extends CanvasObject {
 	}
 
 	setUp(
+		ctx: CanvasRenderingContext2D,
 		canvasWidth: number,
 		canvasHeight: number,
 		canvasPosY?: number
 	): void {
 		let y: number;
 
-		super.setUp(canvasWidth, canvasHeight, canvasPosY);
+		super.setUp(ctx, canvasWidth, canvasHeight, canvasPosY);
 		try {
 			y = this.pos.y;
 		} catch (err) {
@@ -62,5 +66,13 @@ class Paddle extends CanvasObject {
 			this.pos = { x: PADDLE_XSPACE, y }
 	}
 
+	display(canvasPosY?: number): void {
+		console.log("this.pos dans display paddle = ", this.pos)
+		if (canvasPosY)
+			this.canvasPosY = canvasPosY;
+		super.display()
+		this.context.rect(this.pos.x, this.pos.y, this.dimensions.width, this.dimensions.height)
+		this.context.fill();
+	}
 }
-export default Paddle;
+export default PaddleDisplayer;

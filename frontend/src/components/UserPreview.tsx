@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import '../styles/UserPreview.css'
 import { ChannelRole, Status } from "../constants/EMessage"
-import { API_CHAT_CHANNEL_BAN_ROUTE, API_CHAT_CHANNEL_KICK_ROUTE, API_CHAT_CHANNEL_MUTE_ROUTE, API_USER_FRIEND_RELATION, BASE_URL, PROFILE_EP } from "../constants/RoutesApi"
+import { API_CHAT_CHANNEL_BAN_ROUTE, API_CHAT_CHANNEL_KICK_ROUTE, API_CHAT_CHANNEL_MUTE_ROUTE, API_USER_FRIEND_RELATION, BASE_URL, MESSAGES_EP, PROFILE_EP } from "../constants/RoutesApi"
 import { IChannel, IChannelUser } from "../interface/IChannel"
 import ClientApi from "./ClientApi.class"
 import ModalChannelMenu, { ModalChannelType } from "./ModalChannelMenu"
@@ -12,9 +12,16 @@ interface Props {
 	chanUser: IChannelUser | undefined,
 	player: IChannelUser,
 	channel: IChannel,
-	onMute?: (mutedPseudo: string) => void,
-	onKick?: (kickedPseudo: string) => void,
-	onBan?: (bannedPseudo: string) => void,
+	onSeeProfile?: (pseudo?: string) => void,
+	onAddFriend?: (pseudo: string) => void,
+	onDelFriend?: (pseudo: string) => void,
+	onCancelReqFriend?: (pseudo: string) => void,
+	onInviteReq?: (pseudo: string) => void,
+	onSetAdmin?: (pseudo: string) => void,
+	onBlock?: (blockedPseudo: string) => void,
+	onMute?: (mutedPseudo?: string) => void,
+	onKick?: (kickedPseudo?: string) => void,
+	onBan?: (bannedPseudo?: string) => void,
 	onClose?: (e?: React.MouseEvent<HTMLSpanElement>) => void,
 }
 
@@ -83,7 +90,9 @@ interface ButtonProps {
 }
 
 /* to place juste before the element concerned */
-const UserPreview = ({ chanUser, player, channel, onMute, onBan, onKick, onClose }: Props) => {
+const UserPreview = ({ chanUser, player, channel, onSeeProfile,
+	onAddFriend, onBlock, onCancelReqFriend, onDelFriend, onSetAdmin, onInviteReq,
+	onMute, onBan, onKick, onClose }: Props) => {
 
 	const { pseudo: playerName, status, role } = player
 	const [actionModal, setActionModal] = useState<ModalChannelType | null>(null);
@@ -138,7 +147,9 @@ const UserPreview = ({ chanUser, player, channel, onMute, onBan, onKick, onClose
 					{
 						content: "See the profile",
 						action: () => {
-							ClientApi.redirect = new URL(BASE_URL + PROFILE_EP + playerName)
+							ClientApi.redirect = new URL(BASE_URL + PROFILE_EP + '/' + playerName)
+							if (onSeeProfile)
+								onSeeProfile(playerName)
 						},
 						role: undefined,
 						canPrint: true,
@@ -146,7 +157,8 @@ const UserPreview = ({ chanUser, player, channel, onMute, onBan, onKick, onClose
 					{
 						content: "Invite",
 						action: () => {
-			
+							if (onInviteReq)
+								onInviteReq(playerName)
 						},
 						role: ChannelRole.USER,
 						canPrint: (chanUser !== undefined && !userSitutation.isSelf(chanUser, player)),
@@ -162,7 +174,6 @@ const UserPreview = ({ chanUser, player, channel, onMute, onBan, onKick, onClose
 					{
 						content: "Delete friend",
 						action: () => {
-							
 						},
 						role: ChannelRole.USER,
 						canPrint: (relation !== null && userSitutation.isFriend(relation)),
@@ -170,7 +181,7 @@ const UserPreview = ({ chanUser, player, channel, onMute, onBan, onKick, onClose
 					{
 						content: "Send message",
 						action: () => {
-			
+							ClientApi.redirect = new URL(BASE_URL + MESSAGES_EP + '/' + playerName)
 						},
 						role: ChannelRole.USER,
 						canPrint: (chanUser !== undefined && !userSitutation.isSelf(chanUser, player)),
