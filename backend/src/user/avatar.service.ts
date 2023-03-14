@@ -46,7 +46,6 @@ import { UserService } from './user.service';
 		const type = avatar.mimetype;
 		const dataImagePrefix = 'data:'.concat(type);
 		const dataImageSuffix = dataImagePrefix.concat(';base64,');
-		console.log(dataImageSuffix);
 		let base = avatar.datafile.toString('base64');
 		let final= dataImageSuffix.concat(base);
 		return final;

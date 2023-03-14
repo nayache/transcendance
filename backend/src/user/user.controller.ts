@@ -13,6 +13,7 @@ import { Relation } from '../enums/relation.enum';
 import { Status } from 'src/enums/status.enum';
 import { ProfileDto } from 'src/dto/profile.dto';
 import sizeOf from 'image-size';
+import {sharp} from 'sharp';
 import fs from 'fs';
 
 export class friendDto {
@@ -176,7 +177,6 @@ async postpseudoAvatar(
     if (await this.userService.pseudoExist(pseudo))
         throw new ErrorException(HttpStatus.CONFLICT, AboutErr.PSEUDO, TypeErr.DUPLICATED, 'pseudo already used')
     if (file) {
-		//sharp(file).resize(200, 200).toBuffer();
 		const size = sizeOf(file.buffer);
 		console.log(size.width, size.height)
 		if (size.width > 1200 || size.height > 600) {

@@ -8,7 +8,7 @@ import { ErrorException } from 'src/exceptions/error.exception';
 import { friendDto } from 'src/user/user.controller';
 import { UserService } from 'src/user/user.service';
 
-@Controller('user/friends')
+@Controller('users/friends')
 export class FriendController {
     constructor(private userService: UserService,
     private readonly chatGateway: ChatGateway) {}
@@ -17,12 +17,12 @@ export class FriendController {
     async makeFriend(@User() userId: string, @Param('pseudo') pseudo: string) {
         const user2: UserEntity = await this.userService.findByPseudo(pseudo);
         if (!user2)
-            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'target not found');
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
         if (userId == user2.id)
-            throw new ErrorException(HttpStatus.CONFLICT, AboutErr.USER, TypeErr.INVALID, 'cant add himself has friend');
+            throw new ErrorException(HttpStatus.CONFLICT, AboutErr.TARGET, TypeErr.INVALID, 'cant add himself has friend');
         // si j'ai deja envoyer une requete a cet user ou bien si je suis deja ami avec lui
         if (await this.userService.friendshipExist(userId, user2.id))
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.INVALID, 'already added friend');
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'already added friend');
         let eventName: string = 'newRequest';
         if (await this.userService.frienshipWaiting(userId, user2.id)) {
             await this.userService.acceptFriendship(userId, user2.id);
@@ -37,11 +37,11 @@ export class FriendController {
     async deleteFriendship(@User() userId: string, @Param('pseudo') pseudo: string) {
         const user2: UserEntity = await this.userService.findByPseudo(pseudo);
         if (!user2)
-            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'target not found');
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
         if (userId === user2.id)
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.INVALID, 'invalid target(himself)');
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'invalid target(himself)');
         if (!await this.userService.friendshipExist(userId, user2.id))
-            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'friendship not exist');
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'friendship not exist');
         else
             return this.userService.removeFriendship(userId, user2.id);
     }
