@@ -1,27 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Socket } from "socket.io-client";
-import { IChannelUser } from "../interface/IChannelUser";
+import { IChannel, IChannelUser } from "../interface/IChannel";
 import { RootState } from "../redux/store";
 import '../styles/ChannelPlayers.css'
 import ChannelPlayer from "./ChannelPlayer";
 
 
 interface Props {
-	pseudo?: string,
+	chanUser: IChannelUser | undefined,
+	currentChannelId: number,
+	channels: IChannel[],
 	socket: Socket
 }
 
-const ChannelPlayers = ({ pseudo, socket }: Props) => {
+const ChannelPlayers = ({ chanUser, currentChannelId, channels, socket }: Props) => {
 	
-	const { channels, currentChannelId } = useSelector((state: RootState) => state.room)
-	const users: IChannelUser[] | null = currentChannelId !== -1 ? channels[currentChannelId].users : null
+	const users: IChannelUser[] | null = !(currentChannelId <= -1 || currentChannelId >= channels.length) ? channels[currentChannelId].users : null
 	const [ visiblePlayers, setVisiblePlayers ] = useState<IChannelUser[] | undefined>(
-		currentChannelId !== -1 ? channels[currentChannelId].users: undefined
+		undefined
 	)
 	const [ doDisplayPreviews, setDoDisplayPreviews ] = useState<boolean[]>(
-		currentChannelId !== -1 ? channels[currentChannelId].users.map(user => false): []
+		[]
 	)
+
+
 
 
 
@@ -40,13 +43,19 @@ const ChannelPlayers = ({ pseudo, socket }: Props) => {
 
 
 
+
 	useEffect(() => {
-		if (currentChannelId !== -1) {
+		if (!(currentChannelId <= -1 || currentChannelId >= channels.length)) {
 			setVisiblePlayers(
 				channels[currentChannelId].users
 			)
+			setDoDisplayPreviews(
+				channels[currentChannelId].users.map(user => false)
+			)
 		}
 	}, [currentChannelId, users])
+
+
 
 
 
@@ -55,11 +64,12 @@ const ChannelPlayers = ({ pseudo, socket }: Props) => {
 			<h3 className="chat-title">Players</h3>
 			<div className="channelPlayers-container">
 				<div className="channelPlayers-child">
-					{
+					{!(currentChannelId <= -1 || currentChannelId >= channels.length) &&
 						visiblePlayers && visiblePlayers.map((player, index) => (
 							<ChannelPlayer key={index} doDisplayPreview={doDisplayPreviews[index]}
+							channel={channels[currentChannelId]}
 							onClick={(e) => onClick(index, e)} onClosePreview={() => onClosePreview(index)}
-							pseudo={pseudo} player={player}/>
+							chanUser={chanUser} player={player}/>
 						))
 					}
 				</div>

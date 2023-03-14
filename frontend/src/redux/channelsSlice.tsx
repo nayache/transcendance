@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { IChannel, IChannelUser } from '../interface/IChannelUser'
+import { IChannel, IChannelUser } from '../interface/IChannel'
 
 interface DraftMessageProps {
 	draftMessage?: string,
@@ -42,14 +42,6 @@ const channelsSlice = createSlice({
 		},
 	},
 })
-
-export const {
-	addChannel,
-	updateChannel,
-	resetAllChannels,
-	removeChannel,
-	setCurrentChannel,
-} = channelsSlice.actions
 
 const roomReducer = channelsSlice.reducer
 export default roomReducer;

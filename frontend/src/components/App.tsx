@@ -12,7 +12,7 @@ import Settings from './Settings';
 import { IUser } from '../interface/IUser';
 import userEvent from '@testing-library/user-event';
 import ClientApi from './ClientApi.class';
-import { API_SOCKET_URL, CHAT_EP, FRIENDS_EP, GAMEPAGE_EP, HOME_EP, MESSAGES_EP, MYFRIENDS_EP, MYPROFILE_EP, PROFILE_EP, REGISTER_EP, SETTINGS_EP, SETTINGS_MYPROFILE_EP, SETTINGS_TWOFA_EP, SIGNIN_EP, TWOFA_EP } from '../constants/RoutesApi';
+import { CHAT_EP, GAMEPAGE_EP, HOME_EP, MESSAGES_EP, MYFRIENDS_EP, MYPROFILE_EP, PROFILE_EP, REGISTER_EP, SETTINGS_EP, SETTINGS_MYPROFILE_EP, SETTINGS_TWOFA_EP, SIGNIN_EP, TWOFA_EP } from '../constants/RoutesApi';
 import MyProfile from './MyProfile';
 import ChatPage from './ChatPage';
 import TwoFA from './TwoFA';
@@ -49,15 +49,11 @@ const router = createBrowserRouter([
 		element: <MyProfile />
 	},
 	{
-		path: PROFILE_EP,
+		path: PROFILE_EP + '/:pseudo',
 		element: <Profile />
 	},
 	{
 		path: MYFRIENDS_EP,
-		element: <Friends />
-	},
-	{
-		path: FRIENDS_EP,
 		element: <Friends />
 	},
 	{
@@ -92,9 +88,7 @@ const App = () => {
 
 	return (
 		<React.Fragment>
-			<Provider store={store}>
-				<RouterProvider router={router} />
-			</Provider>
+			<RouterProvider router={router} />
 		</React.Fragment>
 	)
 }

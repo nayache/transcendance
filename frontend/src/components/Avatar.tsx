@@ -1,19 +1,20 @@
 import React, { Component } from "react";
 import { Status } from "../constants/EMessage";
+import DefaultImg from "../img/avatar2.jpeg"
+
+
 
 interface Props {
-	image: string,
-	status: Status
+	srcImg: string | undefined,
 }
 
-const Avatar = ({ image, status }: Props) => {
+const Avatar = ({ srcImg }: Props) => {
 	
 	return (
 		<div className="avatar">
 			<div className="avatar-img">
-			<img src={image} alt="#" />
+				<img src={srcImg ? srcImg : DefaultImg} alt="#" />
 			</div>
-			<span className={`isOnline`}></span>
 		</div>
 	);
 }

@@ -3,17 +3,21 @@ export interface IError {
 	type: TypeErr,
 	message?: string,
 }
+
 export enum AboutErr {
 	AUTH,
 	TOKEN,
 	HEADER,
 	USER,
+	TARGET,
 	PSEUDO,
 	AVATAR,
 	CHANNEL,
+	PASSWORD,
 	MESSAGE,
 	REQUEST,
-	TWOFA
+	TWOFA,
+	DATABASE,
 }
 
 export enum TypeErr {
