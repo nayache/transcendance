@@ -22,10 +22,10 @@ const DMListItems = ({pseudo, avatar, unread, animationDelay, onClick}: Props) =
 		className={`chatlist__item`}>
 			<Avatar srcImg={avatar}/>
 			<div className="userMeta">
-				<p ref={pseudoRef}>{pseudo}</p>
+				<p ref={pseudoRef} className={unread > 0 ? 'list_pseudo_text_bold' : 'list_pseudo_text'}>{pseudo}</p>
 				{unread > 0 &&
 				<div className="unread-div">
-					<p>({unread})</p>
+					<p>({unread > 9 ? '9+': unread})</p>
 				</div>}
 			</div>
 		</div>

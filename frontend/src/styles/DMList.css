@@ -156,7 +156,6 @@
 	margin: 0;
 	padding: 0;
 	color: #000;
-	font-weight: 600;
 	font-size: 14px;
 }
 
@@ -197,6 +196,14 @@
 	background-color: #ddd;
 	border-radius: 50%;
 	border: 2px solid #fff;
+}
+
+.list_pseudo_text {
+	font-weight: 500;
+}
+
+.list_pseudo_text_bold {
+	font-weight: 700;
 }
 
 .isOnline.active {

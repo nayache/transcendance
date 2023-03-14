@@ -116,13 +116,18 @@ const DM = () => {
 				return discussions
 			}
 			const daDiscussion: Discussion | undefined = oldDiscussions.find(discussion => discussion.pseudo === pseudo)
-			const daDiscussionInd: number = oldDiscussions.findIndex((discussion, i) => i === position)
+			const daDiscussionInd: number = oldDiscussions.findIndex(discussion => discussion.pseudo === pseudo)
 			if (daDiscussion) {
 				daDiscussion.avatar = avatar
 				daDiscussion.unread = unread
+				console.log("discussions (avant le bail) = ", discussions.map(discussion => discussion))
 				discussions.splice(position, 0, daDiscussion)
-				const daNewDiscussionInd: number = discussions
-					.findIndex((discussion) => oldDiscussions[daDiscussionInd].pseudo === discussion.pseudo)
+				console.log("discussions (apres le bail) = ", discussions.map(discussion => discussion))
+				console.log("oldDisucssions (apres le bail) = ", oldDiscussions)
+				console.log("daDiscussionInd = ", daDiscussionInd)
+				console.log("position = ", position)
+				const daNewDiscussionInd: number = daDiscussionInd > position ? daDiscussionInd + 1 : daDiscussionInd
+				console.log("daNewDiscussionInd = ", daNewDiscussionInd)
 				discussions.splice(daNewDiscussionInd, 1)
 			}
 			return discussions
@@ -151,6 +156,8 @@ const DM = () => {
 	useEffect(() => {
 		(async () => {
 			try {
+				console.log("user = ", user)
+				console.log("oldUser = ", oldUser)
 				if (user?.pseudo && oldUser.current?.pseudo !== user.pseudo) {
 					const { discussions: realDiscussions }: { discussions: Discussion[] } = await ClientApi.get(API_CHAT_DISCUSSIONS_RELATION)
 					console.log("realDiscussions = ", realDiscussions)
@@ -191,7 +198,10 @@ const DM = () => {
 	}, [receiver, user])
 
 	useEffect(() => {
+		console.log("(useEffect) receiver?.pseudo = ", receiver?.pseudo)
+		console.log("(useEffect) oldReceiver.current?.pseudo = ", oldReceiver.current?.pseudo)
 		if (receiver?.pseudo && receiver.pseudo !== oldReceiver.current?.pseudo) {
+			console.log("(useEffect) yo")
 			ClientApi.patch(API_CHAT_MARK_READ + '/' + receiver.pseudo)
 			updateDiscussion(receiver.pseudo, 0, receiver.avatar)
 		}
