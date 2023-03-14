@@ -130,7 +130,25 @@ export class UserController {
 	  @User() userId: string,
 	): Promise<{avatar: string}> {
 	  const avatar = await this.userService.getAvatar(userId);
+	  if (!avatar)
+		return ({avatar: null});
 	  return ({avatar: this.avatarService.toStreamableFile(avatar)});
+	}
+
+	@Get('avatar/:pseudo')
+	async getProfileAvatar(
+		@Param('pseudo') pseudo: string,
+	): Promise <{avatar: string}> {
+		console.log(pseudo)
+		if (!pseudo)
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.EMPTY, 'Empty pseudo');
+		const user = await this.userService.findByPseudo(pseudo);
+		if (!user)
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.NOT_FOUND, 'pseudo does not exist');
+		const avatar = await this.userService.getAvatar(user.id);
+		if (avatar)
+			return({avatar: this.avatarService.toStreamableFile(avatar)});
+		return({avatar: null});
 	}
 	
 	@Post('')
@@ -155,9 +173,10 @@ async postpseudoAvatar(
 ): Promise<any> {
     if (!pseudo)
         throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.EMPTY, 'Empty pseudo');
-    if (!await this.userService.addPseudo(userId, pseudo))
+    if (await this.userService.pseudoExist(pseudo))
         throw new ErrorException(HttpStatus.CONFLICT, AboutErr.PSEUDO, TypeErr.DUPLICATED, 'pseudo already used')
     if (file) {
+		//sharp(file).resize(200, 200).toBuffer();
 		const size = sizeOf(file.buffer);
 		console.log(size.width, size.height)
 		if (size.width > 1200 || size.height > 600) {
@@ -166,6 +185,7 @@ async postpseudoAvatar(
         await this.userService.setAvatar(userId, file);
     }
     const avatar = await this.userService.getAvatar(userId);
+	await this.userService.addPseudo(userId, pseudo);
     if (!avatar)
         return {pseudo: pseudo, avatar: null}
     return {pseudo: pseudo, avatar: this.avatarService.toStreamableFile(avatar)}
