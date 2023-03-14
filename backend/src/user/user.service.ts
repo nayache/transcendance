@@ -418,15 +418,17 @@ export class UserService {
 		}
 	}
 
-	async getBlock(userId: string): Promise<UserEntity[]> {
+	async getBlock(userId: string): Promise<string[]> {
 		try {
 		const block: BlockedEntity[] = await this.blockedRepository.find({where: {authorId: userId},relations: ['user2']});
-		let user: UserEntity[] = [];
+		let users: string[] = [];
 		for (let i = 0; i < block.length; i++)
 		{
-			user.push(await this.findById(block[i].user2Id));
+			let user = await this.findById(block[i].user2Id);
+			if (user)
+				users.push(user.pseudo);
 		}
-		return user;
+		return users;
 		} catch(e) {
 			return null;
 		}

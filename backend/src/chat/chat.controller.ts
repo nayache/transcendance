@@ -318,10 +318,10 @@ export class ChatController {
     async getDiscussion(@User() userId: string, @Param('pseudo') pseudo: string) {
         if (!pseudo)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'empty param');
-        const discussions: Discussion = await this.chatService.getDiscussion(userId, pseudo);
-        if (!discussions)
+        const discussion :Discussion = await this.chatService.getDiscussion(userId, pseudo);
+        if (!discussion)
             throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
-        return {discussions}
+        return {discussion}
     }
 
     @Get('message/:pseudo')
