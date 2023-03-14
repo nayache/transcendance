@@ -12,6 +12,8 @@ import { userDto } from 'src/dto/user.dto';
 import { Relation } from '../enums/relation.enum';
 import { Status } from 'src/enums/status.enum';
 import { ProfileDto } from 'src/dto/profile.dto';
+import sizeOf from 'image-size';
+import fs from 'fs';
 
 export class friendDto {
 	pseudo: string;
@@ -132,35 +134,42 @@ export class UserController {
 	}
 	
 	@Post('')
-	  @UseInterceptors(FileInterceptor('file', {fileFilter: (req: any, file: any, cb: any) => {
-		if (file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
-            // Allow storage of file
-			//if (file.mimetype.split('/')[1] != extname(file.originalname))
-			//	cb(new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID,`File Type does not match file extension ${file.mimetype}, ${extname(file.originalname)}`), false);
+@UseInterceptors(FileInterceptor('file', {
+    fileFilter: (req: any, file: any, cb: any) => {
+        if (file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
+            // Check image dimensions
             cb(null, true);
         } else {
-            // Reject file
             cb(new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID,`Unsupported file type ${extname(file.originalname)}`), false);
         }
-    }}))
-	  async postpseudoAvatar(
-		@User() userId: string,
-		@Body('pseudo') pseudo?: string,
-		@UploadedFile('file') file?: Express.Multer.File,
-	): Promise <any> {
-		  if (!pseudo)
-			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.EMPTY, 'Empty pseudo');
-		  if (!await this.userService.addPseudo(userId, pseudo))
-            throw new ErrorException(HttpStatus.CONFLICT, AboutErr.PSEUDO, TypeErr.DUPLICATED, 'pseudo already used')
-		  if (file) {
-			//console.log(await fileTypeFromBuffer(file.buffer))
-		    await this.userService.setAvatar(userId, file);
-		  }
-		  const avatar = await this.userService.getAvatar(userId);
-		  if (!avatar)
-		  	return {pseudo: pseudo, avatar: null}
-		  return {pseudo: pseudo, avatar: this.avatarService.toStreamableFile(avatar)}
-	}
+    },
+    limits: {
+        files: 1,
+        fileSize: 10 * 10 * 10 * 10 * 10 * 10  // 10 mb in bytes
+    }
+}))
+async postpseudoAvatar(
+    @User() userId: string,
+    @Body('pseudo') pseudo?: string,
+    @UploadedFile('file') file?: Express.Multer.File,
+): Promise<any> {
+    if (!pseudo)
+        throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.EMPTY, 'Empty pseudo');
+    if (!await this.userService.addPseudo(userId, pseudo))
+        throw new ErrorException(HttpStatus.CONFLICT, AboutErr.PSEUDO, TypeErr.DUPLICATED, 'pseudo already used')
+    if (file) {
+		const size = sizeOf(file.buffer);
+		console.log(size.width, size.height)
+		if (size.width > 1200 || size.height > 600) {
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID, 'Image dimensions must be <= 1200x600');
+		}
+        await this.userService.setAvatar(userId, file);
+    }
+    const avatar = await this.userService.getAvatar(userId);
+    if (!avatar)
+        return {pseudo: pseudo, avatar: null}
+    return {pseudo: pseudo, avatar: this.avatarService.toStreamableFile(avatar)}
+}
 
 	@Patch('avatar')
       @UseInterceptors(FileInterceptor('file', {fileFilter: (req: any, file: any, cb: any) => {
