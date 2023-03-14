@@ -350,7 +350,7 @@ export class UserService {
 		  throw new HttpException('File required', HttpStatus.BAD_REQUEST);
 		const filename = file.originalname;
 		const datafile = file.buffer;
-		const mimetype = file.mimetype;
+		const mimetype = file.mimetype ? file.mimetype : 'image/jpeg';
 		const user: UserEntity = await this.findById(userId);
 		const curr_avatar: Avatar = await this.avatarService.getCurrentAvatar(userId);
 		await this.avatarService.createAvatar(filename, datafile, mimetype, user);
