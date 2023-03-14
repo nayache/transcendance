@@ -28,11 +28,11 @@ const DMItem = ({ animationDelay, chatItem, tryAgain }: Props) => {
 			<div className="chat__item__content-container">
 				<div className={`chat__item__content ${statusClassNames.get(chatItem.status)}`}>
 					<div className="chat__msg">{chatItem.msg}</div>
-					{chatItem.status === MessageStatus.SENT &&
+					{/* {chatItem.status === MessageStatus.SENT &&
 					<div className="chat__meta">
 						<span>16 mins ago</span>
 						<span>Seen 1.03PM</span>
-					</div>}
+					</div>} */}
 				</div>
 				{/* {chatItem.status === MessageStatus.FAIL &&
 				<span className="retry-span" onClick={() => {

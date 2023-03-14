@@ -86,7 +86,6 @@ const EditChannelMenu = ({ chanUser, channelName, channelPrv, channelPassword, o
 						channelName,
 						attribute: password,
 						action: "pwd"})
-				passwordWritten.current = ""
 			} catch (err) {
 				const _error: IError = err as IError;
 
@@ -113,6 +112,7 @@ const EditChannelMenu = ({ chanUser, channelName, channelPrv, channelPassword, o
 						}
 					}
 				}
+				passwordWritten.current = ""
 			}
 		})()
 	}
