@@ -159,7 +159,8 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 							}
 						},
 						role: ChannelRole.USER,
-						canPrint: (chanUser !== undefined && !userSitutation.isSelf(chanUser, player)),
+						canPrint: (chanUser !== undefined && relation !== null &&
+							!userSitutation.isSelf(chanUser, player) && !userSitutation.isBlocked(relation)),
 					},
 					{
 						content: "Add to friends",
@@ -181,7 +182,8 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 							}
 						},
 						role: ChannelRole.USER,
-						canPrint: (relation !== null && userSitutation.friend(relation) === Relation.UNKNOWN),
+						canPrint: (relation !== null &&
+							!userSitutation.isBlocked(relation) && userSitutation.friend(relation) === Relation.UNKNOWN),
 					},
 					{
 						content: "Cancel friend request",
@@ -197,7 +199,8 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 							}
 						},
 						role: ChannelRole.USER,
-						canPrint: (relation !== null && userSitutation.friend(relation) === Relation.PENDING),
+						canPrint: (relation !== null &&
+							!userSitutation.isBlocked(relation) && userSitutation.friend(relation) === Relation.PENDING),
 					},
 					{
 						content: "Delete friend",
@@ -210,7 +213,8 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 							}
 						},
 						role: ChannelRole.USER,
-						canPrint: (relation !== null && userSitutation.friend(relation) === Relation.FRIEND),
+						canPrint: (relation !== null &&
+							!userSitutation.isBlocked(relation) && userSitutation.friend(relation) === Relation.FRIEND),
 					},
 					{
 						content: "Send message",
@@ -223,7 +227,8 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 							}
 						},
 						role: ChannelRole.USER,
-						canPrint: (chanUser !== undefined && !userSitutation.isSelf(chanUser, player)),
+						canPrint: (chanUser !== undefined && relation !== null &&
+							!userSitutation.isBlocked(relation) && !userSitutation.isSelf(chanUser, player)),
 					},
 					{
 						content: "Block",
