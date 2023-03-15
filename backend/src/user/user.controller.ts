@@ -12,11 +12,11 @@ import { userDto } from 'src/dto/user.dto';
 import { Relation } from '../enums/relation.enum';
 import { Status } from 'src/enums/status.enum';
 import { ProfileDto } from 'src/dto/profile.dto';
-import sizeOf from 'image-size';
 import * as sharp from 'sharp';
 
 export class friendDto {
 	pseudo: string;
+	avatar: string;
 	status: Status;
 }
 
@@ -227,6 +227,7 @@ async postpseudoAvatar(
 			const avatar = await this.avatarService.getCurrentAvatar(userId);
 			if (!avatar)
 				throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.NOT_FOUND, `No avatar for user`);
-			return this.avatarService.deleteAvatar(avatar.id);
+			await this.avatarService.deleteAvatar(avatar.id);
+			return {};
 		}
 }

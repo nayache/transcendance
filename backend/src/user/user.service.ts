@@ -301,8 +301,9 @@ export class UserService {
             const user: UserEntity = await this.findById(id);
             if (!user)
                 throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found')  
+			const avatar: string = await this.getAvatarfile(user.id);
             const status: Status = await this.chatGateway.getStatus(user.id);
-            return { pseudo: user.pseudo, status };
+            return { pseudo: user.pseudo, avatar: avatar, status };
         }))
         return friendListDto;
     }
