@@ -1,5 +1,5 @@
 import { Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ChatGateway } from 'src/chat/chat.gateway';
+import { AppGateway } from 'src/chat/app.gateway';
 import { User } from 'src/decorators/user.decorator';
 import { FriendEntity } from 'src/entity/friend.entity';
 import { UserEntity } from 'src/entity/user.entity';
@@ -11,7 +11,7 @@ import { UserService } from 'src/user/user.service';
 @Controller('users/friends')
 export class FriendController {
     constructor(private userService: UserService,
-    private readonly chatGateway: ChatGateway) {}
+    private readonly appGateway: AppGateway) {}
 
     @Post('add/:pseudo')
     async makeFriend(@User() userId: string, @Param('pseudo') pseudo: string) {
@@ -30,7 +30,7 @@ export class FriendController {
         }
         else
             await this.userService.createFriendship(userId, user2.id);
-        this.chatGateway.friendEvent(eventName, user2.id, pseudo);
+        this.appGateway.friendEvent(eventName, user2.id, pseudo);
     }
 
     @Delete('del/:pseudo')
