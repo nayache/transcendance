@@ -94,11 +94,16 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   async joinSocketToRooms(userId: string, socket: Socket) {
-    if (!await this.chatService.insideChannel(userId, 'General'))
+    let joinedGeneral: boolean = false;
+    if (!await this.chatService.insideChannel(userId, 'General')) {
       await this.chatService.joinChannel(userId, ChannelRole.USER, 'General');
+      joinedGeneral = true;
+    }
     let channels: string[] = await this.chatService.getChannelNamesByUserId(userId);
     console.log('=> channels rejoined', channels)
     socket.join(channels);
+    if (joinedGeneral)
+      await this.joinRoom(userId, 'General');
   }
 
   async joinRoom(userId: string, channel: string) {
