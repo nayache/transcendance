@@ -39,7 +39,7 @@ export const KickChannelMenu = ({ channelName, target, onKick, onKickFail }: Pro
 
 	return (
 		<React.Fragment>
-			<p className="leave-text">Are you sure you wanna kick {target.pseudo} from the <b>{channelName} channel</b> ?</p>
+			<p className="leave-text">Are you sure you wanna kick {target.pseudo} from the <b>{channelName}</b> channel ?</p>
 			<button type="button" onClick={click}
 			className="continuebtn-channelMenu">Yes</button>
 		</React.Fragment>

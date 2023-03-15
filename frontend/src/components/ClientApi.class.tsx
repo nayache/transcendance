@@ -232,6 +232,20 @@ class ClientApi {
 		const data: any = await ClientApi.fetchEndpoint(url, init)
 		return (data);
 	}
+	
+	public static async delete(url: string): Promise<any> {
+		
+		const method: string = 'DELETE'
+		let headers: HeadersInit = {};
+		
+		if (ClientApi.token)
+			headers['Authorization'] = `Bearer ${ClientApi.token}`
+		let init: RequestInit | undefined = {
+			method, headers
+		};
+		const data: any = await ClientApi.fetchEndpoint(url, init)
+		return (data);
+	}
 }
 
 export default ClientApi;

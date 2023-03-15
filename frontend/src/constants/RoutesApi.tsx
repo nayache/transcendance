@@ -30,6 +30,10 @@ export const API_VERIFY_TOKEN_ROUTE = API_BASE_AUTH + '/verify'
 export const API_PSEUDO_ROUTE = API_BASE_USER + '/pseudo'
 export const API_AVATAR_ROUTE = API_BASE_USER + '/avatar'
 
+export const API_USER_BLOCK = API_BASE_USER + '/block' /* + /:pseudo */
+export const API_USER_FRIENDS_LIST = API_BASE_USER + '/friends/list' /* + /:pseudo */
+export const API_USER_ADD_FRIEND = API_BASE_USER + '/friends/add' /* + /:pseudo */
+export const API_USER_DEL_FRIEND = API_BASE_USER + '/friends/del' /* + /:pseudo */
 export const API_USER_FRIEND_RELATION = API_BASE_USER + '/friends/relation' /* + /:pseudo */
 export const API_USER_ALL_NAMES = API_BASE_USER + '/all/names'
 export const API_USER_ALL = API_BASE_USER + '/all'

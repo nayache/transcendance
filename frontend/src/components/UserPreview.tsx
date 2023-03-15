@@ -1,28 +1,21 @@
 import React, { useEffect, useRef, useState } from "react"
 import '../styles/UserPreview.css'
 import { ChannelRole, Status } from "../constants/EMessage"
-import { API_CHAT_CHANNEL_BAN_ROUTE, API_CHAT_CHANNEL_KICK_ROUTE, API_CHAT_CHANNEL_MUTE_ROUTE, API_USER_FRIEND_RELATION, BASE_URL, MESSAGES_EP, PROFILE_EP } from "../constants/RoutesApi"
+import { API_CHAT_CHANNEL_BAN_ROUTE, API_CHAT_CHANNEL_KICK_ROUTE, API_CHAT_CHANNEL_MUTE_ROUTE, API_USER_ADD_FRIEND, API_USER_BLOCK, API_USER_DEL_FRIEND, API_USER_FRIEND_RELATION, BASE_URL, MESSAGES_EP, PROFILE_EP } from "../constants/RoutesApi"
 import { IChannel, IChannelUser } from "../interface/IChannel"
 import ClientApi from "./ClientApi.class"
 import ModalChannelMenu, { ModalChannelType } from "./ModalChannelMenu"
 import { AlertType } from "./ChatPage"
 import { Relation } from "../interface/IUser"
+import { delay } from "../functions/Debug_utils"
 
 interface Props {
 	chanUser: IChannelUser | undefined,
 	player: IChannelUser,
 	channel: IChannel,
-	onSeeProfile?: (pseudo?: string) => void,
-	onAddFriend?: (pseudo: string) => void,
-	onDelFriend?: (pseudo: string) => void,
-	onCancelReqFriend?: (pseudo: string) => void,
-	onInviteReq?: (pseudo: string) => void,
-	onSetAdmin?: (pseudo: string) => void,
-	onBlock?: (blockedPseudo: string) => void,
-	onMute?: (mutedPseudo?: string) => void,
-	onKick?: (kickedPseudo?: string) => void,
-	onBan?: (bannedPseudo?: string) => void,
-	onClose?: (e?: React.MouseEvent<HTMLSpanElement>) => void,
+	onClose?: () => void,
+	callback?: (props?: any) => void,
+	callbackFail?: (props?: any) => void,
 }
 
 
@@ -42,8 +35,8 @@ const userSitutation = {
 	isSelf: (chanUser: IChannelUser, target: IChannelUser): boolean => {
 		return (chanUser.pseudo === target.pseudo)
 	},
-	isFriend: (relation: UserRelation) => {
-		return (relation.relation === Relation.FRIEND)
+	friend: (relation: UserRelation) => {
+		return relation.relation
 	},
 	isBlocked: (relation: UserRelation) => {
 		return (relation.blocked)
@@ -90,14 +83,13 @@ interface ButtonProps {
 }
 
 /* to place juste before the element concerned */
-const UserPreview = ({ chanUser, player, channel, onSeeProfile,
-	onAddFriend, onBlock, onCancelReqFriend, onDelFriend, onSetAdmin, onInviteReq,
-	onMute, onBan, onKick, onClose }: Props) => {
+const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFail }: Props) => {
 
 	const { pseudo: playerName, status, role } = player
 	const [actionModal, setActionModal] = useState<ModalChannelType | null>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [buttons, setButtons] = useState<ButtonProps[]>([]);
+	const clicked = useRef<boolean>(false);
 
 
 
@@ -147,9 +139,12 @@ const UserPreview = ({ chanUser, player, channel, onSeeProfile,
 					{
 						content: "See the profile",
 						action: () => {
-							ClientApi.redirect = new URL(BASE_URL + PROFILE_EP + '/' + playerName)
-							if (onSeeProfile)
-								onSeeProfile(playerName)
+							if (!clicked.current) {
+								clicked.current = true
+								ClientApi.redirect = new URL(BASE_URL + PROFILE_EP + '/' + playerName)
+								if (callback)
+									callback(playerName)
+							}
 						},
 						role: undefined,
 						canPrint: true,
@@ -157,47 +152,112 @@ const UserPreview = ({ chanUser, player, channel, onSeeProfile,
 					{
 						content: "Invite",
 						action: () => {
-							if (onInviteReq)
-								onInviteReq(playerName)
+							if (!clicked.current) {
+								clicked.current = true
+								if (callback)
+									callback(playerName)
+							}
 						},
 						role: ChannelRole.USER,
 						canPrint: (chanUser !== undefined && !userSitutation.isSelf(chanUser, player)),
 					},
 					{
 						content: "Add to friends",
-						action: () => {
-							
+						action: async () => {
+							if (!clicked.current) {
+								clicked.current = true
+								try {
+									await ClientApi.post(API_USER_ADD_FRIEND + '/' + playerName,
+									JSON.stringify({
+										pseudo: playerName
+									}), 'application/json')
+									if (callback)
+										callback(playerName)
+								} catch (err) {
+									console.log("err = ", err)
+									if (callbackFail)
+										callbackFail(playerName)
+								}
+							}
 						},
 						role: ChannelRole.USER,
-						canPrint: (relation !== null && !userSitutation.isFriend(relation)),
+						canPrint: (relation !== null && userSitutation.friend(relation) === Relation.UNKNOWN),
+					},
+					{
+						content: "Cancel friend request",
+						action: async () => {
+							try {
+								await ClientApi.delete(API_USER_DEL_FRIEND + '/' + playerName)
+								if (callback)
+									callback(playerName)
+							} catch (err) {
+								console.log("err = ", err)
+								if (callbackFail)
+									callbackFail(playerName)
+							}
+						},
+						role: ChannelRole.USER,
+						canPrint: (relation !== null && userSitutation.friend(relation) === Relation.PENDING),
 					},
 					{
 						content: "Delete friend",
-						action: () => {
+						action: async () => {
+							if (!clicked.current) {
+								clicked.current = true
+								await ClientApi.delete(API_USER_ADD_FRIEND + '/' + playerName)
+								if (callback)
+									callback(playerName)
+							}
 						},
 						role: ChannelRole.USER,
-						canPrint: (relation !== null && userSitutation.isFriend(relation)),
+						canPrint: (relation !== null && userSitutation.friend(relation) === Relation.FRIEND),
 					},
 					{
 						content: "Send message",
 						action: () => {
-							ClientApi.redirect = new URL(BASE_URL + MESSAGES_EP + '/' + playerName)
+							if (!clicked.current) {
+								clicked.current = true
+								ClientApi.redirect = new URL(BASE_URL + MESSAGES_EP + '/' + playerName)
+								if (callback)
+									callback(playerName)
+							}
 						},
 						role: ChannelRole.USER,
 						canPrint: (chanUser !== undefined && !userSitutation.isSelf(chanUser, player)),
 					},
 					{
 						content: "Block",
-						action: () => {
-			
+						action: async () => {
+							if (!clicked.current) {
+								clicked.current = true
+								await ClientApi.post(API_USER_BLOCK + '/' + playerName)
+								if (callback)
+									callback(playerName)
+							}
 						},
 						role: ChannelRole.USER,
 						canPrint: (relation !== null && !userSitutation.isBlocked(relation)),
 					},
 					{
+						content: "Unblock",
+						action: async () => {
+							if (!clicked.current) {
+								clicked.current = true
+								await ClientApi.post(API_USER_BLOCK + '/' + playerName)
+								if (callback)
+									callback(playerName)
+							}
+						},
+						role: ChannelRole.USER,
+						canPrint: (relation !== null && userSitutation.isBlocked(relation)),
+					},
+					{
 						content: "Name admin",
 						action: () => {
-							setActionModal(ModalChannelType.SETADMIN)
+							if (!clicked.current) {
+								clicked.current = true
+								setActionModal(ModalChannelType.SETADMIN)
+							}
 						},
 						role: ChannelRole.ADMIN,
 						canPrint: (chanUser !== undefined && userSitutation.canNameAdmin(chanUser, player)),
@@ -205,7 +265,10 @@ const UserPreview = ({ chanUser, player, channel, onSeeProfile,
 					{
 						content: "Mute",
 						action: async () => {
-							setActionModal(ModalChannelType.MUTEUSER)
+							if (!clicked.current) {
+								clicked.current = true
+								setActionModal(ModalChannelType.MUTEUSER)
+							}
 						},
 						role: ChannelRole.ADMIN,
 						canPrint: (chanUser !== undefined && userSitutation.canMute(chanUser, player)),
@@ -213,7 +276,10 @@ const UserPreview = ({ chanUser, player, channel, onSeeProfile,
 					{
 						content: "Kick",
 						action: async () => {
-							setActionModal(ModalChannelType.KICKUSER)
+							if (!clicked.current) {
+								clicked.current = true
+								setActionModal(ModalChannelType.KICKUSER)
+							}
 						},
 						role: ChannelRole.ADMIN,
 						canPrint: (chanUser !== undefined && userSitutation.canKick(chanUser, player)),
@@ -221,7 +287,10 @@ const UserPreview = ({ chanUser, player, channel, onSeeProfile,
 					{
 						content: "Ban",
 						action: async () => {
-							setActionModal(ModalChannelType.BANUSER)
+							if (!clicked.current) {
+								clicked.current = true
+								setActionModal(ModalChannelType.BANUSER)
+							}
 						},
 						role: ChannelRole.ADMIN,
 						canPrint: (chanUser !== undefined && userSitutation.canBan(chanUser, player)),
@@ -249,8 +318,16 @@ const UserPreview = ({ chanUser, player, channel, onSeeProfile,
 				<span onClick={onClose} className="close-preview">&times;</span>
 			</div>
 			{actionModal && <ModalChannelMenu active={actionModal ? true : false} type={actionModal}
-			pointedChannelName={channel.name} target={player} callback={() => setActionModal(null)}
-			callbackFail={() => setActionModal(null)} />
+			pointedChannelName={channel.name} target={player} callback={() => {
+				setActionModal(null)
+				if (callback)
+					callback()
+			}}
+			callbackFail={() => {
+				setActionModal(null)
+				if (callbackFail)
+					callbackFail()
+			}} />
 			}
 		</div>
 	)

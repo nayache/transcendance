@@ -167,13 +167,13 @@ const DM = () => {
 					
 					if (pseudoParam) {
 						console.log("realDiscussions = ", realDiscussions)
-						// const {avatar} = await ClientApi.get(API_AVATAR_ROUTE)
-						const discussions: Discussion[] = realDiscussions.reverse();
+						const {avatar: avatarParam} = await ClientApi.get(API_AVATAR_ROUTE + '/' + pseudoParam)
+						const discussions: Discussion[] = realDiscussions.map(discussion => discussion).reverse()
 						console.log("discussions = ", discussions)
 						if (discussions.findIndex(discussion => discussion.pseudo === pseudoParam) === -1) {
 							discussions.unshift({
 								pseudo: pseudoParam,
-								avatar,
+								avatar: avatarParam,
 								unread: 0
 							})
 						} else {

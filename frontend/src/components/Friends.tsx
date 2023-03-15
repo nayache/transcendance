@@ -1,72 +1,103 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import Navbar from "./Navbar"
 import "../styles/Friends.css"
-import Logo1 from "../img/logo1.png"
-import Logo2 from "../img/logo2.png"
-import Logo3 from "../img/logo3.png"
-import Logo4 from "../img/logo4.png"
+import "../styles/Pendings.css"
+import DefaultImg from "../img/avatar2.jpeg"
+import { Relation } from "../interface/IUser"
+import { Status } from "../constants/EMessage"
+import ClientApi from "./ClientApi.class"
+import { API_USER_FRIENDS_LIST } from "../constants/RoutesApi"
 
 interface Friend {
     pseudo: string,
-    status: string,
-	avatar:  JSX.Element,
+    status: Status,
+	avatar?: string,
+}
+
+interface Pending {
+    pseudo: string,
+	avatar?: string,
 }
 
 const Friends = () => {
 	
-	const friends: Friend[] = [
-		{
-			pseudo: "Guillaumedu77",
-			status: "En ligne",
-			avatar: <img className="Avatarbg" src={Logo1}/>,
-		},
-		{
-			pseudo: "Leodu69",
-			status: "Hors ligne",
-			avatar: <img className="Avatarbg" src={Logo2}/>,
-		},
-		{
-			pseudo: "Manondu62",
-			status: "Hors ligne",
-			avatar: <img className="Avatarbg" src={Logo4}/>,
-		},
-		{
-			pseudo: "AlanTiaCapté",
-			status: "En pleine partie",
-			avatar: <img className="Avatarbg" src={Logo3}/>,
-		},
-		]
 
-	const printFriends = () => {
-		const res: JSX.Element[] = friends.map((friend: Friend) => {
-		let colorcircle;
-		if (friend.status == "En ligne")
-			colorcircle = "circle online"
-		else if (friend.status == "Hors ligne")
-			colorcircle = " circle offline"
-		else if (friend.status == "En pleine partie")
-			colorcircle = "circle  ingame"
+
+	const [friends, setFriends] = useState<Friend[]>([])
+	const [pendings, setPendings] = useState<Pending[]>([])
+
+
+
+
+	const printFriends = (friends: Friend[]) => {
+		const circleStatus = new Map<Status, string>([
+			[Status.OFFLINE, "offline"],
+			[Status.INGAME, "ingame"],
+			[Status.ONLINE, "online"],
+		])
+	
+		const res: JSX.Element[] = friends.map((friend: Friend, i) => {
 
 			return (
-				<div className="friendsTab">
+				<div key={i} className="friendsTab">
 					<button>
-						{friend.avatar}
+						<img className="Avatarbg" src={friend.avatar ? friend.avatar : DefaultImg} />
 						{friend.pseudo}
-						<div className={colorcircle}/>
+						<div className={`circle ${circleStatus.get(friend.status)}`}/>
 					</button>
-
 				</div>
 			)
 		})
-			return res;
-		}
+		return res;
+	}
+
+	const printPendings = (pendings: Pending[]) => {
+	
+		const res: JSX.Element[] = pendings.map((pending: Pending, i) => {
+
+			return (
+				<div key={i} className="pendingsTab">
+					<button>
+						<img className="Avatarbg" src={pending.avatar ? pending.avatar : DefaultImg} />
+						{pending.pseudo}
+						<div>confirmer ou refuser</div>
+					</button>
+				</div>
+			)
+		})
+		return res;
+	}
+
+
+
+	useEffect(() => {
+		(async () => {
+			try {
+				const data: { friends: Friend[], pendings: Pending[] } =
+					await ClientApi.get(API_USER_FRIENDS_LIST)
+				console.log("data = ", data)
+				setFriends(data.friends)
+				setPendings(data.pendings)
+			} catch (err) {
+				console.log("err = ", err)
+			}
+		})()
+	}, [])
+
+
+
 
 	return (
 		<div>
 			<Navbar/>
 			<div className="friends">
-				<h1>Friends</h1>
-				{printFriends()}
+				<div className="friends-container">
+					<h1>Friends</h1>
+					{printFriends(friends)}
+				</div>
+				<div className="pendings-container">
+					{printPendings(pendings)}
+				</div>
 			</div>
 		</div>
 	)

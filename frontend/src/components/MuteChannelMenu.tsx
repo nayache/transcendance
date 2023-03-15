@@ -75,9 +75,14 @@ export const MuteChannelMenu = ({ channelName, target, onMute, onMuteFail }: Pro
 	return (
 		<React.Fragment>
 			<form onSubmit={handleSubmit}>
-				<p className="leave-text">Are you sure you wanna mute {target.pseudo} in the {channelName} channel ?</p>
+				<p className="leave-text">Are you sure you wanna mute {target.pseudo} in the <b>{channelName}</b> channel ?</p>
 				<div className="muteChannel-input-container">
-					<p className="">Yes, I wanna mute {target.pseudo} for <span contentEditable={true} role="textbox" ref={spanInuptRef}
+					<p className="">Yes, I wanna mute {target.pseudo} for <span contentEditable={true} onKeyDown={(e) => {
+						if (!(e.key >= '0' && e.key <= '9'
+						|| e.key === 'Backspace' || e.key === 'ArrowLeft' || e.key === 'ArrowRight'
+						|| e.key === 'ArrowUp' || e.key === 'ArrowDown'))
+							e.preventDefault()
+					}} role="textbox" ref={spanInuptRef}
 					/> sec</p>
 				</div>
 				<button type="submit"

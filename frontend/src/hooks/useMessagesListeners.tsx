@@ -6,6 +6,7 @@ import { API_CHAT_CHANNEL_ROUTE } from "../constants/RoutesApi"
 import { addMessageBlock, addMessageBlockUserBan, addMessageBlockUserGetAdmin, addMessageBlockUserJoin, addMessageBlockUserKick, addMessageBlockUserLeave, addMessageBlockUserMute, addMessageBlockUserMuted, addMessageBlockUserSetAdmin, addMessageBlockUserSetAdminInfo, resetMessagesBlock } from "../functions/Chat_utils_messages"
 import { IChannel, IChannelEvJoin, IChannelEvPunish, IChannelEvLeave, IChannelUser } from "../interface/IChannel"
 import { IChannelMessage } from "../interface/IChannelMessage"
+import { Relation } from "../interface/IUser"
 import { useJoinRoomUpdater } from "./useJoinRoomUpdater"
 import { useLeaveRoomUpdater } from "./useLeaveRoomUpdater"
 import { useMuteUserUpdater } from "./useMuteUserUpdater"
@@ -171,6 +172,8 @@ export const useMessagesListeners = (
 					console.log("psuudo       =    ", chanUser.pseudo);
 					console.log("message.channel = ", message.channel);
 					console.log("channels[currentChannelId].name = ", channels[currentChannelId].name);
+					// const { relation, blocked }: { relation: Relation, blocked: boolean } =
+					// 	await ClientApi.get(API_RELAT)
 					if (message.channel === channels[currentChannelId].name)
 					setMessages(oldmessages => [...oldmessages,
 						addMessageBlock(message)
