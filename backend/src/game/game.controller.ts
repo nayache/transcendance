@@ -42,9 +42,9 @@ export class GameController {
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.REJECTED, 'user is already looking for a match');
         if (this.gameService.isInGame(userId))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.REJECTED, 'user is already ingame');
-        const { id, player1, player2 } = await this.gameService.searchOpponent(userId, difficulty);
-        if (id)
-            this.appGateway.matchEvent(id, player1, player2, difficulty);
+        const game: GameEntity = await this.gameService.searchOpponent(userId, difficulty);
+        if (game)
+            this.appGateway.matchEvent(game);
         return {}
     }
 

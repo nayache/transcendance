@@ -20,10 +20,25 @@ export class GameEntity {
     player2: UserEntity;
     
     @Column()
+    player1Id: string;
+    
+    @Column()
+    player2Id: string;
+
+    @Column()
     score1: number = 0;
     
     @Column()
     score2: number = 0;
+
+    @Column({default: 0})
+    xp1: number = 0;
+    
+    @Column({default: 0})
+    xp2: number = 0;
+
+    @Column({type: 'bool' , default: false})
+    forfeit: boolean = false;
 
     @CreateDateColumn()
     created_at: Date;
@@ -36,5 +51,6 @@ export class GameEntity {
         this.player2 = player2;
         this.Difficulty = difficulty;
         this.score1, this.score2 = 0;
+        this.xp1, this.xp2 = 0;
     }
 }

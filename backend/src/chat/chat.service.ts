@@ -15,7 +15,6 @@ import { isAlpha } from 'class-validator';
 import { Mute } from './entity/mute.entity';
 import { Error } from 'src/exceptions/error.interface';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
-import { Avatar } from 'src/entity/avatar.entity';
 import { AvatarService } from 'src/user/avatar.service';
 import { ErrorException } from 'src/exceptions/error.exception';
 
@@ -132,8 +131,7 @@ export class ChatService {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
 		try {
         await this.channelRepository.update(channel.id, {password: password});
-		} catch (e)
-		{
+		} catch (e) {
 			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
 		}
     }

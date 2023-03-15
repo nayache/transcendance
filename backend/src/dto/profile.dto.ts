@@ -1,3 +1,4 @@
+import { GameDto } from "src/chat/app.gateway";
 import { Relation } from "src/enums/relation.enum";
 
 export class ProfileDto {
@@ -5,9 +6,13 @@ export class ProfileDto {
     pseudo: string;
     friends?: number;
     level: number;
+    xp: number;
+    requiredXp: number;
+    percentageXp: number;
+    achievements: string[];
     wins: number;
     looses: number;
-    history: string = null;
+    history: GameDto[];
     relation?: Relation;
     blocked?: boolean;
 }
