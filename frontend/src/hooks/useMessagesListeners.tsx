@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { Socket } from "socket.io-client"
 import { AlertType } from "../components/ChatPage"
 import ClientApi from "../components/ClientApi.class"
-import { API_CHAT_CHANNEL_ROUTE, API_USER_FRIEND_RELATION } from "../constants/RoutesApi"
+import { API_CHAT_CHANNEL_ROUTE, API_USER_BLOCK, API_USER_FRIEND_RELATION } from "../constants/RoutesApi"
 import { addMessageBlock, addMessageBlockUserBan, addMessageBlockUserGetAdmin, addMessageBlockUserJoin, addMessageBlockUserKick, addMessageBlockUserLeave, addMessageBlockUserMute, addMessageBlockUserMuted, addMessageBlockUserSetAdmin, addMessageBlockUserSetAdminInfo, resetMessagesBlock } from "../functions/Chat_utils_messages"
 import { IChannel, IChannelEvJoin, IChannelEvPunish, IChannelEvLeave, IChannelUser } from "../interface/IChannel"
 import { IChannelMessage } from "../interface/IChannelMessage"
@@ -150,13 +150,12 @@ export const useMessagesListeners = (
 				if (!(currentChannelId <= -1 || currentChannelId >= channels.length)) {
 					const { channel }: { channel: IChannel } = await ClientApi
 						.get(API_CHAT_CHANNEL_ROUTE + '/' + channels[currentChannelId].name)
-					channel.messages = channel.messages.filter(message => {
-						if (chanUser.pseudo !== message.author) {
-							blocked = data.blocked
-						}
-						return !blocked
-					})
+					const { blockeds }: { blockeds: string[] } = await ClientApi
+						.get(API_USER_BLOCK)
+					channel.messages = channel.messages.filter(message => blockeds.every(blocked => 
+						blocked !== message.author))
 					noMessages.current = 0
+					setBlockeds(blockeds)
 					setMessages(resetMessagesBlock(channel.messages))
 				}
 			} catch (err) {
@@ -173,19 +172,15 @@ export const useMessagesListeners = (
 		{
 			console.log("gonna bind messageRoom")
 			console.log("chanUser.pseudo avant bind = ", chanUser.pseudo)
-			socket?.on("messageRoom", async (message: IChannelMessage) => {
+			socket?.on('messageRoom', async (message: IChannelMessage) => {
 				try {
 					rpseudoSender.current = message.author;
 					console.log("psuudo       =    ", chanUser.pseudo);
 					console.log("message.channel = ", message.channel);
 					console.log("channels[currentChannelId].name = ", channels[currentChannelId].name);
-					let blocked: boolean = false;
-					if (chanUser.pseudo !== message.author) {
-						const data: { relation: Relation, blocked: boolean } =
-							await ClientApi.get(API_USER_FRIEND_RELATION + '/' + message.author)
-						blocked = data.blocked
-					}
-					if (!blocked) {
+					const { blockeds }: { blockeds: string[] } = await ClientApi
+						.get(API_USER_BLOCK)
+					if (blockeds.every(blocked => blocked !== message.author)) {
 						if (message.channel === channels[currentChannelId].name)
 							setMessages(oldmessages => [...oldmessages,
 								addMessageBlock(message)
