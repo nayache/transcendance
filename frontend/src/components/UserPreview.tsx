@@ -243,7 +243,7 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 						action: async () => {
 							if (!clicked.current) {
 								clicked.current = true
-								await ClientApi.post(API_USER_BLOCK + '/' + playerName)
+								await ClientApi.delete(API_USER_BLOCK + '/' + playerName)
 								if (callback)
 									callback(playerName)
 							}
