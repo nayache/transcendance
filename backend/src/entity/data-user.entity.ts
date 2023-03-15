@@ -5,20 +5,27 @@ import { UserEntity } from "./user.entity";
 export class DataUserEntity {
     constructor(user: UserEntity) {
         this.user = user;
+        this.achievements = [];
     }
 
     @PrimaryGeneratedColumn("uuid")
-    id: string
+    id: string;
 
     @Column({default: 1})
-    level: number
+    level: number;
 
     @Column({default: 0})
-    win: number
+    win: number;
     
     @Column({default: 0})
-    loose: number
+    loose: number;
+
+    @Column({default: 0})
+    xp: number;
+
+    @Column({type: 'text', array: true})
+    achievements: string[];
 
     @ManyToOne(() => UserEntity, (user) => user, {onDelete: 'CASCADE'})
-    user: UserEntity
+    user: UserEntity;
 }

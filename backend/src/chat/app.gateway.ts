@@ -12,7 +12,20 @@ import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { ChannelUserDto } from './chat.controller';
 import { GameService } from 'src/game/game.service';
 import { Difficulty, Match } from 'src/game/game.controller';
+import { GameEntity } from 'src/game/game.entity';
 
+
+export class GameDto {
+  id: string;
+  difficulty: Difficulty;
+  player1: string;
+  player2: string;
+  score1: number;
+  score2: number;
+  xp1: number;
+  xp2: number;
+  date: Date;
+}
 //@UseGuards(JwtGuard)
 @WebSocketGateway({ cors: {origin: '*'} })
 export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -176,6 +189,12 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     return (this.inGamePage.has(userId));
   }
 
+  levelUp(userId: string, lvl: number) {
+    this.users.get(userId).forEach((socket) => {
+      this.server.to(socket.id).emit('levelUp', lvl);
+    });
+  }
+
   async alertOpponent(userId: string) {
     const opponentId: string = await this.gameService.getOpponent(userId);
     if (opponentId && this.inGamePage.has(opponentId)) {
@@ -184,31 +203,49 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     }
   }
 
-  async matchEvent(id: string, userId1: string, userId2: string, difficulty: Difficulty) {
-    if (!this.users.get(userId1) || !this.users.get(userId2))
+  async matchEvent(payload: GameEntity) {
+      console.log(payload.created_at.toLocaleString('fr-FR'))
+    if (!this.users.get(payload.player1Id) || !this.users.get(payload.player2Id)) {
       return;
-
-    const player1: string = await this.userService.getPseudoById(userId1);
-    const player2: string = await this.userService.getPseudoById(userId2);
-    //VERIF PSEUDO?
-    this.users.get(userId1).forEach((socket) => {
-      this.server.to(socket.id).emit('matchEvent', {id, player1, player2, difficulty});
+    }
+    const game: GameDto = this.gameService.gameToDto(payload);
+    this.users.get(payload.player1Id).forEach((socket) => {
+      this.server.to(socket.id).emit('matchEvent', game);
     });
-    this.users.get(userId2).forEach((socket) => {
-      this.server.to(socket.id).emit('matchEvent', {id, player1, player2, difficulty});
+    this.users.get(payload.player2Id).forEach((socket) => {
+      this.server.to(socket.id).emit('matchEvent', game);
     });
-    this.logger.log(`Match! beetwen (${player1} vs ${player2}) in [${difficulty}] mode`, 'GAME')
+    this.logger.log(`Match! beetwen (${game.player1} vs ${game.player2}) in [${game.difficulty}] mode`, 'GAME')
   }
 
   async cleanGame(userId: string) {
-    this.inGamePage.delete(userId); // supprimer le socket (gamePage)
     //console.log('delete ingame socket !!!!!!!!!')
     if (!this.gameService.isInGame(userId)) // si pas en partie supprimer de la liste d'attente
       await this.gameService.removePlayerFromMatchmaking(userId);
     else { // sinon informer l'adversaire de la deconnection et supprimer la partie du service
       this.alertOpponent(userId);
-      this.gameService.removeGame(userId);
+      const game: GameEntity = await this.gameService.getLastGame(userId);
+      if (game) {
+        this.gameService.removeMatch(userId);
+        await this.gameService.setForfeit(game);
+        await this.gameService.updateForfeitScore(game, userId);
+        await this.gameService.updateResults(game.id, userId);
+        await this.endOfGame(game.id);
+      }
     }
+  }
+
+  async endOfGame(gameId: string) {
+    const payload: GameEntity = await this.gameService.findGameById(gameId);
+    if (!payload) /////// a mieux gerer
+      return;
+    const socket1: Socket = this.inGamePage.get(payload.player1.id);
+    const socket2: Socket = this.inGamePage.get(payload.player2.id);
+    const game: GameDto = this.gameService.gameToDto(payload);
+    if (socket1)
+      this.server.to(socket1.id).emit('endOfGame', game);
+    if (socket2)
+      this.server.to(socket2.id).emit('endOfGame', game);
   }
 
   async handleDisconnect(socket: Socket) {
@@ -216,8 +253,10 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     //CAS DERREUR POSSIBLE ????
     if (user) {
       if (this.users.get(user.id).has(user.socket)) {
-        if (this.inGamePage.has(user.id))
+        if (this.inGamePage.has(user.id)) {
           await this.cleanGame(user.id)
+          this.inGamePage.delete(user.id); // supprimer le socket (gamePage)
+        }
         this.users.get(user.id).delete(user.socket); // supprimer le socket associer
       }
     }

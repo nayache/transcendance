@@ -1,5 +1,6 @@
 import { forwardRef, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { GameDto } from 'src/chat/app.gateway';
 import { UserEntity } from 'src/entity/user.entity';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { ErrorException } from 'src/exceptions/error.exception';
@@ -656,7 +657,7 @@ export class GameService {
     }
 
     async removePlayerFromMatchmaking(userId: string) {
-        let difficulty: Difficulty;
+        let difficulty: Difficulty = null;
         if (this.matchmaking.get(Difficulty.EASY).delete(userId))
             difficulty = Difficulty.EASY
         if (this.matchmaking.get(Difficulty.MEDIUM).delete(userId))
@@ -665,10 +666,11 @@ export class GameService {
             difficulty = Difficulty.HARD
         const pseudo: string = await this.userService.getPseudoById(userId);
         //////
-        this.logger.warn(`Player is removed to matchmaking in [${difficulty}] mode (${pseudo})`)
+        if (difficulty)
+            this.logger.warn(`Player is removed to matchmaking in [${difficulty}] mode (${pseudo})`)
     }
 
-    async removeGame(userId: string) {
+    async removeMatch(userId: string) {
         console.log('matchs:', this.matchs);
         for (const players of this.matchs.values()) {
             if (players[0] === userId || players[1] === userId) {
@@ -680,6 +682,31 @@ export class GameService {
                 return
             }
         }
+    }
+
+    gameToDto(game: GameEntity): GameDto {
+        const id: string = game.id;
+        const difficulty: Difficulty = game.Difficulty;
+        const player1: string = game.player1.pseudo;
+        const player2: string = game.player2.pseudo;
+        const score1: number = game.score1;
+        const score2: number = game.score2;
+        const xp1: number = game.xp1;
+        const xp2: number = game.xp2;
+        const date: Date = game.created_at;
+        return { id, difficulty, player1, player2, score1, score2, xp1, xp2, date };
+    }
+
+    async getLastGame(userId: string): Promise<GameEntity> {
+        if (!this.isInGame(userId))
+            return null;
+        const opponentId: string = this.getOpponent(userId);
+        const game: GameEntity = await this.gameRepository.findOne({where: [
+                {player1Id: userId, player2Id: opponentId},
+                {player1Id: opponentId, player2Id: userId}
+            ], order: { created_at: "DESC" }
+        });
+        return game;
     }
 
     isInGame(userId: string): boolean {
@@ -706,16 +733,16 @@ export class GameService {
         return null;
     }
 
-    async searchOpponent(userId: string, difficulty: Difficulty): Promise<any> {
+    async searchOpponent(userId: string, difficulty: Difficulty): Promise<GameEntity> {
         const opponentId: string = this.findOpponent(userId, difficulty);
         if (!opponentId)
             this.addPlayer(userId, difficulty);
         else {
             const game: GameEntity = await this.createGame(userId, opponentId, difficulty);
             console.log(this.matchmaking) ////log a SUPP
-            return { id: game.id, player1: userId, player2: opponentId };
+            return game;
         }
-        return { id: null };
+        return null;
     }
 
     findOpponent(userId: string, difficulty: Difficulty): string {
@@ -729,4 +756,110 @@ export class GameService {
         }
         return null;
     }
+
+    calculXp(winner: boolean, difficulty: Difficulty, scoredGoal: number, concededGoal: number): number {
+        console.log(difficulty, scoredGoal, concededGoal)
+        const finishGameXp: number = 50;
+        const difficultyBonus: number = (difficulty === Difficulty.HARD) ? 50 : ((difficulty === Difficulty.MEDIUM) ? 30 : 10);
+        console.log('dbonus:', scoredGoal, difficultyBonus);
+        const goalAverage: number = (scoredGoal * difficultyBonus) - (concededGoal * 5);
+        console.log('GA:', goalAverage);
+        const totalXp: number = (finishGameXp + goalAverage);
+        return (winner) ? (totalXp * 2) : totalXp;
+    }
+
+    async updateResults(gameId: string, disconnected: string): Promise<any> {
+        const game: GameEntity = await this.findGameById(gameId);
+        if (!game)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.GAME, TypeErr.NOT_FOUND);
+        const looser: string = (disconnected) ? disconnected : ((game.score1 < game.score2) ? game.player1Id : game.player2Id);
+        const winner: string = (looser === game.player1Id) ? game.player2Id : game.player1Id;
+        const scoreMax: number = (game.score1 > game.score2) ? game.score1 : game.score2;
+        const scoreMin: number = (scoreMax === game.score1) ? game.score2 : game.score1;
+        const looserXp: number = (disconnected) ? 0 : this.calculXp(false, game.Difficulty, scoreMin, scoreMax);
+        const winnerXp: number = (game.forfeit) ? this.calculXp(true, game.Difficulty, 1, 0) : this.calculXp(true, game.Difficulty, scoreMax, scoreMin);
+        await this.updateGameXp(game, winner, winnerXp, looserXp);
+        await this.userService.updateXp(winner, winnerXp);
+        if (!disconnected)
+            await this.userService.updateXp(looser, looserXp);
+        await this.userService.updateResults(winner, true);
+        await this.userService.updateResults(looser, false);
+        if (!disconnected) {
+            await this.userService.updateAchievements(winner, true, !!scoreMin);
+            await this.userService.updateAchievements(looser, false, false);
+        }
+        return { winner, looser, winnerXp, looserXp };
+    }
+
+    ///===============GAME DATABASES-UPDATES=======================
+    ///==================================================
+
+    async findGameById(id: string): Promise<GameEntity> {
+        return this.gameRepository.findOneBy({id: id});
+    }
+
+    async updateGameXp(game: GameEntity, winner: string, winnerXp: number, looserXp: number) {
+        try {
+            if (game.player1Id === winner) {
+                await this.gameRepository.update(game.id, { xp1: winnerXp });
+                await this.gameRepository.update(game.id, { xp2: looserXp });
+            } else {
+                await this.gameRepository.update(game.id, { xp1: looserXp });
+                await this.gameRepository.update(game.id, { xp2: winnerXp });
+            }
+        } catch (e) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+        }
+    }
+
+    async updateForfeitScore(game: GameEntity, disconnected: string) {
+        try {
+            if (game.player1Id === disconnected) {
+                await this.gameRepository.update(game.id, { score1: 0 });
+                await this.gameRepository.update(game.id, { score2: 42 });
+            }
+            else {
+                await this.gameRepository.update(game.id, { score1: 42 });
+                await this.gameRepository.update(game.id, { score2: 0 });
+            }
+        } catch (e) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+        }
+    }
+
+    async scoreGoal(id: string, playerId: string) {
+        const game: GameEntity = await this.findGameById(id);
+        if (!game)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.DATABASE, TypeErr.NOT_FOUND);
+        try {
+            if (game.player1Id === playerId)
+                await this.gameRepository.update(id, { score1: game.score1 + 1 })
+            else
+                await this.gameRepository.update(id, { score2: game.score2 + 1 })
+        } catch (e) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+        }
+    }
+
+    async setForfeit(game: GameEntity) {
+        try {
+            await this.gameRepository.update(game.id, { forfeit: true });
+        } catch (e) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+        }
+    }
+
+    async getHistory(userId: string): Promise<GameDto[]> {
+        try {
+            const games: GameEntity[] = await this.gameRepository.find({where: [
+                {player1Id: userId}, {player2Id: userId}
+            ]});
+            return games.map((game) => this.gameToDto(game));
+        } catch(e) {
+            return null;
+        }
+    }
+
+    ///==================================================
+    ///==================================================
 }
