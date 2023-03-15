@@ -2,7 +2,7 @@ import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { ChannelRole } from '../enums/channel-role.enum';
 import { ChannelDto, ChannelMessageDto, channelPreviewDto, ChannelUserDto, Discussion, prvMsgDto } from './chat.controller';
-import { ChatGateway } from './chat.gateway';
+import { AppGateway } from './app.gateway';
 import { Status } from '../enums/status.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChannelEntity } from './entity/channel.entity';
@@ -30,7 +30,7 @@ export class ChatService {
         @InjectRepository(MessageEntity) private messageRepository: Repository<MessageEntity>,
         @InjectRepository(PrivateMessageEntity) private privateMsgRepository: Repository<PrivateMessageEntity>,
         @InjectRepository(Mute) private muteRepository: Repository<Mute>,
-        @Inject(forwardRef(() => ChatGateway))private readonly chatGateway: ChatGateway) {
+        @Inject(forwardRef(() => AppGateway))private readonly appGateway: AppGateway) {
     }
 
     private color: string[] = ["blue", "red", "brown", "black", "blueviolet",
@@ -252,7 +252,7 @@ export class ChatService {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
         const member: Member = await this.getMemberByUserId(userId, channel.id);
         const pseudo: string = await this.userService.getPseudoById(member.userId);
-        const status: Status = this.chatGateway.getStatus(userId);
+        const status: Status = this.appGateway.getStatus(userId);
         const unmuteDate: Date = member.unmuteDate;
         const user: ChannelUserDto = { pseudo: pseudo, color: member.color, role: member.role, status, unmuteDate };
         return user;
@@ -264,7 +264,7 @@ export class ChatService {
             const messagesChannel: MessageEntity[] = await this.getMessagesByChannel(channel.id);
             const messages: ChannelMessageDto[] = messagesChannel.map((msg) => this.messageToDto(msg));
             const users: ChannelUserDto[] = await Promise.all(members.map(async (member) => {
-                const status: Status = this.chatGateway.getStatus(member.userId);
+                const status: Status = this.appGateway.getStatus(member.userId);
                 const isMuted: boolean = await this.isMuted(member.channel.name, member.user.id);
                 const unmuteDate: Date = (isMuted) ? member.unmuteDate : null;
                 return {pseudo: member.user.pseudo, color: member.color, role: member.role, status, unmuteDate};
@@ -406,7 +406,7 @@ export class ChatService {
 
     async getDiscussions(userId: string): Promise<Discussion[]> {
         const messages: PrivateMessageEntity[] = await this.findPrivateMsg(userId);
-        console.log(messages);
+        //console.log(messages);
         let users: string[] = [];
         messages.map((msg) => {
             if (!users.find((name) => (name) === msg.authorId || (name) === msg.targetId))

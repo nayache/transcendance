@@ -19,6 +19,8 @@ import { Member } from './chat/entity/member.entity';
 import { MessageEntity } from './chat/entity/message.entity';
 import { PrivateMessageEntity } from './chat/entity/privateMessage.entity';
 import { Mute } from './chat/entity/mute.entity';
+import { GameModule } from './game/game.module';
+import { GameEntity } from './game/game.entity';
 
 @Module({
   imports: [AuthModule, UserModule, ChatModule, ConfigModule, ConfigModule.forRoot(),
@@ -30,9 +32,10 @@ import { Mute } from './chat/entity/mute.entity';
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     entities: [UserEntity, FriendEntity, DataUserEntity, Avatar, BlockedEntity, ChannelEntity, Member,
-      MessageEntity, PrivateMessageEntity, Mute],
+      MessageEntity, PrivateMessageEntity, Mute, GameEntity],
     synchronize: true,
   }),
+  GameModule,
   ],
   controllers: [AppController, FriendController, BlockedController],
   providers: [AppService],

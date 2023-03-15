@@ -12,7 +12,7 @@ import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { userDto } from 'src/dto/user.dto';
 import { Relation } from '../enums/relation.enum';
 import { friendDto } from './user.controller';
-import { ChatGateway } from 'src/chat/chat.gateway';
+import { AppGateway } from 'src/chat/app.gateway';
 import { Status } from 'src/enums/status.enum';
 import { ProfileDto } from 'src/dto/profile.dto';
 
@@ -27,7 +27,7 @@ export class UserService {
     @InjectRepository(FriendEntity) private friendRepository: Repository<FriendEntity>,
     @InjectRepository(DataUserEntity) private dataUserRepository: Repository<DataUserEntity>,
 	@InjectRepository(BlockedEntity) private blockedRepository: Repository<BlockedEntity>,
-    @Inject(forwardRef(() => ChatGateway)) private readonly chatGateway: ChatGateway,
+    @Inject(forwardRef(() => AppGateway)) private readonly appGateway: AppGateway,
 	private readonly avatarService: AvatarService) {}
     
     async saveUser(login: string) {
@@ -302,7 +302,7 @@ export class UserService {
             if (!user)
                 throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found')  
 			const avatar: string = await this.getAvatarfile(user.id);
-            const status: Status = await this.chatGateway.getStatus(user.id);
+            const status: Status = await this.appGateway.getStatus(user.id);
             return { pseudo: user.pseudo, avatar: avatar, status };
         }))
         return friendListDto;

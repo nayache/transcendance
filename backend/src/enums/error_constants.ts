@@ -11,7 +11,8 @@ export enum AboutErr {
 	MESSAGE,
 	REQUEST,
 	TWOFA,
-	DATABASE
+	DATABASE,
+	GAME
 }
 
 export enum TypeErr {
