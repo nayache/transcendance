@@ -20,7 +20,8 @@ export class BlockedController {
                 if (await this.userService.blockExist(userId, target.id))
                         throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'This user is already blocked');
                 await this.userService.create_block(userId, target.id);
-				return {};
+                const blockeds: string[] = await this.userService.getBlock(userId);
+		return {blockeds};
         }
 
         @Delete('/:pseudo')
@@ -32,12 +33,14 @@ export class BlockedController {
                 if (!await this.userService.blockandauthorExist(userId, target.id))
                         throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.NOT_FOUND, 'Blockship does not exist or User is not the creator of Block');
                 await this.userService.deleteBlock(userId, target.id);
-				return {};
+                const blockeds: string[] = await this.userService.getBlock(userId);
+		return {blockeds};
         }
 
         @Get('')
         async getBlocked(@User() userId: string)
         {
-                return this.userService.getBlock(userId);
+                const blockeds: string[] = await this.userService.getBlock(userId);
+                return {blockeds};
         }
 }

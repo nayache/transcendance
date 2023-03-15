@@ -141,14 +141,13 @@ export class UserController {
 	): Promise <{avatar: string}> {
 		console.log(pseudo)
 		if (!pseudo)
-			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.EMPTY, 'Empty pseudo');
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'Empty pseudo');
 		const user = await this.userService.findByPseudo(pseudo);
 		if (!user)
-			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.NOT_FOUND, 'pseudo does not exist');
-		const avatar = await this.userService.getAvatar(user.id);
-		if (avatar)
-			return({avatar: this.avatarService.toStreamableFile(avatar)});
-		return({avatar: null});
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.NOT_FOUND, 'pseudo does not exist');
+		const avatarObject: Avatar = await this.userService.getAvatar(user.id);
+		const avatar: string = (avatarObject) ? this.avatarService.toStreamableFile(avatarObject) : null;
+		return { avatar } ;
 	}
 	
 	@Post('')
