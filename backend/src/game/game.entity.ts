@@ -8,6 +8,9 @@ export class GameEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
+    @Column({type: 'bool'})
+    ranked: boolean;
+    
     @Column()
     Difficulty: Difficulty;
 
@@ -46,11 +49,12 @@ export class GameEntity {
     @UpdateDateColumn()
     updated_at: Date;
 
-    constructor(player1: UserEntity, player2: UserEntity, difficulty: Difficulty) {
+    constructor(player1: UserEntity, player2: UserEntity, difficulty: Difficulty, ranked: boolean) {
         this.player1 = player1;
         this.player2 = player2;
         this.Difficulty = difficulty;
         this.score1, this.score2 = 0;
         this.xp1, this.xp2 = 0;
+        this.ranked = ranked;
     }
 }
