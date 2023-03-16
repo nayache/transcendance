@@ -37,7 +37,6 @@ export interface ChatItem
 const DM = () => {
 
 	const pseudo = usePseudo();
-	const avatar = useAvatar();
 	const [user, setUser] = useState<IUser | undefined>(undefined);
 	const oldUser = useRef<IUser>()
 	const socket = useSocket()
@@ -46,6 +45,9 @@ const DM = () => {
 	const [receiver, setReceiver] = useState<IUser | undefined>(undefined);
 	const oldReceiver = useRef<IUser>()
 	const [discussions, setDiscussions] = useState<Discussion[]>([])
+	const [avatar, setAvatar] = useState<string | undefined>(undefined)
+
+	
 
 
 
@@ -157,6 +159,24 @@ const DM = () => {
 		}
 	}, [pseudo, avatar, receiver])
 
+	useEffect(() => {
+		(async () => {
+			try {
+				if (pseudo) {
+					const data = await ClientApi.get(API_AVATAR_ROUTE)
+					console.log("data.avatar = ", data.avatar)
+					setAvatar(data.avatar)
+					console.log("avatar = ", avatar)
+				}
+			} catch (err) {
+				const _typeError: TypeError = err as TypeError;
+				const _error: IError = err as IError;
+				if (_typeError.name == "TypeError")
+					setAvatar(undefined)
+			}
+		})()
+    }, [avatar, pseudo])
+	
 	useEffect(() => {
 		(async () => {
 			try {

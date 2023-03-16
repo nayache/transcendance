@@ -8,6 +8,11 @@
 	padding: 2% 0;
 	border-radius: 8px;
 	background-color: #d7ebff;
+	transition: all 0.4s;
+}
+
+.without_bg {
+	background-color: transparent;
 }
 
 .pending {
@@ -17,14 +22,10 @@
 	cursor: pointer;
 }
 
-.menu {
-	visibility: hidden;
-}
-
-.pending-requests.open .menu {
-	opacity: 1;
-	visibility: visible;
-	display: block;
+.request-list-elem {
+	display: flex;
+	justify-content: center;
+	margin: auto;
 }
 
 .request-friend {
@@ -39,7 +40,7 @@
 	font-size: 16px;
 	font-weight: 600;
 	line-height: 20px;
-	margin: 10px auto;
+	margin: 10px;
 	padding: 13px 23px;
 	position: relative;
 	user-select: none;
@@ -47,7 +48,7 @@
 	width: 55%;
 	cursor: pointer;
 	transition: box-shadow .2s,-ms-transform .1s,-webkit-transform .1s,transform .1s;
-	justify-content: space-between;
+	justify-content: start;
 }
 
 .request-friend:focus-visible {
@@ -106,27 +107,43 @@
 	border-radius: 50%;
 }
 
+.friend-aj {
+	margin-left: 3em;
+}
+
 .choice-friend {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
 	justify-content: space-between;
+	flex-grow: 0.4;
 }
 
 .aj-button {
 	border: 1px solid green;
 	display: flex;
 	background-color: green;
-	height: fit-content;
+	min-height: fit-content;
+	padding: 0.4em 0;
+	box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+	flex-grow: 0.4;
 	color: white;
 }
+
 
 .supp-button {
 	display: flex;
 	border: 1px solid rgb(252, 78, 78);
 	background-color: rgb(255, 78, 78);
+	flex-grow: 0.4;
 	color: white;
-	height: fit-content;
+	padding: 0.4em 0;
+	box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+	min-height: fit-content;
+}
+
+.aj-button:active, .supp-button:active {
+	box-shadow: none;
 }
 
 .aj-svg {
