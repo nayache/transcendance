@@ -19,7 +19,7 @@ export const useJoinRoomUpdater = (
 				&& channels[currentChannelId].name === payload.channel) {
 					const users: IChannelUser[] = [...channels[currentChannelId].users]
 					console.log("(join) payload.user = ", payload.user)
-					const ind = users.findIndex(user => user.pseudo !== payload.user.pseudo)
+					const ind = users.findIndex(user => user.pseudo === payload.user.pseudo)
 					console.log("ind = ", ind, " et users = ", users)
 					if (ind === -1) // contre les bugs graphiques
 						users.push(payload.user)
