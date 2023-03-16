@@ -6,32 +6,17 @@ import Navbar from "./Navbar";
 import ServerDownPage from "./ServerDownPage";
 import { AboutErr, IError, TypeErr } from "../constants/EError";
 import { Socket } from "socket.io-client";
+import { usePseudo } from "../hooks/usePseudo";
 
 
 const Home = () => {
 
 	const [isOkay, setIsOkay] = useState<boolean | undefined>();
-	const [pseudo, setPseudo] = useState<string>();
+	const pseudo = usePseudo();
 
-    useEffect(() => {
-		(async () => {
-			try {
-				const data = await ClientApi.get(API_PSEUDO_ROUTE)
-				console.log("data.pseudo = ", data.pseudo)
-				setPseudo(data.pseudo)
-				console.log("pseudo = ", pseudo)
-				if (pseudo)
-					setIsOkay(true);
-			} catch (err) {
-				const _typeError: TypeError = err as TypeError;
-				const _error: IError = err as IError;
-				if (_typeError.name == "TypeError")
-					setIsOkay(false)
-				else if (_error.about == AboutErr.PSEUDO && _error.type == TypeErr.NOT_FOUND )
-					ClientApi.redirect = new URL(SIGNIN_ROUTE)
-			}
-		})()
-    }, [pseudo])
+
+
+
 
 	const getPage = () => {
 		
@@ -73,8 +58,8 @@ const Home = () => {
 
 	return (
 		<React.Fragment>
-			{isOkay && getPage()}
-			{isOkay == false && <ServerDownPage />}
+			{pseudo && getPage()}
+			{pseudo === undefined && <ServerDownPage />}
 		</React.Fragment>
 	)
 }

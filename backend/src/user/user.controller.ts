@@ -12,9 +12,11 @@ import { userDto } from 'src/dto/user.dto';
 import { Relation } from '../enums/relation.enum';
 import { Status } from 'src/enums/status.enum';
 import { ProfileDto } from 'src/dto/profile.dto';
+import * as sharp from 'sharp';
 
 export class friendDto {
 	pseudo: string;
+	avatar: string;
 	status: Status;
 }
 
@@ -128,39 +130,71 @@ export class UserController {
 	  @User() userId: string,
 	): Promise<{avatar: string}> {
 	  const avatar = await this.userService.getAvatar(userId);
+	  if (!avatar)
+		return ({avatar: null});
 	  return ({avatar: this.avatarService.toStreamableFile(avatar)});
+	}
+
+	@Get('avatar/:pseudo')
+	async getProfileAvatar(
+		@Param('pseudo') pseudo: string,
+	): Promise <{avatar: string}> {
+		console.log(pseudo)
+		if (!pseudo)
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'Empty pseudo');
+		const user = await this.userService.findByPseudo(pseudo);
+		if (!user)
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.NOT_FOUND, 'pseudo does not exist');
+		const avatarObject: Avatar = await this.userService.getAvatar(user.id);
+		const avatar: string = (avatarObject) ? this.avatarService.toStreamableFile(avatarObject) : null;
+		return { avatar } ;
 	}
 	
 	@Post('')
-	  @UseInterceptors(FileInterceptor('file', {fileFilter: (req: any, file: any, cb: any) => {
-		if (file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
-            // Allow storage of file
-			//if (file.mimetype.split('/')[1] != extname(file.originalname))
-			//	cb(new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID,`File Type does not match file extension ${file.mimetype}, ${extname(file.originalname)}`), false);
+@UseInterceptors(FileInterceptor('file', {
+    fileFilter: (req: any, file: any, cb: any) => {
+        if (file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
+            // Check image dimensions
             cb(null, true);
         } else {
-            // Reject file
             cb(new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID,`Unsupported file type ${extname(file.originalname)}`), false);
         }
-    }}))
-	  async postpseudoAvatar(
-		@User() userId: string,
-		@Body('pseudo') pseudo?: string,
-		@UploadedFile('file') file?: Express.Multer.File,
-	): Promise <any> {
-		  if (!pseudo)
-			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.EMPTY, 'Empty pseudo');
-		  if (!await this.userService.addPseudo(userId, pseudo))
-            throw new ErrorException(HttpStatus.CONFLICT, AboutErr.PSEUDO, TypeErr.DUPLICATED, 'pseudo already used')
-		  if (file) {
-			//console.log(await fileTypeFromBuffer(file.buffer))
-		    await this.userService.setAvatar(userId, file);
-		  }
-		  const avatar = await this.userService.getAvatar(userId);
-		  if (!avatar)
-		  	return {pseudo: pseudo, avatar: null}
-		  return {pseudo: pseudo, avatar: this.avatarService.toStreamableFile(avatar)}
-	}
+    },
+    limits: {
+        files: 1,
+        fileSize: 10 * 10 * 10 * 10 * 10 * 10  // 10 mb in bytes
+    }
+}))
+async postpseudoAvatar(
+    @User() userId: string,
+    @Body('pseudo') pseudo?: string,
+    @UploadedFile('file') file?: Express.Multer.File,
+): Promise<any> {
+    if (!pseudo)
+        throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.EMPTY, 'Empty pseudo');
+    if (await this.userService.pseudoExist(pseudo))
+        throw new ErrorException(HttpStatus.CONFLICT, AboutErr.PSEUDO, TypeErr.DUPLICATED, 'pseudo already used')
+    if (file) {
+		const whitelist = [
+			'image/jpeg',
+			'image/png'
+		];
+		console.log(file.buffer);
+		if (file.buffer.length == 0)
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID, 'File is not an image');
+		const mime = await this.avatarService.getMimeTypeFromArrayBuffer(file.buffer);
+		if (!whitelist.includes(mime))
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID, 'File is not an image');
+		const resize = await sharp(file.buffer).resize(200, 200).toBuffer();
+		file.buffer = resize;
+        await this.userService.setAvatar(userId, file);
+    }
+    const avatar = await this.userService.getAvatar(userId);
+	await this.userService.addPseudo(userId, pseudo);
+    if (!avatar)
+        return {pseudo: pseudo, avatar: null}
+    return {pseudo: pseudo, avatar: this.avatarService.toStreamableFile(avatar)}
+}
 
 	@Patch('avatar')
       @UseInterceptors(FileInterceptor('file', {fileFilter: (req: any, file: any, cb: any) => {
@@ -174,15 +208,34 @@ export class UserController {
             // Reject file
             cb(new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID,`Unsupported file type ${file.mimetype}`), false);
         }
+    },
+    limits: {
+        files: 1,
+        fileSize: 10 * 10 * 10 * 10 * 10 * 10  // 10 mb in bytes
     }}))
       async updateAvatar(
          @User() userId: string,
          @UploadedFile('file') file?: Express.Multer.File
       ): Promise<any> {
-        	await this.userService.setAvatar(userId, file);
+			if (file)
+			{
+				const whitelist = [
+					'image/jpeg',
+					'image/png'
+				];
+				console.log(file.buffer);
+				if (file.buffer.length == 0)
+					throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID, 'File is not an image');
+				const mime = await this.avatarService.getMimeTypeFromArrayBuffer(file.buffer);
+				if (!whitelist.includes(mime))
+					throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID, 'File is not an image');
+				const resize = await sharp(file.buffer).resize(200, 200).toBuffer();
+				file.buffer = resize;
+        		await this.userService.setAvatar(userId, file);
+			}
 			const avatar = await this.userService.getAvatar(userId);
 			if (!avatar)
-				return {};
+				return {avatar: null};
        		return {
             	avatar: this.avatarService.toStreamableFile(avatar)}
 			}
@@ -193,6 +246,7 @@ export class UserController {
 			const avatar = await this.avatarService.getCurrentAvatar(userId);
 			if (!avatar)
 				throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.NOT_FOUND, `No avatar for user`);
-			return this.avatarService.deleteAvatar(avatar.id);
+			await this.avatarService.deleteAvatar(avatar.id);
+			return {};
 		}
 }

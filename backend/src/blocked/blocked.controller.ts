@@ -5,7 +5,7 @@ import { UserService } from 'src/user/user.service';
 import { UserEntity } from 'src/entity/user.entity';
 import { ErrorException } from 'src/exceptions/error.exception';
 import { AboutErr, TypeErr } from '../enums/error_constants';
-@Controller('user/block')
+@Controller('users/block')
 export class BlockedController {
         constructor(private userService: UserService) {}
 
@@ -19,7 +19,9 @@ export class BlockedController {
                         throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID,'Cannot block himself');
                 if (await this.userService.blockExist(userId, target.id))
                         throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'This user is already blocked');
-                return this.userService.create_block(userId, target.id);
+                await this.userService.create_block(userId, target.id);
+                const blockeds: string[] = await this.userService.getBlock(userId);
+		return {blockeds};
         }
 
         @Delete('/:pseudo')
@@ -30,12 +32,15 @@ export class BlockedController {
                         throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'pseudo not found');
                 if (!await this.userService.blockandauthorExist(userId, target.id))
                         throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.NOT_FOUND, 'Blockship does not exist or User is not the creator of Block');
-                return this.userService.deleteBlock(userId, target.id);
+                await this.userService.deleteBlock(userId, target.id);
+                const blockeds: string[] = await this.userService.getBlock(userId);
+		return {blockeds};
         }
 
         @Get('')
         async getBlocked(@User() userId: string)
         {
-                return this.userService.getBlock(userId);
+                const blockeds: string[] = await this.userService.getBlock(userId);
+                return {blockeds};
         }
 }

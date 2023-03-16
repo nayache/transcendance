@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Tilt+Neon&display=swap');
+
+
+.chooseReceiver-container-container {
+	position: relative;
+	width: 80%;
+	margin: auto;
+}
+
+.chooseReceiver-container {
+	position: relative;
+	width: 100%;
+	margin: 50px auto 10px;
+}
+
+.chooseReceiver-child {
+	position: relative;
+	padding: 20px;
+	border-radius: 10px;
+}
+
+.chooseReceiver-text {
+}
+
+.chooseReceiver-input {
+	width: 100%;
+	box-sizing: border-box;
+	font-size: 0.9rem;
+	padding: 2px;
+	border: 1px solid;
+	border-radius: 3px;
+	margin-bottom: 2em;
+}
+
+.chooseReceiver-input::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border: 2px solid;
+}
+
+.chooseReceiver-input:focus {
+	outline: none;
+}
+
+.chooseReceiver-content-container {
+	position: relative;
+}
+
+.chooseReceiver-users-container {
+	position: relative;
+	box-sizing: border-box;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	left: var(--gap);
+	min-height: 100px;
+	width: calc(100% - var(--gap) * 2);
+	height: calc(500px - var(--gap) * 4);
+	scrollbar-width: thin;
+}
+
+.chooseReceiver-users-container::-webkit-scrollbar {
+	width: var(--scrollbar-width);
+}
+
+div::-webkit-scrollbar-thumb {
+	border-radius: 5px; 
+	background: #c5c5c5;
+}
+
+.chooseReceiver-users-child {
+	position: relative;
+	left: var(--scrollbar-width);
+	width: calc(100% - var(--scrollbar-width) * 2);
+}
+
+.userbtn-container {
+	padding: 0;
+}
+
+.userbtn {
+	display: flex;
+	position: relative;
+	text-align: start;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 7px;
+	border-radius: 3px;
+	background-color: white;
+	margin: 0.2em;
+	font-size: 0.9em;
+	box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+	transition: all 0.1s;
+}
+
+.userbtn:hover {
+	background-color: rgb(247, 247, 247);
+}
+
+.userbtn-text {
+	margin: 0;
+}

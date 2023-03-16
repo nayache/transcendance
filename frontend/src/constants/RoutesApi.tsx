@@ -19,7 +19,7 @@ export const API_BASE_URL = `${REACT_APP_BACK_PROTOCOL}://${REACT_APP_BACK_HOSTN
 
 
 export const API_BASE_AUTH = API_BASE_URL + '/auth'
-export const API_BASE_USER = API_BASE_URL + '/user'
+export const API_BASE_USER = API_BASE_URL + '/users'
 export const API_BASE_CHAT = API_BASE_URL + '/chat'
 
 
@@ -30,12 +30,27 @@ export const API_VERIFY_TOKEN_ROUTE = API_BASE_AUTH + '/verify'
 export const API_PSEUDO_ROUTE = API_BASE_USER + '/pseudo'
 export const API_AVATAR_ROUTE = API_BASE_USER + '/avatar'
 
+export const API_USER_FRIEND_RELATION = API_BASE_USER + '/friends/relation' /* + /:pseudo */
+export const API_USER_ALL_NAMES = API_BASE_USER + '/all/names'
+export const API_USER_ALL = API_BASE_USER + '/all'
+
+export const API_CHAT_DISCUSSIONS_RELATION = API_BASE_CHAT + '/discussions'
+export const API_CHAT_DM = API_BASE_CHAT + '/message' /* + '/:pseudo' */
+export const API_CHAT_MARK_READ = API_BASE_CHAT + '/message/read' /* + /:pseudo */
 export const API_CHAT_MESSAGES_CHANNEL_ROUTE = API_BASE_CHAT + '/channel/message'
 export const API_CHAT_USER_CHANNELS_ROUTE = API_BASE_CHAT + '/channels'
 export const API_CHAT_ALL_CHANNELS_ROUTE = API_BASE_CHAT + '/channels/all'
+export const API_CHAT_ALL_CHANNELNAMES_ROUTE = API_BASE_CHAT + '/channels/all/names'
+export const API_CHAT_ALL_CHANNELPRVW_ROUTE = API_BASE_CHAT + '/channels/all/preview'
 export const API_CHAT_CHANNEL_ROUTE = API_BASE_CHAT + '/channel' /* + '/:channelName' */
+export const API_CHAT_CHANNEL_PWDACCESS_ROUTE = API_BASE_CHAT + '/channel/access/password'
+export const API_CHAT_CHANNEL_PRVACCESS_ROUTE = API_BASE_CHAT + '/channel/access'
 export const API_CHAT_CHANNEL_JOIN_ROUTE = API_BASE_CHAT + '/channel/join'
 export const API_CHAT_CHANNEL_LEAVE_ROUTE = API_BASE_CHAT + '/channel/leave'
+export const API_CHAT_CHANNEL_KICK_ROUTE = API_BASE_CHAT + '/channel/kick'
+export const API_CHAT_CHANNEL_BAN_ROUTE = API_BASE_CHAT + '/channel/ban'
+export const API_CHAT_CHANNEL_MUTE_ROUTE = API_BASE_CHAT + '/channel/mute'
+export const API_CHAT_CHANNEL_SETADMIN_ROUTE = API_BASE_CHAT + '/channel/setAdmin'
 
 
 
@@ -71,14 +86,15 @@ export const CHAT_ROUTE = BASE_URL + CHAT_EP
 export const MYPROFILE_EP = '/me/profile'
 export const MYPROFILE_ROUTE = BASE_URL + MYPROFILE_EP
 
-export const PROFILE_EP = '/profile/:pseudo'
-export const PROFILE_ROUTE = BASE_URL + PROFILE_EP
+//'/profile' /* + /:pseudo */
+export const PROFILE_EP = '/profile' /* + /:pseudo */
+export const PROFILE_ROUTE = BASE_URL + PROFILE_EP /* + '/:pseudo' */
 
 export const MYFRIENDS_EP = '/me/friends'
 export const MYFRIENDS_ROUTE = BASE_URL + MYFRIENDS_EP
 
-export const FRIENDS_EP = '/:pseudo/friends'
-export const FRIENDS_ROUTE = BASE_URL + FRIENDS_EP
+// export const FRIENDS_EP = /* /:pseudo + */ '/friends'
+// export const FRIENDS_ROUTE = BASE_URL + '/:pseudo' + FRIENDS_EP
 
 
 export const SETTINGS_EP = '/settings'

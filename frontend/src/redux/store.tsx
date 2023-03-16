@@ -3,7 +3,6 @@ import { combineReducers } from "redux";
 import roomReducer from "./channelsSlice";
 
 const reducer = combineReducers({
-	room: roomReducer
 })
 
 const store = configureStore({

@@ -2,7 +2,7 @@ import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { ChannelRole } from '../enums/channel-role.enum';
 import { ChannelDto, ChannelMessageDto, channelPreviewDto, ChannelUserDto, Discussion, prvMsgDto } from './chat.controller';
-import { ChatGateway } from './chat.gateway';
+import { AppGateway } from './app.gateway';
 import { Status } from '../enums/status.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChannelEntity } from './entity/channel.entity';
@@ -15,7 +15,6 @@ import { isAlpha } from 'class-validator';
 import { Mute } from './entity/mute.entity';
 import { Error } from 'src/exceptions/error.interface';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
-import { Avatar } from 'src/entity/avatar.entity';
 import { AvatarService } from 'src/user/avatar.service';
 import { ErrorException } from 'src/exceptions/error.exception';
 
@@ -30,7 +29,7 @@ export class ChatService {
         @InjectRepository(MessageEntity) private messageRepository: Repository<MessageEntity>,
         @InjectRepository(PrivateMessageEntity) private privateMsgRepository: Repository<PrivateMessageEntity>,
         @InjectRepository(Mute) private muteRepository: Repository<Mute>,
-        @Inject(forwardRef(() => ChatGateway))private readonly chatGateway: ChatGateway) {
+        @Inject(forwardRef(() => AppGateway))private readonly appGateway: AppGateway) {
     }
 
     private color: string[] = ["blue", "red", "brown", "black", "blueviolet",
@@ -120,18 +119,32 @@ export class ChatService {
 
     async setChannelAccess(channelName: string, prv: boolean) {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
+		try {
         await this.channelRepository.update(channel.id, {private: prv});
-    }
+    	} catch (e)
+		{
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
+	}
 
     async setChannelPassword(channelName: string, password: string) {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
+		try {
         await this.channelRepository.update(channel.id, {password: password});
+		} catch (e) {
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
     }
 
     async banUser(channelName: string, userId: string) {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
+		try {
         channel.banneds.push(userId);
         await this.channelRepository.update(channel.id, {banneds: channel.banneds});
+		} catch (e)
+		{
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
     }
 
     getMuteExpiration(muted: Mute): Date {
@@ -141,16 +154,21 @@ export class ChatService {
     async isMuted(channelName: string, userId: string): Promise<boolean> {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
         const muted: Mute = await this.findMute(channel, userId);
-        if (muted) {
-            if (Date.now() >= (muted.updated_at.getTime() + (muted.duration * 1000))) {
-                await this.muteRepository.delete(muted.id);
-                const member: Member = await this.getMemberByUserId(userId, channel.id);
-                if (member)
-                    await this.memberRepository.update(member.id, {unmuteDate: null});
-            }
-            else
-                return true;
-        }
+		try {
+        	if (muted) {
+        	    if (Date.now() >= (muted.updated_at.getTime() + (muted.duration * 1000))) {
+        	        await this.muteRepository.delete(muted.id);
+        	        const member: Member = await this.getMemberByUserId(userId, channel.id);
+        	        if (member)
+        	            await this.memberRepository.update(member.id, {unmuteDate: null});
+        	    }
+        	    else
+        	        return true;
+        	}
+		} catch (e)
+		{
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
         return false;
     }
 
@@ -163,7 +181,12 @@ export class ChatService {
     async setUnmuteDate(muted: Mute, unmutedDate: Date) {
         console.log(unmutedDate, " -.........")
         const member: Member = await this.getMemberByUserId(muted.userId, muted.channelId);
-        return this.memberRepository.update(member.id, {unmuteDate: unmutedDate});
+		try {
+        	return await this.memberRepository.update(member.id, {unmuteDate: unmutedDate});
+		} catch (e)
+		{
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
     }
 
     async muteUser(channelName: string, target: UserEntity, duration: number): Promise<Mute> {
@@ -183,7 +206,11 @@ export class ChatService {
     async setRole(channelName: string, userId: string, role: ChannelRole) {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
         const member: Member = await this.getMemberByUserId(userId, channel.id);
+		try {
         await this.memberRepository.update(member.id, {role: role});
+		} catch (e) {
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
     }
 
     async getMemberColor(channelName: string, userId: string): Promise<string> {
@@ -193,15 +220,25 @@ export class ChatService {
     }
 
     async getMembersByChannel(channelId: string): Promise<Member[]> {
-        return this.memberRepository.find({relations: ['channel'],
+		try {
+        return await this.memberRepository.find({relations: ['channel'],
             where: { channelId: channelId }
         });
+		} catch (e)
+		{
+			return null;
+		}
     }
 
     async getMessagesByChannel(channelId: string): Promise<MessageEntity[]> {
-        return this.messageRepository.find({relations: ['channel'],
-            where: { channelId: channelId }    
-        })
+		try {
+        	return this.messageRepository.find({relations: ['channel'],
+        	    where: { channelId: channelId }    
+        	})
+		} catch (e)
+		{
+			return null;
+		}
     }
 
     messageToDto(msg: MessageEntity): ChannelMessageDto {
@@ -213,7 +250,7 @@ export class ChatService {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
         const member: Member = await this.getMemberByUserId(userId, channel.id);
         const pseudo: string = await this.userService.getPseudoById(member.userId);
-        const status: Status = this.chatGateway.getStatus(userId);
+        const status: Status = this.appGateway.getStatus(userId);
         const unmuteDate: Date = member.unmuteDate;
         const user: ChannelUserDto = { pseudo: pseudo, color: member.color, role: member.role, status, unmuteDate };
         return user;
@@ -225,7 +262,7 @@ export class ChatService {
             const messagesChannel: MessageEntity[] = await this.getMessagesByChannel(channel.id);
             const messages: ChannelMessageDto[] = messagesChannel.map((msg) => this.messageToDto(msg));
             const users: ChannelUserDto[] = await Promise.all(members.map(async (member) => {
-                const status: Status = this.chatGateway.getStatus(member.userId);
+                const status: Status = this.appGateway.getStatus(member.userId);
                 const isMuted: boolean = await this.isMuted(member.channel.name, member.user.id);
                 const unmuteDate: Date = (isMuted) ? member.unmuteDate : null;
                 return {pseudo: member.user.pseudo, color: member.color, role: member.role, status, unmuteDate};
@@ -280,7 +317,10 @@ export class ChatService {
         const colorr: string = this.generateColorr(chann);
         const muted: Mute = await this.findMute(chann, userId);
         const expiration: Date = (muted) ? this.getMuteExpiration(muted) : null;
-        const member = new Member(await this.userService.findById(userId), chann, colorr, role, expiration);
+		const user: UserEntity = await this.userService.findById(userId);
+		if (!user)
+			throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND);
+        const member = new Member(user, chann, colorr, role, expiration);
         if (!chann.members)
             chann.members = [member];
         else
@@ -340,9 +380,31 @@ export class ChatService {
         
     }
 
+    async markRead(authorId: string, targetId: string) {
+        const messages: PrivateMessageEntity[] = await this.getUnreadMessages(authorId, targetId);
+        if (messages) {
+            try {
+                messages.forEach(async (msg) => {
+                    await this.privateMsgRepository.update(msg.id, { read: true });
+                })
+            } catch(e) {
+                throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+            }
+        }
+    }
+
+    async getDiscussion(userId: string, pseudo: string): Promise<Discussion> {
+        const target: UserEntity = await this.userService.findByPseudo(pseudo);
+        if (!target)
+            return null;
+        const avatar: string = await this.userService.getAvatarfile(target.id);
+        const unreadMessages: PrivateMessageEntity[] = await this.getUnreadMessages(target.id, userId);
+        return { pseudo, avatar, unread: (unreadMessages) ? unreadMessages.length : 0 };
+    }
+
     async getDiscussions(userId: string): Promise<Discussion[]> {
         const messages: PrivateMessageEntity[] = await this.findPrivateMsg(userId);
-        console.log(messages);
+        //console.log(messages);
         let users: string[] = [];
         messages.map((msg) => {
             if (!users.find((name) => (name) === msg.authorId || (name) === msg.targetId))
@@ -350,9 +412,7 @@ export class ChatService {
         });
         const discussions: Discussion[] = await Promise.all(users.map(async (user) => {
             const pseudo: string = await this.userService.getPseudoById(user);
-            const avatars: Avatar = await this.userService.getAvatar(user);
-			const avatar: string = await this.avatarService.toStreamableFile(avatars);
-            //const avatar = null; //============================================================> SAMIIIIII pour toi
+            const avatar: string = await this.userService.getAvatarfile(user);
             const unreadMessages: PrivateMessageEntity[] = await this.getUnreadMessages(user, userId);
             return { pseudo, avatar, unread: (unreadMessages) ? unreadMessages.length : 0 };
         }))

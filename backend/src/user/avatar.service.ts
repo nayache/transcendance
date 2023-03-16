@@ -29,7 +29,7 @@ import { UserService } from './user.service';
 	  try {
 		await this.avatarRepository.save(avatar);
 	  } catch (error) {
-		throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+		throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
 	  }
 	  return avatar;
 	}
@@ -46,7 +46,6 @@ import { UserService } from './user.service';
 		const type = avatar.mimetype;
 		const dataImagePrefix = 'data:'.concat(type);
 		const dataImageSuffix = dataImagePrefix.concat(';base64,');
-		console.log(dataImageSuffix);
 		let base = avatar.datafile.toString('base64');
 		let final= dataImageSuffix.concat(base);
 		return final;
@@ -61,6 +60,27 @@ import { UserService } from './user.service';
 		{
 			return (null);
 		}
+	}
+
+	async getMimeTypeFromArrayBuffer(arrayBuffer): Promise <string> {
+  		const uint8arr = new Uint8Array(arrayBuffer)
+  		const len = 4
+  		if (uint8arr.length >= len) {
+  		  let signatureArr = new Array(len)
+  		  for (let i = 0; i < len; i++)
+  		    signatureArr[i] = (new Uint8Array(arrayBuffer))[i].toString(16)
+  		  const signature = signatureArr.join('').toUpperCase()
+		  console.log(signature);
+
+    		switch (signature) {
+    		  case '89504E47':
+    		    return 'image/png'
+    		  case 'FFD8FFE0':
+    		    return 'image/jpeg'
+    		  default:
+    		    return null }
+  			}
+  			return null 
 	}
 
 	async getavatarId(userId:string, filename: string): Promise<string> {

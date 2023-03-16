@@ -1,39 +1,32 @@
+import { useRef } from "react";
 import { Status } from "../constants/EMessage";
+import { useResizeText } from "../hooks/useResizeText";
 import Avatar from "./Avatar"
 
 interface Props {
-	name: string,
-	key: number,
+	pseudo: string,
 	animationDelay: number,
-	active: string,
-	status: Status,
-	image: string,
+	unread: number,
+	avatar?: string,
+	onClick?: () => void
 }
 
-const DMListItems = ({name, key, animationDelay, active, status, image}: Props) => {
+const DMListItems = ({pseudo, avatar, unread, animationDelay, onClick}: Props) => {
 
-	const selectChat = (e: any) => {
-		for (
-			let index = 0;
-			index < e.currentTarget.parentNode.children.length;
-			index++
-		) {
-			e.currentTarget.parentNode.children[index].classList.remove("active");
-		}
-		e.currentTarget.classList.add("active");
-	};
+	const pseudoRef = useResizeText(useRef<HTMLParagraphElement>(null))
 
 	return (
 		<div
 		style={{ animationDelay: `0.${animationDelay}s` }}
-		// onClick={selectChat}
-		className={`chatlist__item ${
-			active ? active : ""
-		} `}>
-			<Avatar image={image} status={status}/>
+		onClick={onClick}
+		className={`chatlist__item`}>
+			<Avatar srcImg={avatar}/>
 			<div className="userMeta">
-				<p>{name}</p>
-				<span className="activeTime">32 mins ago</span>
+				<p ref={pseudoRef} className={unread > 0 ? 'list_pseudo_text_bold' : 'list_pseudo_text'}>{pseudo}</p>
+				{unread > 0 &&
+				<div className="unread-div">
+					<p>({unread > 9 ? '9+': unread})</p>
+				</div>}
 			</div>
 		</div>
 	);

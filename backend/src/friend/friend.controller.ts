@@ -1,5 +1,5 @@
 import { Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ChatGateway } from 'src/chat/chat.gateway';
+import { AppGateway } from 'src/chat/app.gateway';
 import { User } from 'src/decorators/user.decorator';
 import { FriendEntity } from 'src/entity/friend.entity';
 import { UserEntity } from 'src/entity/user.entity';
@@ -8,21 +8,21 @@ import { ErrorException } from 'src/exceptions/error.exception';
 import { friendDto } from 'src/user/user.controller';
 import { UserService } from 'src/user/user.service';
 
-@Controller('user/friends')
+@Controller('users/friends')
 export class FriendController {
     constructor(private userService: UserService,
-    private readonly chatGateway: ChatGateway) {}
+    private readonly appGateway: AppGateway) {}
 
     @Post('add/:pseudo')
     async makeFriend(@User() userId: string, @Param('pseudo') pseudo: string) {
         const user2: UserEntity = await this.userService.findByPseudo(pseudo);
         if (!user2)
-            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'target not found');
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
         if (userId == user2.id)
-            throw new ErrorException(HttpStatus.CONFLICT, AboutErr.USER, TypeErr.INVALID, 'cant add himself has friend');
+            throw new ErrorException(HttpStatus.CONFLICT, AboutErr.TARGET, TypeErr.INVALID, 'cant add himself has friend');
         // si j'ai deja envoyer une requete a cet user ou bien si je suis deja ami avec lui
         if (await this.userService.friendshipExist(userId, user2.id))
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.INVALID, 'already added friend');
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'already added friend');
         let eventName: string = 'newRequest';
         if (await this.userService.frienshipWaiting(userId, user2.id)) {
             await this.userService.acceptFriendship(userId, user2.id);
@@ -30,18 +30,18 @@ export class FriendController {
         }
         else
             await this.userService.createFriendship(userId, user2.id);
-        this.chatGateway.friendEvent(eventName, user2.id, pseudo);
+        this.appGateway.friendEvent(eventName, user2.id, pseudo);
     }
 
     @Delete('del/:pseudo')
     async deleteFriendship(@User() userId: string, @Param('pseudo') pseudo: string) {
         const user2: UserEntity = await this.userService.findByPseudo(pseudo);
         if (!user2)
-            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'target not found');
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
         if (userId === user2.id)
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.INVALID, 'invalid target(himself)');
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'invalid target(himself)');
         if (!await this.userService.friendshipExist(userId, user2.id))
-            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'friendship not exist');
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'friendship not exist');
         else
             return this.userService.removeFriendship(userId, user2.id);
     }

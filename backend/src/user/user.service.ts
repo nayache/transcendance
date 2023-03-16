@@ -12,9 +12,10 @@ import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { userDto } from 'src/dto/user.dto';
 import { Relation } from '../enums/relation.enum';
 import { friendDto } from './user.controller';
-import { ChatGateway } from 'src/chat/chat.gateway';
+import { AppGateway, GameDto } from 'src/chat/app.gateway';
 import { Status } from 'src/enums/status.enum';
 import { ProfileDto } from 'src/dto/profile.dto';
+import { GameService } from 'src/game/game.service';
 
 export class UserPreview {
     pseudo: string;
@@ -27,8 +28,12 @@ export class UserService {
     @InjectRepository(FriendEntity) private friendRepository: Repository<FriendEntity>,
     @InjectRepository(DataUserEntity) private dataUserRepository: Repository<DataUserEntity>,
 	@InjectRepository(BlockedEntity) private blockedRepository: Repository<BlockedEntity>,
-    @Inject(forwardRef(() => ChatGateway)) private readonly chatGateway: ChatGateway,
+    @Inject(forwardRef(() => AppGateway)) private readonly appGateway: AppGateway,
+    @Inject(forwardRef(() => GameService)) private readonly gameService: GameService,
 	private readonly avatarService: AvatarService) {}
+    
+    private requiredXp: number[] = [420, 1050, 2625, 6587, 16468, 41000, 102927, 257300, 500000, 999999];
+    private achievements: string[] = ["FirstWin", "CleanSheet", "PONG-MASTER"];
     
     async saveUser(login: string) {
         try {
@@ -73,7 +78,7 @@ export class UserService {
         console.log('in validpseudo()',pseudo)
         if (pseudo.search(/\s/) != -1)
             return false
-        return (pseudo.length > 3 && pseudo.length < 26);
+        return (pseudo.length > 3 && pseudo.length < 21);
     }
 
     async pseudoExist(pseudo: string): Promise<boolean> {
@@ -86,16 +91,30 @@ export class UserService {
             throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found')
         if (user.pseudo && await this.pseudoExist(pseudo))
             return null;
-       
-        return this.userRepository.update(id ,{pseudo: pseudo})
+        try {
+        	return await this.userRepository.update(id ,{pseudo: pseudo});
+		} catch (e)
+		{
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
     }
 
     async updateTwoFa(id: string, value: boolean) {
-        return this.userRepository.update(id, {twoFaEnabled: value});
+		try {
+        	return await this.userRepository.update(id, {twoFaEnabled: value});
+		} catch (e)
+		{
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
     }
 
     async updateTwoFaSecret(id: string, value: string) {
-        return this.userRepository.update(id, { TwoFaSecret: value });
+		try {
+        	return await this.userRepository.update(id, { TwoFaSecret: value });
+		} catch (e)
+		{
+			throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+		}
     }
 
     async getTwoFa(id: string): Promise<boolean> {
@@ -287,8 +306,9 @@ export class UserService {
             const user: UserEntity = await this.findById(id);
             if (!user)
                 throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found')  
-            const status: Status = await this.chatGateway.getStatus(user.id);
-            return { pseudo: user.pseudo, status };
+			const avatar: string = await this.getAvatarfile(user.id);
+            const status: Status = await this.appGateway.getStatus(user.id);
+            return { pseudo: user.pseudo, avatar: avatar, status };
         }))
         return friendListDto;
     }
@@ -315,19 +335,24 @@ export class UserService {
         const target: UserEntity = await this.findById(targetId);
         if (!target)
             throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND);
-        const avatar: string = this.avatarService.toStreamableFile(await this.getAvatar(userId))// Sami rectifie ca stp
-        const pseudo: string = target.pseudo
+        const avatarObject: Avatar = await this.getAvatar(userId);
+        const avatar: string = (avatarObject) ? this.avatarService.toStreamableFile(avatarObject) : null// Sami rectifie ca stp
+        const pseudo: string = target.pseudo;
         const level: number = target.data.level;
+        const xp: number = target.data.xp;
+        const requiredXp: number = this.requiredXp[level];
+        const percentageXp: number = (xp * 100) / requiredXp;
         const wins: number = target.data.win;
         const looses: number = target.data.loose;
-        const history = null;
+        const achievements: string[] = target.data.achievements;
+        const history: GameDto[] = await this.gameService.getHistory(target.id);
         if (!userId) {
             const friends: number = await this.getFriendsSize(targetId);
-            return { avatar, pseudo, friends, level, wins, looses, history };
+            return { avatar, pseudo, friends, level, xp, requiredXp, percentageXp, achievements, wins, looses, history };
         } else {
             const relation: Relation = await this.getRelation(userId, targetId);
             const blocked: boolean = await this.blockandauthorExist(userId, targetId);
-            return { avatar, pseudo, level, wins, looses, history, relation, blocked };
+            return { avatar, pseudo, level, xp, requiredXp, percentageXp, achievements, wins, looses, history, relation, blocked };
         }
     }
 
@@ -336,7 +361,7 @@ export class UserService {
 		  throw new HttpException('File required', HttpStatus.BAD_REQUEST);
 		const filename = file.originalname;
 		const datafile = file.buffer;
-		const mimetype = file.mimetype;
+		const mimetype = file.mimetype ? file.mimetype : 'image/jpeg';
 		const user: UserEntity = await this.findById(userId);
 		const curr_avatar: Avatar = await this.avatarService.getCurrentAvatar(userId);
 		await this.avatarService.createAvatar(filename, datafile, mimetype, user);
@@ -379,13 +404,9 @@ export class UserService {
 		userId: string,
 		user2Id: string
 	): Promise <boolean> {
-		try {
-		return await this.blockedRepository.exist({where: [
+		return this.blockedRepository.exist({where: [
 			{authorId: userId, user2Id: user2Id}
 		]});
-	} catch (error) {
-		throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
-	}
 	}
 
 	async blockandauthorExist(
@@ -408,13 +429,89 @@ export class UserService {
 		}
 	}
 
-	async getBlock(userId: string): Promise<UserEntity[]> {
-		const block: BlockedEntity[] = await this.blockedRepository.find({where: {authorId: userId},relations: ['user2']});
-		let user: UserEntity[] = [];
-		for (let i = 0; i < block.length; i++)
-		{
-			user.push(await this.findById(block[i].user2Id));
+	async getBlock(userId: string): Promise<string[]> {
+		try {
+		    const block: BlockedEntity[] = await this.blockedRepository.find({where: {authorId: userId},relations: ['user2']});
+		    let users: string[] = [];
+		    for (let i = 0; i < block.length; i++)
+		    {
+			    let user = await this.findById(block[i].user2Id);
+			    if (user)
+				    users.push(user.pseudo);
+		    }
+		    return users;
+		} catch(e) {
+			return null;
 		}
-		return user;
 	}
+
+    async findDataUserByUserId(userId: string): Promise<DataUserEntity> {
+        const user: UserEntity = await this.findById(userId);
+        if (!user)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND);
+        return user.data;
+    }
+
+    async updateResults(userId: string, winnnig: boolean) {
+        const dataUser: DataUserEntity = await this.findDataUserByUserId(userId);
+        if (!dataUser)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'data user not found');
+        try {
+            if (winnnig)
+                await this.dataUserRepository.update(dataUser.id, {win: dataUser.win + 1});
+            else
+                await this.dataUserRepository.update(dataUser.id, {loose: dataUser.loose + 1});
+        } catch(e) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+        }
+    }
+
+    levelChecker(xp: number): number {
+        let level: number = 0;
+        while (xp >= this.requiredXp[level])
+            level++;
+        return (level + 1);
+    }
+
+    async updateXp(userId: string, xp: number) {
+        const dataUser: DataUserEntity = await this.findDataUserByUserId(userId);
+        if (!dataUser)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'data user not found');
+        try {
+            await this.dataUserRepository.update(dataUser.id, {xp: dataUser.xp + xp});
+            const levelFromXp: number = this.levelChecker(dataUser.xp + xp);
+            if (levelFromXp > dataUser.level) {
+                await this.dataUserRepository.update(dataUser.id, {level: levelFromXp});
+                this.appGateway.levelUp(userId, levelFromXp);
+            }
+        } catch(e) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+        }
+    }
+
+    deserveOneAchievement(collection: string[], lvl: number, winning: boolean, cleansheet: boolean): string {
+        if (collection.length === 3)
+            return null;
+        if (winning && !collection.find((achievement) => achievement === this.achievements[0]))
+            return this.achievements[0];
+        else if (cleansheet && !collection.find((achievement) => achievement === this.achievements[1]))
+            return this.achievements[1];
+        else if (lvl === 10)
+            return this.achievements[2];
+        return null;
+    }
+
+    async updateAchievements(userId: string, winning: boolean, cleansheet: boolean) {
+        const dataUser: DataUserEntity = await this.findDataUserByUserId(userId);
+        if (!dataUser)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'data user not found');
+        try {
+            const unlockedAchievement: string = this.deserveOneAchievement(dataUser.achievements, dataUser.level, winning, cleansheet);
+            if (unlockedAchievement) {
+                await this.dataUserRepository.update(dataUser.id, {achievements: [...dataUser.achievements, ...[unlockedAchievement]]});
+            }
+        } catch(e) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+        }
+    }
 }

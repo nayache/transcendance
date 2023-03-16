@@ -1,0 +1,32 @@
+
+.JoinOrAdd-buttons-container {
+	display: flex;
+	margin: 20px;
+	flex-direction: column;
+}
+
+.JoinOrAdd-buttons-container button {
+	flex: 1 1 0;
+	border-radius: 10px;
+	color: white;
+	font-weight: bold;
+	font-size: large;
+	padding: 14px 20px;
+	margin: 8px auto;
+	border: none;
+	cursor: pointer;
+	opacity: 0.9;
+	text-shadow: 1px 1px 0px black;
+}
+
+.JoinOrAdd-buttons-container button:hover {
+	opacity:1;
+}
+
+.create-button {
+	background-color: #3f44e3;
+}
+
+.join-button {
+	background-color: #64cddb;
+}

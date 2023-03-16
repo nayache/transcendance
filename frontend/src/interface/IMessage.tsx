@@ -1,14 +1,18 @@
 
 export interface IMessage {
-	author: string,
-	color: string,
-	message: string,
-	channel: string
+    author: string;
+    content: string;
+    date: Date;
 }
 
-export interface IOldMessageChannel {
-	author: string,
-	color: string,
-	content: string,
-	created_at: string,
+export interface IMessageEvRecv {
+    author: string,
+    message: string;
+    date: Date;
+}
+
+export interface Discussion {
+    pseudo: string;
+    avatar: string | undefined;
+    unread: number;
 }

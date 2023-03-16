@@ -1,6 +1,7 @@
 .main__chatlist {
 	border-right: 1px solid #ebe7fb;
 	padding: 0 20px 0 0px;
+	min-width: 20em;
 }
 
 .chatlist__heading {
@@ -17,7 +18,9 @@
 	box-sizing: border-box;
 	color: black;
 	cursor: pointer;
-	display: inline-block;
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
 	font-family: -apple-system,system-ui,"Segoe UI","Liberation Sans",sans-serif;
 	font-size: 13px;
 	font-weight: 400;
@@ -65,8 +68,7 @@
 .search_wrap {
 	background-color: #e6e5ea;
 	border-radius: 5px;
-	
-
+	height: fit-content;
 }
 
 .search_wrap input {
@@ -143,11 +145,17 @@
 	object-fit: cover;
 }
 
+.chatlist__item .userMeta {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: flex-start;
+}
+
 .chatlist__item .userMeta p {
 	margin: 0;
 	padding: 0;
 	color: #000;
-	font-weight: 600;
 	font-size: 14px;
 }
 
@@ -158,6 +166,17 @@
 	font-weight: 400;
 	font-size: 12px;
 	display: block;
+}
+
+.unread-div {
+	width: fit-content;
+	align-self: flex-end;
+	transform: translate(80%, -40%);
+}
+
+.unread-div p {
+	color: red !important;
+	font-style: italic;
 }
 
 .chatlist__item:hover,
@@ -177,6 +196,14 @@
 	background-color: #ddd;
 	border-radius: 50%;
 	border: 2px solid #fff;
+}
+
+.list_pseudo_text {
+	font-weight: 500;
+}
+
+.list_pseudo_text_bold {
+	font-weight: 700;
 }
 
 .isOnline.active {
