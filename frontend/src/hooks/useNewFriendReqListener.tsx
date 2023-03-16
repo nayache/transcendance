@@ -2,14 +2,14 @@ import { useEffect, useRef } from "react"
 import { Socket } from "socket.io-client"
 import ClientApi from "../components/ClientApi.class"
 import { Friend, Pending } from "../components/Friends"
-import { API_USER_BLOCK } from "../constants/RoutesApi"
+import { API_AVATAR_ROUTE, API_USER_BLOCK } from "../constants/RoutesApi"
 import { IFriendEv } from "../interface/IFriend"
 
-export const useFriendListener = (
+export const useNewFriendReqListener = (
 	socket: Socket | undefined,
 	pseudo: string | undefined,
-	addFriend?: (friend: Friend) => void,
 	addPending?: (pending: Pending) => void,
+	onNotification?: (payload?: IFriendEv) => void
 ) => {	
 	
 	useEffect(() => {
@@ -22,10 +22,20 @@ export const useFriendListener = (
 				if (!isBlocked)
 				{
 					if (ClientApi.redirect.pathname.indexOf("/friends") === 0) {
-						
+						try {
+							const data = await ClientApi.get(API_AVATAR_ROUTE + '/' + payload.pseudo)
+							if (addPending)
+								addPending({
+									pseudo: payload.pseudo,
+									avatar: data.avatar
+								})
+						} catch (err) {
+							console.log("err = ", err)
+						}
 					}
 					else {
-						//notification
+						if (onNotification)
+							onNotification(payload)
 					}
 				}
 			})

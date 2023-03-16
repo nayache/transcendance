@@ -11,6 +11,9 @@ import { BsCheck2 } from "react-icons/bs"
 import { RxCross1 } from "react-icons/rx"
 import { ImCross } from "react-icons/im"
 import { usePseudo } from "../hooks/usePseudo"
+import { useNewFriendReqListener } from "../hooks/useNewFriendReqListener"
+import { useSocket } from "../hooks/useSocket"
+import { useNewFriendAccListener } from "../hooks/useFriendAccUpdater"
 
 export interface Friend {
     pseudo: string,
@@ -26,10 +29,21 @@ export interface Pending {
 const Friends = () => {
 	
 
+	const socket = useSocket()
 	const pseudo = usePseudo()
 	const [friends, setFriends] = useState<Friend[]>([])
 	const [pendings, setPendings] = useState<Pending[]>([])
 	const[isOpen, setIsOpen] = useState(true);
+	useNewFriendReqListener(socket, pseudo, (pending: Pending) => {
+		setPendings(pendings => [...pendings,
+			pending
+		])
+	})
+	useNewFriendAccListener(socket, pseudo, (friend: Friend) => {
+		setFriends(friends => [...friends,
+			friend
+		])
+	})
 
 
 
