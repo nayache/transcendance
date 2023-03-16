@@ -153,10 +153,14 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     this.server.to(channel).emit('messageRoom', messageData);
   }
 
-  friendEvent(eventName: string, targetId: string, pseudo: string) {
+  async friendEvent(eventName: string, targetId: string, authorId: string) {
     if (!this.users.get(targetId))
       return
     
+    const pseudo: string = await this.userService.getPseudoById(authorId);
+    if (!pseudo)
+      return // a gerer mieux
+
     this.users.get(targetId).forEach((socket) => {
       this.server.to(socket.id).emit(eventName, pseudo);
     });

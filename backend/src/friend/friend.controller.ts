@@ -30,7 +30,7 @@ export class FriendController {
         }
         else
             await this.userService.createFriendship(userId, user2.id);
-        this.appGateway.friendEvent(eventName, user2.id, pseudo);
+        await this.appGateway.friendEvent(eventName, user2.id, userId);
         const friends: FriendEntity[] = await this.userService.getFriends(userId, true);
         const friendList : friendDto[] = await this.userService.makeFriendList(userId, friends);
         return { friends: friendList }
@@ -43,7 +43,7 @@ export class FriendController {
             throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
         if (userId === user2.id)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'invalid target(himself)');
-        if (!await this.userService.friendshipExist(userId, user2.id) || !await this.userService.frienshipWaiting(user2.id, userId))
+        if (!await this.userService.friendshipExist(userId, user2.id) && !await this.userService.frienshipWaiting(userId, user2.id))
             throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'friendship not exist');
         else
             await this.userService.removeFriendship(userId, user2.id);
