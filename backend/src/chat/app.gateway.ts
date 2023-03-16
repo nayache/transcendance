@@ -41,6 +41,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   private readonly logger = new Logger();
   private readonly users = new Map<string, Set<Socket>>();
   private readonly inGamePage = new Map<string, Socket>();
+  private readonly ready = new Set<string>();
   
   async afterInit() {
     if (!await this.chatService.channelExistt('General')) {
@@ -249,6 +250,28 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
         await this.endOfGame(game.id);
       }
     }
+  }
+
+  @SubscribeMessage('readyForGame')
+  async readyEvent(@MessageBody() data: GameDto, @ConnectedSocket() socket: Socket) {
+    const user: userDto = await this.authentication(socket);
+    // a gerer SI ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR
+    if (!user)
+      return;
+    if (!this.ready.has(user.id))
+      this.ready.add(user.id);
+
+    const user2: UserEntity = await this.userService.findByPseudo((data.player1 === user.pseudo) ? data.player2 : data.player1);
+    if (this.ready.has(user2.id))
+      this.startGameEvent(data);
+  }
+
+  startGameEvent(payload: GameDto) {
+    const socket1: Socket = this.inGamePage.get(payload.player1);
+    const socket2: Socket = this.inGamePage.get(payload.player2);
+    this.server.to([socket1.id, socket2.id]).emit('startGame', payload);
+    this.ready.delete(payload.player1);
+    this.ready.delete(payload.player2);
   }
 
   async endOfGame(gameId: string) {
