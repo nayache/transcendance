@@ -10,7 +10,7 @@ import DMContent from "./DMContent";
 import DMList from "./DMList";
 import UserProfileChat from "./DMUserProfile";
 import Navbar from "./Navbar";
-import { API_AVATAR_ROUTE, API_CHAT_DISCUSSIONS_RELATION, API_CHAT_DM, API_CHAT_MARK_READ, MESSAGES_ROUTE } from "../constants/RoutesApi";
+import { API_AVATAR_ROUTE, API_CHAT_DISCUSSIONS_RELATION, API_CHAT_DM, API_CHAT_MARK_READ, API_USER_BLOCK, MESSAGES_ROUTE } from "../constants/RoutesApi";
 import { useSocket } from "../hooks/useSocket";
 import { useDMListener } from "../hooks/useDMListener";
 import { useParams } from "react-router-dom";
@@ -163,8 +163,10 @@ const DM = () => {
 				console.log("user = ", user)
 				console.log("oldUser = ", oldUser)
 				if (user?.pseudo && oldUser.current?.pseudo !== user.pseudo) {
-					const { discussions: realDiscussions }: { discussions: Discussion[] } =
-						await ClientApi.get(API_CHAT_DISCUSSIONS_RELATION)
+					const { discussions: notrealDiscussions }: { discussions: Discussion[] } =
+						await ClientApi.get(API_CHAT_DISCUSSIONS_RELATION);
+					const data: { blockeds: string[] } = await ClientApi.get(API_USER_BLOCK); 
+					const realDiscussions = notrealDiscussions.filter(discussion => data.blockeds.every(blocked => discussion.pseudo !== blocked))
 					if (pseudoParam) {
 						try {
 							console.log("realDiscussions = ", realDiscussions)

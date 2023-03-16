@@ -12,7 +12,7 @@ import Settings from './Settings';
 import { IUser } from '../interface/IUser';
 import userEvent from '@testing-library/user-event';
 import ClientApi from './ClientApi.class';
-import { CHAT_EP, GAMEPAGE_EP, HOME_EP, MESSAGES_EP, MYFRIENDS_EP, MYPROFILE_EP, PROFILE_EP, REGISTER_EP, SETTINGS_EP, SETTINGS_MYPROFILE_EP, SETTINGS_TWOFA_EP, SIGNIN_EP, TWOFA_EP } from '../constants/RoutesApi';
+import { CHAT_EP, GAMEPAGE_EP, HOME_EP, MESSAGES_EP, MYFRIENDS_EP, MYPROFILE_EP, PROFILE_EP, REGISTER_EP, SETTINGS_BLOCKED_EP, SETTINGS_EP, SETTINGS_HELP_EP, SETTINGS_MYPROFILE_EP, SETTINGS_TWOFA_EP, SIGNIN_EP, TWOFA_EP } from '../constants/RoutesApi';
 import MyProfile from './MyProfile';
 import ChatPage from './ChatPage';
 import TwoFA from './TwoFA';
@@ -21,6 +21,8 @@ import MyProfileSettings from './MyProfileSettings';
 import { Provider } from 'react-redux';
 import store from '../redux/store';
 import DM from './DM';
+import HelpSettings from './HelpSettings';
+import BlockedSettings from './BlockedSettings';
 
 
 const router = createBrowserRouter([
@@ -79,6 +81,14 @@ const router = createBrowserRouter([
 	{
 		path: SETTINGS_TWOFA_EP,
 		element: <TwoFASettings />
+	},
+	{
+		path: SETTINGS_HELP_EP,
+		element: <HelpSettings />
+	},
+	{
+		path: SETTINGS_BLOCKED_EP,
+		element: <BlockedSettings />
 	},
 	{
 		path: '*',

@@ -66,7 +66,7 @@ const Signin = () => {
 					if (_error.type == TypeErr.EMPTY)
 						setPseudoErrorText("Don't leave an empty pseudo")
 					else if (_error.type == TypeErr.INVALID)
-						setPseudoErrorText("Please choose a valid pseudo. Size: 3 - 25 characters")
+						setPseudoErrorText("Please choose a valid pseudo. Size: 3 - 20 characters")
 					else if (_error.type == TypeErr.DUPLICATED)
 					setPseudoErrorText("The pseudo already exists. Please provide another pseudo")
 				}

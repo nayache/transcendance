@@ -67,7 +67,7 @@ const Settings = () => {
 			},
 			values: [
 				{
-					name: "Blocked account",
+					name: "Blocked accounts",
 					description: 
 						"Accounts you have blocked",
 					tags: [],
