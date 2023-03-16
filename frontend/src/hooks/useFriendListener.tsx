@@ -1,52 +1,28 @@
 import { useEffect, useRef } from "react"
 import { Socket } from "socket.io-client"
 import ClientApi from "../components/ClientApi.class"
-import { ChatItem, MessageStatus } from "../components/DM"
-import { API_CHAT_DISCUSSIONS_RELATION, API_CHAT_MARK_READ, API_USER_BLOCK } from "../constants/RoutesApi"
-import { Discussion, IMessageEvRecv } from "../interface/IMessage"
-import { IUser } from "../interface/IUser"
+import { Friend, Pending } from "../components/Friends"
+import { API_USER_BLOCK } from "../constants/RoutesApi"
+import { IFriendEv } from "../interface/IFriend"
 
-export const useDMListener = (
+export const useFriendListener = (
 	socket: Socket | undefined,
-	user: IUser | undefined,
-	receiver: IUser | undefined,
-	updateDiscussions: (pseudo: string, position: number, unread: number, avatar?: string) => void,
-	addChatItem?: (chatItem: ChatItem) => void,
-) => {
-
-	const unreadNb = useRef<number>(0);
-	
+	pseudo: string | undefined,
+	addFriend?: (friend: Friend) => void,
+	addPending?: (pending: Pending) => void,
+) => {	
 	
 	useEffect(() => {
-		if (user?.pseudo) {
-			socket?.on('message', async (payload: IMessageEvRecv) => {
-				console.log("(message) user?.pseudo = ", user?.pseudo, " et payload = ", payload)
-				console.log("receiver?.pseudo = ", receiver?.pseudo);
-				if (ClientApi.redirect.pathname.indexOf("/messages") === 0) {
-					const data: { blockeds: string[] } = await ClientApi.get(API_USER_BLOCK);
-					const isBlocked: boolean = data.blockeds.some(blocked => 
-						blocked === receiver?.pseudo )
-					if (!isBlocked) {
-						if (receiver?.pseudo === payload.author) {
-							ClientApi.patch(API_CHAT_MARK_READ + '/' + payload.author)
-							if (addChatItem)
-								addChatItem({
-									avatar: receiver?.avatar,
-									type: "other",
-									status: MessageStatus.SENT,
-									msg: payload.message
-								})
-						}
-						else {
-							try {
-								const { discussion }: {discussion: Discussion} = await ClientApi.get(API_CHAT_DISCUSSIONS_RELATION + '/' + payload.author)
-								if (updateDiscussions)
-									updateDiscussions(payload.author, 0, discussion.unread,
-										discussion.avatar)
-							} catch (err) {
-								console.log("err = ", err)
-							}
-						}
+		if (pseudo) {
+			socket?.on('newRequest', async (payload: IFriendEv) => {
+				console.log("(newRequest) pseudo = ", pseudo, " et payload = ", payload)
+				const data: { blockeds: string[] } = await ClientApi.get(API_USER_BLOCK);
+				const isBlocked: boolean = data.blockeds.some(blocked => 
+					blocked === payload.pseudo )
+				if (!isBlocked)
+				{
+					if (ClientApi.redirect.pathname.indexOf("/friends") === 0) {
+						
 					}
 					else {
 						//notification
@@ -55,7 +31,7 @@ export const useDMListener = (
 			})
 		}
 		return () => {
-			socket?.removeAllListeners('message')
+			socket?.removeAllListeners('newRequest')
 		}
-	}, [socket, user, receiver])
+	}, [socket, pseudo])
 }

@@ -22,11 +22,12 @@ export const useDMListener = (
 			socket?.on('message', async (payload: IMessageEvRecv) => {
 				console.log("(message) user?.pseudo = ", user?.pseudo, " et payload = ", payload)
 				console.log("receiver?.pseudo = ", receiver?.pseudo);
-				if (ClientApi.redirect.pathname.indexOf("/messages") === 0) {
-					const data: { blockeds: string[] } = await ClientApi.get(API_USER_BLOCK);
-					const isBlocked: boolean = data.blockeds.some(blocked => 
-						blocked === receiver?.pseudo )
-					if (!isBlocked) {
+				const data: { blockeds: string[] } = await ClientApi.get(API_USER_BLOCK);
+				const isBlocked: boolean = data.blockeds.some(blocked => 
+					blocked === receiver?.pseudo )
+				if (!isBlocked)
+				{
+					if (ClientApi.redirect.pathname.indexOf("/messages") === 0) {
 						if (receiver?.pseudo === payload.author) {
 							ClientApi.patch(API_CHAT_MARK_READ + '/' + payload.author)
 							if (addChatItem)

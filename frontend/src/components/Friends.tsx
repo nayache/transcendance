@@ -6,19 +6,19 @@ import DefaultImg from "../img/avatar2.jpeg"
 import { Relation } from "../interface/IUser"
 import { Status } from "../constants/EMessage"
 import ClientApi from "./ClientApi.class"
-import { API_USER_ADD_FRIEND, API_USER_DEL_FRIEND, API_USER_FRIENDS_LIST, PROFILE_EP, PROFILE_ROUTE } from "../constants/RoutesApi"
+import { API_USER_ADD_FRIEND, API_USER_BLOCK, API_USER_DEL_FRIEND, API_USER_FRIENDS_LIST, PROFILE_EP, PROFILE_ROUTE } from "../constants/RoutesApi"
 import { BsCheck2 } from "react-icons/bs"
 import { RxCross1 } from "react-icons/rx"
 import { ImCross } from "react-icons/im"
 import { usePseudo } from "../hooks/usePseudo"
 
-interface Friend {
+export interface Friend {
     pseudo: string,
     status: Status,
 	avatar?: string,
 }
 
-interface Pending {
+export interface Pending {
     pseudo: string,
 	avatar?: string,
 }
@@ -101,12 +101,19 @@ const Friends = () => {
 
 
 
+
+
 	useEffect(() => {
 		(async () => {
 			try {
 				const data: { friends: Friend[], pendings: Pending[] } =
 					await ClientApi.get(API_USER_FRIENDS_LIST)
 				console.log("data = ", data)
+				const { blockeds }: { blockeds: string[] } = await ClientApi.get(API_USER_BLOCK); 
+				data.friends = data.friends.filter(friend => blockeds
+					.every(blocked => friend.pseudo !== blocked))
+				data.pendings = data.pendings.filter(pending => blockeds
+					.every(blocked => pending.pseudo !== blocked))
 				setFriends(data.friends)
 				setPendings(data.pendings)
 			} catch (err) {
