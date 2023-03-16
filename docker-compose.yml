@@ -12,7 +12,7 @@ services:
     volumes:
       - ./frontend:/app
     env_file:
-      - ./docker/frontend.env
+      - ./frontend/.env
     restart: unless-stopped
     depends_on:
       - postgres
@@ -38,7 +38,7 @@ services:
     container_name: postgres
     image: postgres:latest
     env_file:
-      - ./docker/postgres.env
+      - ./backend/.env
     environment:
       TZ: "Europe/Paris"
     restart: unless-stopped
