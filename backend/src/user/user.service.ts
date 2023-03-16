@@ -78,7 +78,7 @@ export class UserService {
         console.log('in validpseudo()',pseudo)
         if (pseudo.search(/\s/) != -1)
             return false
-        return (pseudo.length > 3 && pseudo.length < 26);
+        return (pseudo.length > 3 && pseudo.length < 21);
     }
 
     async pseudoExist(pseudo: string): Promise<boolean> {
@@ -434,15 +434,15 @@ export class UserService {
 
 	async getBlock(userId: string): Promise<string[]> {
 		try {
-		const block: BlockedEntity[] = await this.blockedRepository.find({where: {authorId: userId},relations: ['user2']});
-		let users: string[] = [];
-		for (let i = 0; i < block.length; i++)
-		{
-			let user = await this.findById(block[i].user2Id);
-			if (user)
-				users.push(user.pseudo);
-		}
-		return users;
+		    const block: BlockedEntity[] = await this.blockedRepository.find({where: {authorId: userId},relations: ['user2']});
+		    let users: string[] = [];
+		    for (let i = 0; i < block.length; i++)
+		    {
+			    let user = await this.findById(block[i].user2Id);
+			    if (user)
+				    users.push(user.pseudo);
+		    }
+		    return users;
 		} catch(e) {
 			return null;
 		}

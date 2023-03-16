@@ -17,6 +17,7 @@ import { Error } from 'src/exceptions/error.interface';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { AvatarService } from 'src/user/avatar.service';
 import { ErrorException } from 'src/exceptions/error.exception';
+import * as bcrypt from 'bcrypt';
 
 
 @Injectable()
@@ -106,13 +107,17 @@ export class ChatService {
         return (alphaCount >= 6);
     }
 
+    async checkPassword(hash: string, password: string): Promise<boolean> {
+        return bcrypt.compare(password, hash);
+    }
+
     async channelAccess(userId: string, channelName: string, password?: string): Promise<Error> {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
         if (channel.private === true)
             return new Error(AboutErr.CHANNEL, TypeErr.REJECTED, 'channel is private');
         if (await this.isBanned(channelName, userId))
             return new Error(AboutErr.USER, TypeErr.REJECTED, 'user is banned');
-        if (channel.password && channel.password != password)
+        if (channel.password && !(await this.checkPassword(channel.password, password)))
             return new Error(AboutErr.PASSWORD, TypeErr.INVALID, 'channel password is incorrect');
         return null;
     }
@@ -304,6 +309,10 @@ export class ChatService {
     }
 
     async createChannel(nameChannel: string, prv: boolean, password?: string) {
+        if (password) {
+            const salt: string = await bcrypt.genSalt();
+            password = await bcrypt.hash(password, salt);
+        }
         await this.channelRepository.save(new ChannelEntity(nameChannel, prv, password));
     }
 

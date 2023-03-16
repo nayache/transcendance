@@ -11,17 +11,19 @@ import { eventMessageDto, joinRoomDto, kickBanDto, leaveRoomDto, muteDto, userDt
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { ChannelUserDto } from './chat.controller';
 import { GameService } from 'src/game/game.service';
-import { Difficulty, Match } from 'src/game/game.controller';
+import { Difficulty } from 'src/game/game.controller';
 import { GameEntity } from 'src/game/game.entity';
 
 
 export class GameDto {
   id: string;
+  ranked: boolean;
   difficulty: Difficulty;
   player1: string;
   player2: string;
   score1: number;
   score2: number;
+  forfeit: boolean;
   xp1: number;
   xp2: number;
   date: Date;
@@ -208,6 +210,15 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     }
   }
 
+  async inviteGame(authorId: string, invitedId: string, invited: string, difficulty: Difficulty) {
+    const author: string = await this.userService.getPseudoById(authorId);
+    if (!author || !this.users.get(invitedId)) 
+      return; // a mieux gererrr
+    this.users.get(invitedId).forEach((socket) => {
+      this.server.to(socket.id).emit('inviteGame', { author, invited, difficulty });
+    });
+  }
+
   async matchEvent(payload: GameEntity) {
       console.log(payload.created_at.toLocaleString('fr-FR'))
     if (!this.users.get(payload.player1Id) || !this.users.get(payload.player2Id)) {
@@ -259,7 +270,8 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     if (user) {
       if (this.users.get(user.id).has(user.socket)) {
         if (this.inGamePage.has(user.id)) {
-          await this.cleanGame(user.id)
+          await this.cleanGame(user.id);
+          this.gameService.deleteChallenges(user.id);
           this.inGamePage.delete(user.id); // supprimer le socket (gamePage)
         }
         this.users.get(user.id).delete(user.socket); // supprimer le socket associer
