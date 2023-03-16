@@ -52,11 +52,7 @@ const Friends = () => {
 			pending
 		])
 	})
-	useNewFriendAccListener(socket, pseudo, (friend: Friend) => {
-		setFriends(friends => [...friends,
-			friend
-		])
-	})
+	useNewFriendAccListener(socket, pseudo, (friends: Friend[]) => setFriends(friends))
 
 
 

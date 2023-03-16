@@ -4,6 +4,8 @@ import ClientApi from "../components/ClientApi.class"
 import { Friend, Pending } from "../components/Friends"
 import { API_AVATAR_ROUTE, API_USER_BLOCK } from "../constants/RoutesApi"
 import { IFriendEv } from "../interface/IFriend"
+import DefaultImg from "../img/avatar2.jpeg"
+
 
 export const useNewFriendReqListener = (
 	socket: Socket | undefined,
@@ -29,7 +31,7 @@ export const useNewFriendReqListener = (
 							if (addPending)
 								addPending({
 									pseudo: payload.pseudo,
-									avatar: data.avatar
+									avatar: data.avatar ? data.avatar : DefaultImg
 								})
 						} catch (err) {
 							console.log("err = ", err)
