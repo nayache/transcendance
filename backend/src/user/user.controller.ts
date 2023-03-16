@@ -13,6 +13,7 @@ import { Relation } from '../enums/relation.enum';
 import { Status } from 'src/enums/status.enum';
 import { ProfileDto } from 'src/dto/profile.dto';
 import * as sharp from 'sharp';
+import isEmptyArrayBuffer from 'is-empty-array-buffer';
 
 export class friendDto {
 	pseudo: string;
@@ -175,6 +176,16 @@ async postpseudoAvatar(
     if (await this.userService.pseudoExist(pseudo))
         throw new ErrorException(HttpStatus.CONFLICT, AboutErr.PSEUDO, TypeErr.DUPLICATED, 'pseudo already used')
     if (file) {
+		const whitelist = [
+			'image/jpeg',
+			'image/png'
+		];
+		console.log(file.buffer);
+		if (file.buffer.length == 0)
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID, 'File is not an image');
+		const mime = await this.avatarService.getMimeTypeFromArrayBuffer(file.buffer);
+		if (!whitelist.includes(mime))
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID, 'File is not an image');
 		const resize = await sharp(file.buffer).resize(200, 200).toBuffer();
 		file.buffer = resize;
         await this.userService.setAvatar(userId, file);

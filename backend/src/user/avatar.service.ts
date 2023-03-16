@@ -62,6 +62,27 @@ import { UserService } from './user.service';
 		}
 	}
 
+	async getMimeTypeFromArrayBuffer(arrayBuffer): Promise <string> {
+  		const uint8arr = new Uint8Array(arrayBuffer)
+  		const len = 4
+  		if (uint8arr.length >= len) {
+  		  let signatureArr = new Array(len)
+  		  for (let i = 0; i < len; i++)
+  		    signatureArr[i] = (new Uint8Array(arrayBuffer))[i].toString(16)
+  		  const signature = signatureArr.join('').toUpperCase()
+		  console.log(signature);
+
+    		switch (signature) {
+    		  case '89504E47':
+    		    return 'image/png'
+    		  case 'FFD8FFE0':
+    		    return 'image/jpeg'
+    		  default:
+    		    return null }
+  			}
+  			return null 
+	}
+
 	async getavatarId(userId:string, filename: string): Promise<string> {
 		try {
 			const avatar: Avatar[] = await this.avatarRepository.find({where: {userId: userId}});
