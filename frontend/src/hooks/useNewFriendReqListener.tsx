@@ -22,7 +22,7 @@ export const useNewFriendReqListener = (
 				console.log("isBlocked = ", isBlocked)
 				if (!isBlocked)
 				{
-					if (ClientApi.redirect.pathname.indexOf("/friends") === 0) {
+					if (ClientApi.redirect.pathname.indexOf("/me/friends") === 0) {
 						try {
 							console.log("new Req")
 							const data = await ClientApi.get(API_AVATAR_ROUTE + '/' + payload.pseudo)

@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import Loader from "../img/pong.gif"
 import { GameMode } from "./Home";
 import { Link, redirect, useParams } from "react-router-dom";
-import { BASE_URL } from "../constants/RoutesApi";
+import { BASE_URL, GAMEPAGE_ROUTE } from "../constants/RoutesApi";
 import ClientApi from "./ClientApi.class";
 import { usePseudo } from "../hooks/usePseudo";
 
@@ -27,7 +27,7 @@ const GoPlay = () => {
 
 	useEffect (() => {
 		setTimeout(() => {
-			setLoader(false);
+			ClientApi.redirect = new URL(GAMEPAGE_ROUTE)
 		}, 3000)
 	}, [])
 
@@ -54,7 +54,10 @@ const GoPlay = () => {
 							onClick={() => setLoader(true)}>
 							PLAY {gameMode.toUpperCase()} GAME
 						</button> :
-						<img className="loaderPong-img" src={Loader}/>}
+						<div>
+							<img className="loaderPong-img" src={Loader}/>
+							<p>Loading...</p>
+						</div>}
 				</div>
 			</div>
 		}

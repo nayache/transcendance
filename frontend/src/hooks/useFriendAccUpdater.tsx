@@ -22,7 +22,7 @@ export const useNewFriendAccListener = (
 					blocked === payload.pseudo )
 				if (!isBlocked)
 				{
-					if (ClientApi.redirect.pathname.indexOf("/friends") === 0) {
+					if (ClientApi.redirect.pathname.indexOf("/me/friends") === 0) {
 						try {
 							const data = await ClientApi.get(API_AVATAR_ROUTE + '/' + payload.pseudo)
 							if (addFriend)

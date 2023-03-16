@@ -97,16 +97,26 @@ const Friends = () => {
 				</div>
 				<div className="choice-friend">
 					<button className="aj-button" onClick={async () => {
-						const {friends: newfriends} = await ClientApi.post(API_USER_ADD_FRIEND + '/' + pending.pseudo)
-						setFriends(newfriends)
-						setPendings(pendings => pendings.filter(daPending => daPending.pseudo !== pending.pseudo))
+						try {
+							const {friends: newfriends} = await ClientApi.post(API_USER_ADD_FRIEND + '/' + pending.pseudo)
+							setFriends(newfriends)
+							setPendings(pendings => pendings.filter(daPending => daPending.pseudo !== pending.pseudo))
+						} catch (err) {
+							console.log("err = ", err)
+							setPendings(pendings => pendings.filter(daPending => daPending.pseudo !== pending.pseudo))
+						}
 					}} >
 						<BsCheck2 className="aj-svg" />
 					</button>
 					<button className="supp-button" onClick={async () => {
-						const {friends: newfriends} = await ClientApi.delete(API_USER_DEL_FRIEND + '/' + pending.pseudo)
-						setFriends(newfriends)
-						setPendings(pendings => pendings.filter(daPending => daPending.pseudo !== pending.pseudo))
+						try {
+							const {friends: newfriends} = await ClientApi.delete(API_USER_DEL_FRIEND + '/' + pending.pseudo)
+							setFriends(newfriends)
+							setPendings(pendings => pendings.filter(daPending => daPending.pseudo !== pending.pseudo))
+						} catch (err) {
+							console.log("err = ", err)
+							setPendings(pendings => pendings.filter(daPending => daPending.pseudo !== pending.pseudo))
+						}
 					}} >
 						<RxCross1 className="rejet-svg" />
 					</button>

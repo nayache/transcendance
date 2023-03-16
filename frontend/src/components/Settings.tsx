@@ -5,6 +5,7 @@ import { useState } from "react";
 import "../styles/Settings.css";
 import { BASE_URL, SETTINGS_BLOCKED_EP, SETTINGS_HELP_EP, SETTINGS_MYPROFILE_EP, SETTINGS_TWOFA_EP } from "../constants/RoutesApi";
 import ClientApi from "./ClientApi.class";
+import { usePseudo } from "../hooks/usePseudo";
 
 interface IOptionValue {
 	name: string;
@@ -23,6 +24,7 @@ interface IOption {
 // changer le theme du site (background devient black lightblack ou bien red lightred, etc..)
 const Settings = () => {
 
+	const pseudo = usePseudo()
 	const options: IOption[] = [
 		{
 			header: {
@@ -79,6 +81,9 @@ const Settings = () => {
 	const [visibleOptions, setVisibleOptions] = useState(options);
 
 
+
+
+
 	const handleonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		e.preventDefault();
 		
@@ -103,6 +108,9 @@ const Settings = () => {
 		})
 		setVisibleOptions(returnedItems);
 	}
+
+
+
 
 
 	return (
