@@ -69,6 +69,9 @@ export const BASE_URL = `${REACT_APP_FRONT_PROTOCOL}://${REACT_APP_FRONT_HOSTNAM
 export const HOME_EP = '/'
 export const HOME_ROUTE = BASE_URL + HOME_EP
 
+export const GOPLAY_EP = '/go-play'
+export const GOPLAY_ROUTE = BASE_URL + GOPLAY_EP
+
 export const REGISTER_EP = '/register';
 export const REGISTER_ROUTE = BASE_URL + REGISTER_EP
 

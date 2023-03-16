@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react"
-import { API_PSEUDO_ROUTE, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
+import React, { useEffect, useRef, useState } from "react"
+import { API_PSEUDO_ROUTE, GOPLAY_EP, MESSAGES_ROUTE, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
 import ClientApi from "./ClientApi.class";
 import '../styles/Home.css'
 import Navbar from "./Navbar";
@@ -7,13 +7,30 @@ import ServerDownPage from "./ServerDownPage";
 import { AboutErr, IError, TypeErr } from "../constants/EError";
 import { Socket } from "socket.io-client";
 import { usePseudo } from "../hooks/usePseudo";
+import GoPlay from "./GoPlay";
+import Notification, { NotificationType } from "./Notification";
+import { useDMListener } from "../hooks/useDMListener";
+import { useSocket } from "../hooks/useSocket";
+import { useAvatar } from "../hooks/useAvatar";
+import { IMessageEvRecv } from "../interface/IMessage";
+import { IFriendEv } from "../interface/IFriend";
 
+export type GameMode = "classic" | "medium" | "hard"
 
 const Home = () => {
 
-	const [isOkay, setIsOkay] = useState<boolean | undefined>();
 	const pseudo = usePseudo();
-
+	const avatar = useAvatar();
+	const socket = useSocket();
+	const [isOkay, setIsOkay] = useState<boolean | undefined>();
+	const [gameMode, setGameMode] = useState<GameMode | undefined>(undefined)
+	const infos = useRef<IMessageEvRecv | IFriendEv | undefined>(undefined);
+	const [notificationType, setNotificationType] = useState<NotificationType | null>(null)
+	useDMListener(socket, {pseudo, avatar}, undefined, undefined, undefined, (payload) => {
+		infos.current = payload
+		console.log("infos.current = ", infos.current)
+		setNotificationType(NotificationType.DM)
+	})
 
 
 
@@ -27,6 +44,18 @@ const Home = () => {
 		return (
 			<div>
 				<Navbar/>
+				{ (() => { console.log("(getPage) infos.current = ", infos.current, "  et  notificationType = ", notificationType); return true })() && notificationType !== null && infos.current !== undefined &&
+					<Notification active={notificationType !== null ? true : false} type={notificationType}
+					infos={infos.current}
+					callback={({type, infos}) => {
+						if (type === NotificationType.DM)
+							ClientApi.redirect = new URL(MESSAGES_ROUTE + '/' + infos.pseudo)
+					}}
+					callbackFail={() => {
+						infos.current = undefined
+						setNotificationType(null)
+					}} />
+				}
 				<div className="home-container">
 					<div>
 						<div className="title-container">
@@ -40,21 +69,27 @@ const Home = () => {
 					</div>
 					<div>
 						<div className="button-container">
-							<button className="classic-game">
+							<a href={GOPLAY_EP + '/classic'} className="classic-game">
 								classic
-							</button>
-							<button className="medium-game">
+							</a>
+							<a href={GOPLAY_EP + '/medium'} className="medium-game">
 								medium
-							</button>
-							<button className="hard-game">
+							</a>
+							<a href={GOPLAY_EP + '/hard'} className="hard-game">
 								hard
-							</button>
+							</a>
 						</div>
+					</div>
+					<div>
+
 					</div>
 				</div>
 			</div>
 		)
 	}
+
+
+
 
 	return (
 		<React.Fragment>

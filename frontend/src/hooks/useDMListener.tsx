@@ -10,8 +10,9 @@ export const useDMListener = (
 	socket: Socket | undefined,
 	user: IUser | undefined,
 	receiver: IUser | undefined,
-	updateDiscussions: (pseudo: string, position: number, unread: number, avatar?: string) => void,
+	updateDiscussions?: (pseudo: string, position: number, unread: number, avatar?: string) => void,
 	addChatItem?: (chatItem: ChatItem) => void,
+	onNotification?: (payload?: IMessageEvRecv) => void
 ) => {
 
 	const unreadNb = useRef<number>(0);
@@ -50,7 +51,8 @@ export const useDMListener = (
 						}
 					}
 					else {
-						//notification
+						if (onNotification)
+							onNotification(payload)
 					}
 				}
 			})

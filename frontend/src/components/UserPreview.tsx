@@ -207,7 +207,7 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 						action: async () => {
 							if (!clicked.current) {
 								clicked.current = true
-								await ClientApi.delete(API_USER_ADD_FRIEND + '/' + playerName)
+								await ClientApi.delete(API_USER_DEL_FRIEND + '/' + playerName)
 								if (callback)
 									callback(playerName)
 							}

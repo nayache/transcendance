@@ -48,3 +48,11 @@
   color: #fff;
 }
 
+.loaderPong-img {
+  position: relative;
+  top: 0;
+  left: 0;
+  margin: auto;
+  width: 60%;
+  height: auto;
+}
