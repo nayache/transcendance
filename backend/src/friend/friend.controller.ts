@@ -60,6 +60,13 @@ export class FriendController {
         const pendings: UserPreview[] = await this.userService.makeList(friendshipPendings, userId);
         return { friends: friendList, pendings };
     }
+
+    @Get('pending')
+    async getPendings(@User() userId: string) {
+        const friendshipPendings: FriendEntity[] = await this.userService.getFriendshipInWaiting(userId);
+        const pendings: UserPreview[] = await this.userService.makeList(friendshipPendings, userId);
+        return {pendings};
+    }
 /*
     @Get('/:pseudo/:value')
     async getUserFriendList(@Param('value') value: boolean, @Param('pseudo') pseudo: string) {
