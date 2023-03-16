@@ -12,7 +12,7 @@ services:
     volumes:
       - ./frontend:/app
     env_file:
-      - ./docker/frontend.env
+      - ./frontend/.env
     restart: unless-stopped
     depends_on:
       - postgres
