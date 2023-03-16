@@ -6,7 +6,7 @@ import { UserEntity } from 'src/entity/user.entity';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { ErrorException } from 'src/exceptions/error.exception';
 import { friendDto } from 'src/user/user.controller';
-import { UserService } from 'src/user/user.service';
+import { UserPreview, UserService } from 'src/user/user.service';
 
 @Controller('users/friends')
 export class FriendController {
@@ -51,7 +51,7 @@ export class FriendController {
         const friends: FriendEntity[] = await this.userService.getFriends(userId, true);
         const friendList : friendDto[] = await this.userService.makeFriendList(userId, friends);
         const friendshipPendings: FriendEntity[] = await this.userService.getFriendshipInWaiting(userId);
-        const pendings: string[] = await this.userService.makeList(friendshipPendings, userId);
+        const pendings: UserPreview[] = await this.userService.makeList(friendshipPendings, userId);
         return { friends: friendList, pendings };
     }
 /*

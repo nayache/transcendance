@@ -290,10 +290,13 @@ export class UserService {
         return blockedList;
     }
     
-    async makeList(pendings: FriendEntity[], userId: string): Promise<string[]> {
+    async makeList(pendings: FriendEntity[], userId: string): Promise<UserPreview[]> {
         return Promise.all(pendings.map(async (pending) => {
-            const id: string = (pending.user1Id === userId) ? pending.user2Id : pending.user1Id; 
-            return await this.getPseudoById(id);
+            const id: string = (pending.user1Id === userId) ? pending.user2Id : pending.user1Id;
+            const avatarObject: Avatar = await this.getAvatar(id);
+            const avatar: string = (avatarObject) ? this.avatarService.toStreamableFile(avatarObject) : null;
+            const pseudo: string = await this.getPseudoById(id);
+            return { pseudo, avatar };
         }));
     }
 
