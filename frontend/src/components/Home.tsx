@@ -49,7 +49,7 @@ const Home = () => {
 					infos={infos.current}
 					callback={({type, infos}) => {
 						if (type === NotificationType.DM)
-							ClientApi.redirect = new URL(MESSAGES_ROUTE + '/' + infos.pseudo)
+							ClientApi.redirect = new URL(MESSAGES_ROUTE + '/' + infos.author)
 					}}
 					callbackFail={() => {
 						infos.current = undefined
