@@ -112,7 +112,7 @@ const Profile = () => {
 			try {
 				console.log("ytrfygjvhbk")
 				console.log("pseudo = ", pseudo);
-				const url: string = API_BASE_USER + "/" + pseudo
+				const url: string = API_BASE_USER + '/' + pseudo
 				const data = await ClientApi.get(url)
 				
 				setUser(data.user)

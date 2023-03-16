@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
-import { API_PSEUDO_ROUTE, GOPLAY_EP, MESSAGES_ROUTE, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
+import { API_PSEUDO_ROUTE, GOPLAY_EP, MESSAGES_ROUTE, MYFRIENDS_EP, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
 import ClientApi from "./ClientApi.class";
 import '../styles/Home.css'
 import Navbar from "./Navbar";
@@ -14,6 +14,8 @@ import { useSocket } from "../hooks/useSocket";
 import { useAvatar } from "../hooks/useAvatar";
 import { IMessageEvRecv } from "../interface/IMessage";
 import { IFriendEv } from "../interface/IFriend";
+import { useNewFriendReqListener } from "../hooks/useNewFriendReqListener";
+import { useNewFriendAccListener } from "../hooks/useFriendAccUpdater";
 
 export type GameMode = "classic" | "medium" | "hard"
 
@@ -23,13 +25,22 @@ const Home = () => {
 	const avatar = useAvatar();
 	const socket = useSocket();
 	const [isOkay, setIsOkay] = useState<boolean | undefined>();
-	const [gameMode, setGameMode] = useState<GameMode | undefined>(undefined)
 	const infos = useRef<IMessageEvRecv | IFriendEv | undefined>(undefined);
 	const [notificationType, setNotificationType] = useState<NotificationType | null>(null)
 	useDMListener(socket, {pseudo, avatar}, undefined, undefined, undefined, (payload) => {
 		infos.current = payload
 		console.log("infos.current = ", infos.current)
 		setNotificationType(NotificationType.DM)
+	})
+	useNewFriendReqListener(socket, pseudo, undefined, (payload) => {
+		infos.current = payload
+		console.log("infos.current = ", infos.current)
+		setNotificationType(NotificationType.NEWFRIEND)
+	})
+	useNewFriendAccListener(socket, pseudo, undefined, (payload) => {
+		infos.current = payload
+		console.log("infos.current = ", infos.current)
+		setNotificationType(NotificationType.ACCEPTEDFRIEND)
 	})
 
 
@@ -50,6 +61,8 @@ const Home = () => {
 					callback={({type, infos}) => {
 						if (type === NotificationType.DM)
 							ClientApi.redirect = new URL(MESSAGES_ROUTE + '/' + infos.author)
+						if (type === NotificationType.NEWFRIEND || type === NotificationType.ACCEPTEDFRIEND)
+							ClientApi.redirect = new URL(MYFRIENDS_EP)
 					}}
 					callbackFail={() => {
 						infos.current = undefined

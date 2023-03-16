@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import Navbar from "./Navbar"
 import "../styles/Friends.css"
 import "../styles/Pendings.css"
@@ -6,7 +6,7 @@ import DefaultImg from "../img/avatar2.jpeg"
 import { Relation } from "../interface/IUser"
 import { Status } from "../constants/EMessage"
 import ClientApi from "./ClientApi.class"
-import { API_USER_ADD_FRIEND, API_USER_BLOCK, API_USER_DEL_FRIEND, API_USER_FRIENDS_LIST, PROFILE_EP, PROFILE_ROUTE } from "../constants/RoutesApi"
+import { API_USER_ADD_FRIEND, API_USER_BLOCK, API_USER_DEL_FRIEND, API_USER_FRIENDS_LIST, MESSAGES_ROUTE, PROFILE_EP, PROFILE_ROUTE } from "../constants/RoutesApi"
 import { BsCheck2 } from "react-icons/bs"
 import { RxCross1 } from "react-icons/rx"
 import { ImCross } from "react-icons/im"
@@ -14,6 +14,11 @@ import { usePseudo } from "../hooks/usePseudo"
 import { useNewFriendReqListener } from "../hooks/useNewFriendReqListener"
 import { useSocket } from "../hooks/useSocket"
 import { useNewFriendAccListener } from "../hooks/useFriendAccUpdater"
+import { useDMListener } from "../hooks/useDMListener"
+import { IMessageEvRecv } from "../interface/IMessage"
+import { IFriendEv } from "../interface/IFriend"
+import Notification, { NotificationType } from "./Notification"
+import { useAvatar } from "../hooks/useAvatar"
 
 export interface Friend {
     pseudo: string,
@@ -29,11 +34,19 @@ export interface Pending {
 const Friends = () => {
 	
 
-	const socket = useSocket()
+	const socket = useSocket();
 	const pseudo = usePseudo()
+	const avatar = useAvatar();
 	const [friends, setFriends] = useState<Friend[]>([])
 	const [pendings, setPendings] = useState<Pending[]>([])
 	const[isOpen, setIsOpen] = useState(true);
+	const infos = useRef<IMessageEvRecv | IFriendEv | undefined>(undefined);
+	const [notificationType, setNotificationType] = useState<NotificationType | null>(null)
+	useDMListener(socket, {pseudo, avatar}, undefined, undefined, undefined, (payload) => {
+		infos.current = payload
+		console.log("infos.current = ", infos.current)
+		setNotificationType(NotificationType.DM)
+	})
 	useNewFriendReqListener(socket, pseudo, (pending: Pending) => {
 		setPendings(pendings => [...pendings,
 			pending
@@ -142,6 +155,18 @@ const Friends = () => {
 	return (
 		<div>
 			<Navbar/>
+			{ notificationType !== null && infos.current !== undefined &&
+				<Notification active={notificationType !== null ? true : false} type={notificationType}
+				infos={infos.current}
+				callback={({type, infos}) => {
+					if (type === NotificationType.DM)
+						ClientApi.redirect = new URL(MESSAGES_ROUTE + '/' + infos.author)
+				}}
+				callbackFail={() => {
+					infos.current = undefined
+					setNotificationType(null)
+				}} />
+			}
 			<div className="friends">
 				<h1>Friends</h1>
 				{ printFriends(friends) }

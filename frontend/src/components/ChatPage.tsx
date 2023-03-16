@@ -4,7 +4,7 @@ import Navbar from "./Navbar";
 import styled from "styled-components";
 import ChannelPart from "./ChannelPart";
 import ClientApi from "./ClientApi.class";
-import { API_CHAT_USER_CHANNELS_ROUTE } from "../constants/RoutesApi";
+import { API_CHAT_USER_CHANNELS_ROUTE, MESSAGES_ROUTE, MYFRIENDS_EP } from "../constants/RoutesApi";
 import { useSocket } from "../hooks/useSocket";
 import ChannelPlayers from "./ChannelPlayers";
 import { IChannel, IChannelUser } from "../interface/IChannel";
@@ -14,6 +14,13 @@ import ServerDownPage from "./ServerDownPage";
 import { useChanUser } from "../hooks/useChanUser";
 import Modal from "./Modal";
 import AlertChannelModal from "./AlertChannelModal";
+import Notification, { NotificationType } from "./Notification";
+import { IMessageEvRecv } from "../interface/IMessage";
+import { IFriendEv } from "../interface/IFriend";
+import { useDMListener } from "../hooks/useDMListener";
+import { useNewFriendReqListener } from "../hooks/useNewFriendReqListener";
+import { useNewFriendAccListener } from "../hooks/useFriendAccUpdater";
+import { useAvatar } from "../hooks/useAvatar";
 
 
 const ChatContainer = styled.div`
@@ -31,6 +38,7 @@ export type AlertType = "kick" | "ban" | "mute" | null;
 const ChatPage = () => {
 
 	const pseudo = usePseudo();
+	const avatar = useAvatar()
 	const [channels, setChannels] = useState<IChannel[]>([]);
 	const [currentChannelId, setCurrentChannelId] = useState<number>(0);
 	const chanUser = useChanUser(pseudo, channels, currentChannelId)
@@ -40,6 +48,24 @@ const ChatPage = () => {
 	const [alertChannelName, setAlertChannelName] = useState<string | null>(null);
 	const [isOkay, setIsOkay] = useState<boolean>();
 	const socket = useSocket()
+	const infos = useRef<IMessageEvRecv | IFriendEv | undefined>(undefined);
+	const [notificationType, setNotificationType] = useState<NotificationType | null>(null)
+	useDMListener(socket, {pseudo, avatar}, undefined, undefined, undefined, (payload) => {
+		infos.current = payload
+		console.log("infos.current = ", infos.current)
+		setNotificationType(NotificationType.DM)
+	})
+	useNewFriendReqListener(socket, pseudo, undefined, (payload) => {
+		infos.current = payload
+		console.log("infos.current = ", infos.current)
+		setNotificationType(NotificationType.NEWFRIEND)
+	})
+	useNewFriendAccListener(socket, pseudo, undefined, (payload) => {
+		infos.current = payload
+		console.log("infos.current = ", infos.current)
+		setNotificationType(NotificationType.ACCEPTEDFRIEND)
+	})
+	
 
 
 
@@ -268,6 +294,20 @@ const ChatPage = () => {
 		return (
 			<React.Fragment>
 				<Navbar />
+				{ notificationType !== null && infos.current !== undefined &&
+					<Notification active={notificationType !== null ? true : false} type={notificationType}
+					infos={infos.current}
+					callback={({type, infos}) => {
+						if (type === NotificationType.DM)
+							ClientApi.redirect = new URL(MESSAGES_ROUTE + '/' + infos.author)
+						if (type === NotificationType.NEWFRIEND || type === NotificationType.ACCEPTEDFRIEND)
+							ClientApi.redirect = new URL(MYFRIENDS_EP)
+					}}
+					callbackFail={() => {
+						infos.current = undefined
+						setNotificationType(null)
+					}} />
+				}
 				<ChatContainer>
 					<ChannelPart socket={socket}
 					updateChannel={updateChannel}

@@ -19,10 +19,12 @@ export const useNewFriendReqListener = (
 				const data: { blockeds: string[] } = await ClientApi.get(API_USER_BLOCK);
 				const isBlocked: boolean = data.blockeds.some(blocked => 
 					blocked === payload.pseudo )
+				console.log("isBlocked = ", isBlocked)
 				if (!isBlocked)
 				{
 					if (ClientApi.redirect.pathname.indexOf("/friends") === 0) {
 						try {
+							console.log("new Req")
 							const data = await ClientApi.get(API_AVATAR_ROUTE + '/' + payload.pseudo)
 							if (addPending)
 								addPending({
