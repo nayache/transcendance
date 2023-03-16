@@ -43,7 +43,7 @@ export class FriendController {
             throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
         if (userId === user2.id)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'invalid target(himself)');
-        if (!await this.userService.friendshipExist(userId, user2.id))
+        if (!await this.userService.friendshipExist(userId, user2.id) || !await this.userService.frienshipWaiting(user2.id, userId))
             throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'friendship not exist');
         else
             await this.userService.removeFriendship(userId, user2.id);
@@ -66,6 +66,12 @@ export class FriendController {
         const friendshipPendings: FriendEntity[] = await this.userService.getFriendshipInWaiting(userId);
         const pendings: UserPreview[] = await this.userService.makeList(friendshipPendings, userId);
         return {pendings};
+    }
+
+    @Get(':/pseudo')
+    async getFriend(@User() userId: string, @Param('pseudo') pseudo: string) {
+        if (!pseudo)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'empty arg');
     }
 /*
     @Get('/:pseudo/:value')
