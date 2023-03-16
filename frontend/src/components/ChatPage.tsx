@@ -300,7 +300,7 @@ const ChatPage = () => {
 					callback={({type, infos}) => {
 						if (type === NotificationType.DM)
 							ClientApi.redirect = new URL(MESSAGES_ROUTE + '/' + infos.author)
-						if (type === NotificationType.NEWFRIEND || type === NotificationType.ACCEPTEDFRIEND)
+						else if (type === NotificationType.NEWFRIEND || type === NotificationType.ACCEPTEDFRIEND)
 							ClientApi.redirect = new URL(MYFRIENDS_EP)
 					}}
 					callbackFail={() => {

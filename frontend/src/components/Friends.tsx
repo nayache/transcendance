@@ -73,9 +73,14 @@ const Friends = () => {
 						<div className={`circle ${circleStatus.get(friend.status)}`} />
 					</button>
 					<ImCross className="rm-friend-svg" onClick={async () => {
-						const {friends: newfriends} = await ClientApi.delete(API_USER_DEL_FRIEND + '/' + friend.pseudo)
-						setFriends(newfriends)
-						setPendings(pendings => pendings.filter(daPending => daPending.pseudo !== friend.pseudo))
+						try {
+							const {friends: newfriends} = await ClientApi.delete(API_USER_DEL_FRIEND + '/' + friend.pseudo)
+							setFriends(newfriends)
+							setPendings(pendings => pendings.filter(daPending => daPending.pseudo !== friend.pseudo))
+						} catch (err) {
+							console.log("err = ", err)
+							setFriends(friends => friends.filter(frien => frien.pseudo !== friend.pseudo))
+						}
 					}} />
 				</div>
 			)
