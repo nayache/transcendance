@@ -77,6 +77,8 @@ import { UserService } from './user.service';
     		    return 'image/png'
     		  case 'FFD8FFE0':
     		    return 'image/jpeg'
+			  case 'FFD8FFE1':
+				return 'image/jpg'
     		  default:
     		    return null }
   			}

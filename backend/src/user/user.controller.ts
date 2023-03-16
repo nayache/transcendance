@@ -174,6 +174,8 @@ async postpseudoAvatar(
         throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.EMPTY, 'Empty pseudo');
     if (await this.userService.pseudoExist(pseudo))
         throw new ErrorException(HttpStatus.CONFLICT, AboutErr.PSEUDO, TypeErr.DUPLICATED, 'pseudo already used')
+	if (!this.userService.isValidPseudo(pseudo))
+		throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.PSEUDO, TypeErr.INVALID, 'pseudo input is invalid');
     if (file) {
 		const whitelist = [
 			'image/jpeg',
@@ -221,9 +223,10 @@ async postpseudoAvatar(
 			{
 				const whitelist = [
 					'image/jpeg',
+					'image/jpg',
 					'image/png'
 				];
-				console.log(file.buffer);
+				console.log(file.mimetype);
 				if (file.buffer.length == 0)
 					throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID, 'File is not an image');
 				const mime = await this.avatarService.getMimeTypeFromArrayBuffer(file.buffer);
