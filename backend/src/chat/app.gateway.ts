@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Logger } from '@nestjs/common';
-import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, WebSocketGateway, WebSocketServer} from '@nestjs/websockets';
+import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { Error } from 'src/exceptions/error.interface';
@@ -10,17 +10,24 @@ import { Status } from '../enums/status.enum';
 import { eventMessageDto, joinRoomDto, kickBanDto, leaveRoomDto, muteDto, userDto } from './dto/chat-gateway.dto';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { ChannelUserDto } from './chat.controller';
-import { GameService } from 'src/game/game.service';
+import { Game, GameService, moveObject } from 'src/game/game.service';
 import { Difficulty } from 'src/game/game.controller';
 import { GameEntity } from 'src/game/game.entity';
+import { UserEntity } from 'src/entity/user.entity';
+import { Point } from 'typeorm';
 
+
+export class PlayerDto {
+  id: string;
+  pseudo: string;
+}
 
 export class GameDto {
   id: string;
   ranked: boolean;
   difficulty: Difficulty;
-  player1: string;
-  player2: string;
+  player1: PlayerDto
+  player2: PlayerDto;
   score1: number;
   score2: number;
   forfeit: boolean;
@@ -225,7 +232,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     if (!this.users.get(payload.player1Id) || !this.users.get(payload.player2Id)) {
       return;
     }
-    const game: GameDto = this.gameService.gameToDto(payload);
+    const game: GameDto = await this.gameService.gameToDto(payload);
     this.users.get(payload.player1Id).forEach((socket) => {
       this.server.to(socket.id).emit('matchEvent', game);
     });
@@ -233,6 +240,12 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       this.server.to(socket.id).emit('matchEvent', game);
     });
     this.logger.log(`Match! beetwen (${game.player1} vs ${game.player2}) in [${game.difficulty}] mode`, 'GAME')
+  }
+
+  @SubscribeMessage('buildGame')
+  async buildGame(@MessageBody() payload: {game: GameDto, w: number, h: number, y: number}, @ConnectedSocket() socket: Socket) {
+    const author: string = (this.inGamePage.get(payload.game.player1.id) === socket) ? payload.game.player1.id : payload.game.player2.id;
+    await this.gameService.startGame(payload.game, author, payload.w, payload.h, payload.y);
   }
 
   async cleanGame(userId: string) {
@@ -254,24 +267,21 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
 
   @SubscribeMessage('readyForGame')
   async readyEvent(@MessageBody() data: GameDto, @ConnectedSocket() socket: Socket) {
-    const user: userDto = await this.authentication(socket);
     // a gerer SI ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR
-    if (!user)
-      return;
-    if (!this.ready.has(user.id))
-      this.ready.add(user.id);
-
-    const user2: UserEntity = await this.userService.findByPseudo((data.player1 === user.pseudo) ? data.player2 : data.player1);
-    if (this.ready.has(user2.id))
+    if (!this.ready.has(data.player1.id))
+      this.ready.add(data.player1.id);
+    if (this.ready.has(data.player2.id))
       this.startGameEvent(data);
   }
 
   startGameEvent(payload: GameDto) {
-    const socket1: Socket = this.inGamePage.get(payload.player1);
-    const socket2: Socket = this.inGamePage.get(payload.player2);
-    this.server.to([socket1.id, socket2.id]).emit('startGame', payload);
-    this.ready.delete(payload.player1);
-    this.ready.delete(payload.player2);
+    const socket1: Socket = this.inGamePage.get(payload.player1.id);
+    const socket2: Socket = this.inGamePage.get(payload.player2.id);
+    setTimeout(() => {
+      this.server.to([socket1.id, socket2.id]).emit('startGame', payload);
+    }, 3000);
+    this.ready.delete(payload.player1.id);
+    this.ready.delete(payload.player2.id);
   }
 
   async endOfGame(gameId: string) {
@@ -280,13 +290,27 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       return;
     const socket1: Socket = this.inGamePage.get(payload.player1.id);
     const socket2: Socket = this.inGamePage.get(payload.player2.id);
-    const game: GameDto = this.gameService.gameToDto(payload);
+    const game: GameDto = await this.gameService.gameToDto(payload);
     if (socket1)
       this.server.to(socket1.id).emit('endOfGame', game);
     if (socket2)
       this.server.to(socket2.id).emit('endOfGame', game);
   }
 
+  @SubscribeMessage('paddleMove')  
+  async paddleMoveEvent(@MessageBody() data: {game: GameDto, e: MouseEvent}, @ConnectedSocket() socket: Socket) {
+    const author: string = (this.inGamePage.get(data.game.player1.id) === socket) ? data.game.player1.id : data.game.player2.id;
+    await this.gameService.paddleMove(author, data.game, data.e);
+  }
+
+  paddleEvent(payload: moveObject[], author: string) {
+    payload.forEach((e) => {
+      const socket: Socket = this.inGamePage.get(e.userId);
+      if (socket)
+        this.server.to(socket.id).emit('paddleEvent', { author, pos: e.pos })
+    })
+  }
+  
   async handleDisconnect(socket: Socket) {
     const user: userDto = await this.authentication(socket);
     //CAS DERREUR POSSIBLE ????
