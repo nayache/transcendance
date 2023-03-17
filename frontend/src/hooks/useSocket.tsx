@@ -5,14 +5,19 @@ import { API_SOCKET_URL } from "../constants/RoutesApi";
 
 
 
-const socket = ClientApi.redirect.findIndex("/gamepage") === 0  io(API_SOCKET_URL, {
+const socket = (ClientApi.redirect.pathname.indexOf("/gamepage") === 0) ? io(API_SOCKET_URL, {
 	auth: {
 		token: `Bearer ${ClientApi.token}`
 	},
 	query: {
 		page: "game"
 	}
-})
+}) : io(API_SOCKET_URL, {
+	auth: {
+		token: `Bearer ${ClientApi.token}`
+	}
+});
+
 
 export const useSocket = () => {
 

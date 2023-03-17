@@ -8,10 +8,10 @@ import { Difficulty } from "../interface/IGame";
 
 interface Props {
 	gameMode?: Difficulty,
-	onClicked?: (props?: any) => void,
+	onClick?: (props?: any) => void,
 }
 
-const GoPlay = ({gameMode, onClicked}: Props) => {	
+const GoPlay = ({gameMode, onClick}: Props) => {	
 
 	const [loader, setLoader] = useState<boolean>(false)
 	
@@ -27,8 +27,8 @@ const GoPlay = ({gameMode, onClicked}: Props) => {
 						<button className="goplay"
 							onClick={() => {
 								setLoader(true)
-								if (onClicked)
-									onClicked()
+								if (onClick)
+									onClick()
 							}}>
 							PLAY {gameMode.toUpperCase()} GAME
 						</button> :

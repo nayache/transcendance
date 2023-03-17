@@ -6,13 +6,26 @@ import RefereeDisplayer from './RefereeDisplayer.class'
 // import DrawerDisplayer from './DrawerDisplayer.class'
 import PlayerDisplayer, { PlayerSide } from './PlayerDisplayer.class'
 import DrawerDisplayer from './DrawerDisplayer.class'
+import { Socket } from 'socket.io-client'
+import { GameDto } from '../interface/IGame'
+import { useState } from 'react'
 
 const MAX_GOALS: number = 4;
 
 interface Props {
+	socket: Socket;
+	infos: GameDto;
 }
 
-const Playground = () => {
+interface CanvasDimensions {
+	width: number,
+	height: number;
+	y: number
+}
+
+const Playground = ({ socket, infos }: Props) => {
+
+	const [dimensions, setDimensions] = useState<CanvasDimensions>();
 
 	const paddle_left: PaddleDisplayer = new PaddleDisplayer(
 		undefined,
@@ -36,13 +49,21 @@ const Playground = () => {
 		MAX_GOALS
 	)
 	const drawer: DrawerDisplayer = new DrawerDisplayer(ref)
-	
+
 	return (
 		<Container>
 			{/* {isCanvasReady([playgroundWidth, playgroundHeight]) &&
 			<Canvas display={gameLoop} id="playground"
 			width={playgroundWidth} height={playgroundHeight} />} */}
-			<Canvas display={(context, canvasWidth, canvasHeight, canvas) => drawer.gameLoop(context, canvasWidth, canvasHeight, canvas)} id="playground" />
+			<Canvas
+			onInit={(context, canvasWidth, canvasHeight, canvas) => 
+				setDimensions({width: canvasWidth, height: canvasHeight, y: canvas.getBoundingClientRect().top})}
+			display={(context, canvasWidth, canvasHeight, canvas) => 
+				drawer.gameLoop(context, canvasWidth, canvasHeight, canvas)} id="playground" />
+			<button onClick={() => {
+				if (dimensions != undefined)
+					socket.emit('buildGame', {infos, });
+			}}>Start</button>
 		</Container>
 	)
 };

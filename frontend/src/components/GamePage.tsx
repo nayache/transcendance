@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react"
 import Background from './Background'
 import Baseline from "./Baseline";
 import Playground from "./Playground";
-import styled from "styled-components";
 import ClientApi from "./ClientApi.class";
 import GoPlay from "./GoPlay";
 import { API_GAME_SEARCH, BASE_URL } from "../constants/RoutesApi";
@@ -18,22 +17,20 @@ const GamePage: React.FC = () => {
 	const gameMode: Difficulty = useParams().mode as Difficulty
 	const [go, setGo] = useState<boolean>(false)
 	const [clicked, setClicked] = useState<boolean>(false)
+	const [infos, setInfos] = useState<GameDto>()
 	
-
-
-
-
 	useEffect(() => {
 		if (clicked) {
 			socket?.on('matchEvent', (gameInfos: GameDto) => {
 				console.log("(matchEvent) gameInfos = ", gameInfos)
+				setInfos(gameInfos);
 				setGo(true)
 			})
 		}
 		return () => {
 			socket?.removeAllListeners('matchEvent')
 		}
-	}, [gameMode])
+	}, [gameMode, clicked])
 
 	useEffect(() => {
 		(async () => {
@@ -52,7 +49,7 @@ const GamePage: React.FC = () => {
 				}
 			}
 		})()
-	}, [gameMode])
+	}, [gameMode, clicked])
 
 
 
@@ -60,13 +57,13 @@ const GamePage: React.FC = () => {
 	return (
 		<React.Fragment>
 			{ !go &&
-				<GoPlay gameMode={gameMode} onClicked={() => setClicked(true)} /> ||
+				<GoPlay gameMode={gameMode} onClick={() => setClicked(true)} /> ||
 
-			go && (
+			go && infos !== undefined && (
 				<React.Fragment>
 					<Background />
 					<Baseline title="Ping pong mais dans gamepage"/>
-					<Playground />
+					<Playground socket={socket} infos={infos}/>
 				</React.Fragment>
 			) }
 		</React.Fragment>
