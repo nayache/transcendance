@@ -16,10 +16,10 @@ export const useStartGameListener = (
 
 	useEffect(() => {
 		socket?.on('preStartGame', ({leftPaddle, rightPaddle, ball: _ball}: MoveObjects) => {
+			console.log("(preStartGame) leftPaddle = ", leftPaddle)
+			console.log("(preStartGame) rightPaddle = ", rightPaddle)
+			console.log("(preStartGame) _ball = ", _ball)
 			// try {
-				leftPlayer.paddle.display(leftPaddle)
-				rightPlayer.paddle.display(rightPaddle)
-				ball.display(_ball)
 				if (onPreStartGame)
 					onPreStartGame({leftPaddle, rightPaddle, ball: _ball})
 			// }

@@ -7,7 +7,7 @@ import RefereeDisplayer from './RefereeDisplayer.class'
 import PlayerDisplayer, { PlayerSide } from './PlayerDisplayer.class'
 import DrawerDisplayer from './DrawerDisplayer.class'
 import { Socket } from 'socket.io-client'
-import { GameDto } from '../interface/IGame'
+import { GameDto, MoveObjects } from '../interface/IGame'
 import '../styles/Playground.css'
 import { useRef, useState } from 'react'
 import { BtnStatus } from './Button'
@@ -47,7 +47,11 @@ const Playground = ({ socket, infos, leftPlayer, rightPlayer }: Props) => {
 
 
 
-	useStartGameListener(socket, leftPlayer, rightPlayer, ball)
+	useStartGameListener(socket, leftPlayer, rightPlayer, ball, ({leftPaddle, rightPaddle, ball: _ball}: MoveObjects) => {
+		leftPlayer.paddle.display(leftPaddle)
+		rightPlayer.paddle.display(rightPaddle)
+		ball.display(_ball)
+	})
 
 
 

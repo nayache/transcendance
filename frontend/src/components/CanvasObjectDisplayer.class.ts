@@ -140,12 +140,12 @@ abstract class CanvasObjectDisplayer {
 
 	display(moveObject?: MoveObject): void {
 		this.context.beginPath();
-		this.context.fillStyle = this.color;
 		if (moveObject) {
 			this.pos = moveObject.pos
 			this.dimensions = moveObject.dimensions
 			this.color = moveObject.color
 		}
+		this.context.fillStyle = this.color;
 	}
 
 	//collision, etc..
