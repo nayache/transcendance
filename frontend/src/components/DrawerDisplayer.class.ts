@@ -8,7 +8,10 @@ import { MoveObject, MoveObjects } from "../interface/IGame";
 class DrawerDisplayer {
 
 	private _reqAnim?: number;
-
+	private _context?: CanvasRenderingContext2D;
+	private _canvasWidth?: number;
+	private _canvasHeight?: number;
+	private _canvas?: HTMLCanvasElement;
 
 	constructor(
 		private _leftPlayer: PlayerDisplayer,
@@ -50,6 +53,52 @@ class DrawerDisplayer {
 		if (!this._reqAnim)
 			throw new Error('The reqAnim have not been set up')
 		return this._reqAnim
+	}
+
+	public get context(): CanvasRenderingContext2D {
+		if (!this._context)
+			throw new Error('The conte_context have not been set up')
+		return this._context
+	}
+	
+	private set context(context: CanvasRenderingContext2D) {
+		this._context = context
+	}
+
+	public get canvasWidth(): number {
+		if (!this._canvasWidth)
+			throw new Error('The canvasWidth have not been set up')
+		return this._canvasWidth
+	}
+	
+	private set canvasWidth(canvasWidth: number) {
+		this._canvasWidth = canvasWidth
+	}
+
+	public get canvasHeight(): number {
+		if (!this._canvasHeight)
+			throw new Error('The canvasHeight have not been set up')
+		return this._canvasHeight
+	}
+	
+	private set canvasHeight(canvasHeight: number) {
+		this._canvasHeight = canvasHeight
+	}
+
+	public get canvas(): HTMLCanvasElement {
+		if (!this._canvas)
+			throw new Error('The canvas have not been set up')
+		return this._canvas
+	}
+	
+	private set canvas(canvas: HTMLCanvasElement) {
+		this._canvas = canvas
+	}
+
+	public isCanvasUtilsSet(): boolean {
+		if (!(this._context && this._canvasWidth && this._canvasHeight && this.canvas))
+			return false;
+		return true
 	}
 
 
@@ -95,6 +144,10 @@ class DrawerDisplayer {
 		canvas: HTMLCanvasElement,
 		moveObjects?: MoveObjects
 	) {
+		this.context = context;
+		this.canvasWidth = canvasWidth;
+		this.canvasHeight = canvasHeight;
+		this.canvas = canvas;
 		this.drawBgnd(context, canvasWidth, canvasHeight)
 		this.leftPaddle.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top, moveObjects?.leftPaddle);
 		this.rightPaddle.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top, moveObjects?.rightPaddle);
@@ -123,7 +176,7 @@ class DrawerDisplayer {
 		canvas: HTMLCanvasElement
 	) {
 		this.updateGame(context, canvasWidth, canvasHeight, canvas)
-		this.reqAnim = requestAnimationFrame(() => this.gameLoop(context, canvasWidth, canvasHeight, canvas))
+		// this.reqAnim = requestAnimationFrame(() => this.gameLoop(context, canvasWidth, canvasHeight, canvas))
 		// console.log('reqAnim = ', reqAnim);
 	}
 }

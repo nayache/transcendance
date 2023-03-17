@@ -69,8 +69,14 @@ const Playground = ({ socket, infos, leftPlayer, rightPlayer }: Props) => {
 				<div className="pulseBtn-wrap">
 					<button className="pulseBtn-button" onClick={() => {
 						console.log("dimensions.current = ", dimensions.current)
-						if (dimensions.current !== undefined)
-							socket.emit('setReady', infos);
+						console.log("drawer.isCanvasUtilsSet() = ", drawer.isCanvasUtilsSet())
+						if (drawer.isCanvasUtilsSet())
+							socket.emit('setReady', {
+								game: infos,
+								w: drawer.canvasWidth,
+								h: drawer.canvasHeight,
+								y: drawer.canvas.getBoundingClientRect().top
+							});
 						setStartBtn("loading")
 					}}>Start</button>
 				</div> ||
