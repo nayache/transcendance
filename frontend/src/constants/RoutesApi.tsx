@@ -21,6 +21,7 @@ export const API_BASE_URL = `${REACT_APP_BACK_PROTOCOL}://${REACT_APP_BACK_HOSTN
 export const API_BASE_AUTH = API_BASE_URL + '/auth'
 export const API_BASE_USER = API_BASE_URL + '/users'
 export const API_BASE_CHAT = API_BASE_URL + '/chat'
+export const API_BASE_GAME = API_BASE_URL + '/game'
 
 
 export const API_TWOFA_ROUTE = API_BASE_AUTH + '/2fa'
@@ -56,6 +57,7 @@ export const API_CHAT_CHANNEL_BAN_ROUTE = API_BASE_CHAT + '/channel/ban'
 export const API_CHAT_CHANNEL_MUTE_ROUTE = API_BASE_CHAT + '/channel/mute'
 export const API_CHAT_CHANNEL_SETADMIN_ROUTE = API_BASE_CHAT + '/channel/setAdmin'
 
+export const API_GAME_SEARCH = API_BASE_GAME + '/search' /* + /:difficulty */
 
 
 export const API_SOCKET_URL = 'ws://localhost:3042'

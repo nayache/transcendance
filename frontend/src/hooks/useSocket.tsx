@@ -4,9 +4,13 @@ import ClientApi from "../components/ClientApi.class";
 import { API_SOCKET_URL } from "../constants/RoutesApi";
 
 
-const socket = io(API_SOCKET_URL, {
+
+const socket = ClientApi.redirect.findIndex("/gamepage") === 0  io(API_SOCKET_URL, {
 	auth: {
 		token: `Bearer ${ClientApi.token}`
+	},
+	query: {
+		page: "game"
 	}
 })
 

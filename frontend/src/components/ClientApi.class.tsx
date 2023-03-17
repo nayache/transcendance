@@ -1,5 +1,4 @@
 import FileResizer from 'react-image-file-resizer'
-import { io, Socket } from 'socket.io-client';
 import { AboutErr, IError, TypeErr } from "../constants/EError";
 import { BASE_URL, API_BASE_AUTH, REGISTER_ROUTE, SIGNIN_ROUTE, API_VERIFY_TOKEN_ROUTE, API_TOKEN_ROUTE, API_SOCKET_URL } from "../constants/RoutesApi";
 

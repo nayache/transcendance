@@ -1,4 +1,4 @@
-import Paddle from "./Paddle.class";
+import PaddleDisplayer from "./PaddleDisplayer.class";
 
 export enum PlayerSide {
 	Left = 1,
@@ -12,14 +12,14 @@ class Player {
 
 	constructor(
 		private _playerSide: PlayerSide,
-		private _paddle: Paddle,
+		private _paddle: PaddleDisplayer,
 	) {
 		this._nbGoals = 0;
 		this._ready = false;
 	}
 
 
-	public get paddle(): Paddle {
+	public get paddle(): PaddleDisplayer {
 		return this._paddle;
 	}
 

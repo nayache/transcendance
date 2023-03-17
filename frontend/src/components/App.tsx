@@ -32,10 +32,6 @@ const router = createBrowserRouter([
 		element: <Home />
 	},
 	{
-		path: GOPLAY_EP + '/:mode',
-		element: <GoPlay />
-	},
-	{
 		path: REGISTER_EP,
 		element: <Register />
 	},
@@ -48,7 +44,7 @@ const router = createBrowserRouter([
 		element: <Signin />
 	},
 	{
-		path: GAMEPAGE_EP,
+		path: GAMEPAGE_EP + '/:mode',
 		element: <GamePage />
 	},
 	{

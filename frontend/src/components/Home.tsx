@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
-import { API_PSEUDO_ROUTE, GOPLAY_EP, MESSAGES_ROUTE, MYFRIENDS_EP, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
+import { API_PSEUDO_ROUTE, GAMEPAGE_EP, GAMEPAGE_ROUTE, GOPLAY_EP, MESSAGES_ROUTE, MYFRIENDS_EP, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
 import ClientApi from "./ClientApi.class";
 import '../styles/Home.css'
 import Navbar from "./Navbar";
@@ -17,7 +17,6 @@ import { IFriendEv } from "../interface/IFriend";
 import { useNewFriendReqListener } from "../hooks/useNewFriendReqListener";
 import { useNewFriendAccListener } from "../hooks/useFriendAccUpdater";
 
-export type GameMode = "classic" | "medium" | "hard"
 
 const Home = () => {
 
@@ -82,13 +81,13 @@ const Home = () => {
 					</div>
 					<div>
 						<div className="button-container">
-							<a href={GOPLAY_EP + '/classic'} className="classic-game">
-								classic
+							<a href={GAMEPAGE_ROUTE + '/easy'} className="easy-game">
+								easy
 							</a>
-							<a href={GOPLAY_EP + '/medium'} className="medium-game">
+							<a href={GAMEPAGE_ROUTE + '/medium'} className="medium-game">
 								medium
 							</a>
-							<a href={GOPLAY_EP + '/hard'} className="hard-game">
+							<a href={GAMEPAGE_ROUTE + '/hard'} className="hard-game">
 								hard
 							</a>
 						</div>

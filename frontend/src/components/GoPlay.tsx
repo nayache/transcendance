@@ -3,55 +3,33 @@ import "../styles/GoPlay.css"
 import Navbar from "./Navbar";
 import { useState, useEffect } from "react";
 import Loader from "../img/pong.gif"
-import { GameMode } from "./Home";
-import { Link, redirect, useParams } from "react-router-dom";
-import { BASE_URL, GAMEPAGE_ROUTE } from "../constants/RoutesApi";
-import ClientApi from "./ClientApi.class";
-import { usePseudo } from "../hooks/usePseudo";
+import { Difficulty } from "../interface/IGame";
 
 
 interface Props {
-	gameMode?: GameMode
+	gameMode?: Difficulty,
+	onClicked?: (props?: any) => void,
 }
 
-const GoPlay = () => {
+const GoPlay = ({gameMode, onClicked}: Props) => {	
 
-
-	const pseudo = usePseudo()
-	const [loader, setLoader] = useState(false);
-	const gameMode: GameMode = useParams().mode as GameMode
-
-
-
-
-
-	useEffect (() => {
-		setTimeout(() => {
-			ClientApi.redirect = new URL(GAMEPAGE_ROUTE)
-		}, 3000)
-	}, [])
-
-	useEffect(() => {
-		console.log("gamemode = ", gameMode)
-		if (!(gameMode === "classic" || gameMode === "hard" || gameMode === "medium"))
-			ClientApi.redirect = new URL(BASE_URL)
-	}, [gameMode])
-
-
-	
-
+	const [loader, setLoader] = useState<boolean>(false)
 	
 
 	return (
 		<React.Fragment>
-		{ (gameMode === "classic" || gameMode === "hard"
-		|| gameMode === "medium") &&
+		{ (gameMode === Difficulty.EASY || gameMode === Difficulty.MEDIUM ||
+			gameMode === Difficulty.HARD) &&
 			<div>
 			<Navbar/>
 				<div className="play-container">
 					{ !loader ?
 						<button className="goplay"
-							onClick={() => setLoader(true)}>
+							onClick={() => {
+								setLoader(true)
+								if (onClicked)
+									onClicked()
+							}}>
 							PLAY {gameMode.toUpperCase()} GAME
 						</button> :
 						<div>

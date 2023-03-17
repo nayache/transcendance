@@ -52,7 +52,7 @@
 	flex-direction: column;
 }
 
-.classic-game {
+.easy-game {
 	position: relative;
 	font-family: 'Mukta', sans-serif;
 	margin: 0 0 1rem -2rem;
@@ -79,11 +79,11 @@
 	touch-action: manipulation;
 }
 
-.classic-game:focus {
+.easy-game:focus {
 	outline: 0;
 }
 
-.classic-game:after {
+.easy-game:after {
 	content: '';
 	position: absolute;
 	border: 1px solid #000000;
@@ -94,7 +94,7 @@
 	height: calc(100% - 1px);
 }
 
-.classic-game:hover:after {
+.easy-game:hover:after {
 	bottom: 2px;
 	left: 2px;
 }
