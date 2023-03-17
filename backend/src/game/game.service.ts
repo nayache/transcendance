@@ -1,6 +1,6 @@
 import { forwardRef, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { GameDto } from 'src/chat/app.gateway';
+import { AppGateway, GameDto, PlayerDto } from 'src/chat/app.gateway';
 import { UserEntity } from 'src/entity/user.entity';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { ErrorException } from 'src/exceptions/error.exception';
@@ -324,12 +324,12 @@ export class Player {
     constructor(
         private _playerSide: PlayerSide,
         private _paddle: Paddle,
+        private _userId: string
     ) {
         this._paddle.bindToplayer(this)
         this._nbGoals = 0;
         this._ready = false;
     }
-
 
     public get paddle(): Paddle {
         return this._paddle;
@@ -355,7 +355,16 @@ export class Player {
         this._ready = ready;
     }
 
-
+    private set userId(userId: string) {
+        this._userId = userId
+    }
+    
+    public get userId(): string {
+        if (!this._userId)
+            throw new Error('The userId have not been set up')
+        return this._userId
+    }
+    
     public addOneGoal() {
         this.nbGoals++;
     }
@@ -595,15 +604,49 @@ export class Game {
     ball: Ball
     referee: Referee;
     score: [number, number];
+    reqAnim: number;
 
     constructor(userId1: string, userId2: string, width: number, height: number, y: number) {
         this.player1ID = userId1;
         this.player2ID = userId2;
-        this.player1 = new Player(PlayerSide.Left, new Paddle(110, 'blue', width, height, y));
-        this.player2 = new Player(PlayerSide.Right, new Paddle(110, 'red', width, height, y));
+        this.player1 = new Player(PlayerSide.Left, new Paddle(110, 'blue', width, height, y), userId1);
+        this.player2 = new Player(PlayerSide.Right, new Paddle(110, 'red', width, height, y), userId2);
         this.ball = new Ball(10, 'grey', width, height, y);
         this.referee = new Referee([this.player1, this.player2], this.ball, 3);
         this.score = [0, 0];
+    }
+
+    setUpGame(canvasWidth: number, canvasHeight: number, canvasPosY: number) {
+		this.player1.paddle.setUp(canvasWidth, canvasHeight, canvasPosY);
+		this.player2.paddle.setUp(canvasWidth, canvasHeight, canvasPosY);
+		this.ball.setUp(canvasWidth, canvasHeight, canvasPosY);
+		//on va set 2 boutons qui vont permettre de mettre respectivement les 2 joueurs prets a jouer,
+		// quand les 2 joueurs sont prets, ca demarre
+		// if (player1.isReadyToPlay && player2.isReadyToPlay || true)
+	}
+    
+    updateGame() {
+        this.ball.updatePos([this.player1.paddle, this.player2.paddle]);
+    }
+
+    gameLoop(width: number, height: number, y: number) {
+        if (this.referee.gamestate == GameState.WaitingForStart)
+        {
+            try {
+                this.setUpGame(width, height, y)
+            } catch (e) {
+                console.log('ERROR: setupgame :', e);
+            }
+        }
+        if (this.referee.gamestate == GameState.Running)
+            this.updateGame();
+        try {
+            this.referee.referee();
+        } catch (e) {
+            console.log('ERROR: ', e);
+        }
+        this.reqAnim = requestAnimationFrame(() => this.gameLoop(width, height, y))
+        // console.log('reqAnim = ', reqAnim)
     }
 }
 
@@ -619,10 +662,20 @@ export class Challenge {
     }
 }
 
+export class moveObject {
+    userId: string;
+    pos: Point;
+    constructor(id: string, pos: Point) {
+        this.userId = id;
+        this.pos = pos;
+    }
+}
+
 @Injectable()
 export class GameService {
     constructor(@InjectRepository(GameEntity) private gameRepository: Repository<GameEntity>,
-        @Inject(forwardRef(() => UserService)) private userService: UserService) {
+        @Inject(forwardRef(() => UserService)) private userService: UserService,
+        @Inject(forwardRef(() => AppGateway)) private readonly appGateway: AppGateway) {
         this.matchmaking = new Map<Difficulty, Set<string>>();
         this.matchmaking.set(Difficulty.EASY, new Set<string>());
         this.matchmaking.set(Difficulty.MEDIUM, new Set<string>());
@@ -631,21 +684,60 @@ export class GameService {
         this.matchs = new Set<[string, string]>();
         this.challenges = [];
     }
-
+                    // Player1  //Player2    socket   dessin
     private games: Map<[string, string], Map<string, Game> >; //concept
     private matchmaking: Map<Difficulty, Set<string> >;
     private challenges: Challenge[];
     private matchs: Set<[string, string]>;
     private logger: Logger = new Logger("GAME");
 
-    async buildGame(userId1: string, userId2: string, viewer: string, width: number, height: number, y: number) {
-        const game: Game = new Game(userId1, userId2, width, height, y);
-        if (!this.games.has([userId1, userId2]))
-            this.games.set([userId1, userId2], new Map<string, Game>().set(viewer, game));
+    async buildGame(payload: GameDto, viewer: string, width: number, height: number, y: number): Promise<Game> {
+        const game: Game = new Game(payload.player1.id, payload.player2.id, width, height, y);
+        if (game.player1ID === viewer)
+            game.player1.ready = true;
         else
-            this.games.get([userId1, userId2]).set(viewer, game);
+            game.player2.ready = true;
+        if (!this.games.has([payload.player1.id, payload.player2.id]))
+            this.games.set([payload.player1.id, payload.player2.id], new Map<string, Game>().set(viewer, game));
+        else
+            this.games.get([payload.player1.id, payload.player2.id]).set(viewer, game);
+        return game;
     }
 
+    async startGame(gameInfos: GameDto, viewer: string, width: number, height: number, y: number) {
+        const game: Game = await this.buildGame(gameInfos, viewer, width, height, y);
+        if (game.player1.ready === true && game.player2.ready === true) {
+            this.appGateway.startGameEvent(gameInfos);
+            game.gameLoop(width, height, y);
+        }
+    }
+
+    getGames(player1: string, player2: string): Map<string, Game> {
+        return this.games.get([player1, player2]);
+    /*    const uids: string[] = Array.from(payload.keys());
+        let games: Game[];
+        for (let game of payload.values())
+            games.push(game);
+        return { games, uids};*/
+    }
+    //===============EVENTS GAMEEEE==================================
+    //===============================================================
+
+    async paddleMove(author: string, payload: GameDto, e: MouseEvent) {
+        const ctx: Map<string, Game> = this.getGames(payload.player1.id, payload.player2.id);
+        let moves: moveObject[];
+        ctx.forEach((game, uid) => {
+            const emitter: Player = (game.player1ID === author) ? game.player1 : game.player2;
+            emitter.paddle.onMouseMove(e);
+            moves.push(new moveObject(uid, emitter.paddle.pos));
+        })
+        this.appGateway.paddleEvent(moves, author);
+    }
+
+
+    //==============================================================
+    //==============================================================
+    
     async createGame(user1: string, user2: string, difficulty: Difficulty, ranked: boolean = true): Promise<GameEntity> {
         const player1: UserEntity = await this.userService.findById(user1);
         const player2: UserEntity = await this.userService.findById(user2);
@@ -727,12 +819,17 @@ export class GameService {
         }
     }
 
-    gameToDto(game: GameEntity): GameDto {
+    async getPlayerDto(userId: string): Promise<PlayerDto> {
+        const pseudo: string = await this.userService.getPseudoById(userId);
+        return {id: userId, pseudo};
+    }
+
+    async gameToDto(game: GameEntity): Promise<GameDto> {
         const id: string = game.id;
         const ranked: boolean = game.ranked;
         const difficulty: Difficulty = game.Difficulty;
-        const player1: string = game.player1.pseudo;
-        const player2: string = game.player2.pseudo;
+        const player1: PlayerDto = await this.getPlayerDto(game.player1Id);
+        const player2: PlayerDto = await this.getPlayerDto(game.player2Id);
         const score1: number = game.score1;
         const score2: number = game.score2;
         const forfeit: boolean = game.forfeit;
@@ -901,7 +998,7 @@ export class GameService {
             const games: GameEntity[] = await this.gameRepository.find({where: [
                 {player1Id: userId}, {player2Id: userId}
             ]});
-            return games.map((game) => this.gameToDto(game));
+            return await Promise.all(games.map(async (game) => await this.gameToDto(game)));
         } catch(e) {
             return null;
         }
