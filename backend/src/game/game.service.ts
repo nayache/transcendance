@@ -787,6 +787,12 @@ export class GameService {
         const games: Map<string, Game> = this.getGamesById(gameId);
         const gameData: GameEntity = await this.updateEndingGame(gameId, forfeit);
         const gameInfo: GameDto = await this.gameToDto(gameData);
+        if (games)
+            console.log('endgames, games => ', games.size);
+        else {
+            console.log('endgames nogames!!!!!!! ');
+            return
+        }
         for (let userId of games.keys())
             this.appGateway.endGameEvent(userId, gameInfo); // socket event avertir fin game
     }
