@@ -10,11 +10,9 @@ import { Status } from '../enums/status.enum';
 import { eventMessageDto, joinRoomDto, kickBanDto, leaveRoomDto, muteDto, userDto } from './dto/chat-gateway.dto';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { ChannelUserDto } from './chat.controller';
-import { Game, GameService, moveObject } from 'src/game/game.service';
+import { GameService, MoveObject } from 'src/game/game.service';
 import { Difficulty } from 'src/game/game.controller';
 import { GameEntity } from 'src/game/game.entity';
-import { UserEntity } from 'src/entity/user.entity';
-import { Point } from 'typeorm';
 
 
 export class PlayerDto {
@@ -86,8 +84,20 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     }
     await this.joinSocketToRooms(user.id, user.socket);
     this.logger.log(`CONNECTED: ${socket.id} (${user.pseudo})`, "Gateway");
-    console.log(this.server.of('/').adapter.sids);
-    console.log(this.server.of('/').adapter.rooms);
+    console.log('sockets: ',this.server.of('/').adapter.sids.size);
+    console.log('socketsgame numbers: ', this.inGamePage.size)
+    console.log('socketsgame ->: ')
+    for (let e of this.inGamePage.values())
+      console.log(e.id);
+    //console.log(this.server.of('/').adapter.rooms);
+  }
+
+  getIdBySocket(socket: Socket): string {
+    for (let sock of this.users.entries()) {
+      if (sock[1].has(socket))
+        return sock[0];
+    }
+    return null;
   }
 
   alreadyInGame(socket: Socket) {
@@ -238,22 +248,39 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     }
     const game: GameDto = await this.gameService.gameToDto(payload);
     this.users.get(payload.player1Id).forEach((socket) => {
-      this.server.to(socket.id).emit('matchEvent', game);
+      this.server.to(socket.id).emit('matchEvent', {game, me: game.player1});
     });
     this.users.get(payload.player2Id).forEach((socket) => {
-      this.server.to(socket.id).emit('matchEvent', game);
+      this.server.to(socket.id).emit('matchEvent', {game, me: game.player2});
     });
     this.logger.log(`Match! beetwen (${game.player1} vs ${game.player2}) in [${game.difficulty}] mode`, 'GAME')
   }
 
-  @SubscribeMessage('buildGame')
+  @SubscribeMessage('setReady')
   async buildGame(@MessageBody() payload: {game: GameDto, w: number, h: number, y: number}, @ConnectedSocket() socket: Socket) {
-    const author: string = (this.inGamePage.get(payload.game.player1.id) === socket) ? payload.game.player1.id : payload.game.player2.id;
-    await this.gameService.startGame(payload.game, author, payload.w, payload.h, payload.y);
+    const userId: string = this.getIdBySocket(socket);
+    const author: string = (payload.game.player1.id === userId) ? userId : payload.game.player2.id;
+    await this.gameService.setReadyGame(payload.game, author, payload.w, payload.h, payload.y);
   }
 
+ /* @SubscribeMessage('readyForGame')
+  async readyEvent(@MessageBody() data: GameDto, @ConnectedSocket() socket: Socket) {
+    // a gerer SI ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR
+    if (!this.ready.has(data.player1.id))
+      this.ready.add(data.player1.id);
+    if (this.ready.has(data.player2.id))
+      this.preStartGameEvent(data);
+  }*/
+
+  preStartGameEvent(userId: string, left: MoveObject, right: MoveObject, ball: MoveObject) {
+    const socket: Socket = this.inGamePage.get(userId);
+    //setTimeout(() => {
+    this.server.to(socket.id).emit('preStartGame', {leftPaddle: left, rightPaddle: right, ball});
+    //}, 3000);
+    this.ready.delete(userId);
+  }
+  
   async cleanGame(userId: string) {
-    //console.log('delete ingame socket !!!!!!!!!')
     if (!this.gameService.isInGame(userId)) // si pas en partie supprimer de la liste d'attente
       await this.gameService.removePlayerFromMatchmaking(userId);
     else { // sinon informer l'adversaire de la deconnection et supprimer la partie du service
@@ -261,34 +288,19 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       const game: GameEntity = await this.gameService.getLastGame(userId);
       if (game) {
         this.gameService.removeMatch(userId);
-        await this.gameService.setForfeit(game);
-        await this.gameService.updateForfeitScore(game, userId);
-        await this.gameService.updateResults(game.id, userId);
-        await this.endOfGame(game.id);
+        await this.gameService.endGame(game.id, userId);
+      //  await this.endOfGame(game.id);
       }
     }
   }
 
-  @SubscribeMessage('readyForGame')
-  async readyEvent(@MessageBody() data: GameDto, @ConnectedSocket() socket: Socket) {
-    // a gerer SI ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR
-    if (!this.ready.has(data.player1.id))
-      this.ready.add(data.player1.id);
-    if (this.ready.has(data.player2.id))
-      this.startGameEvent(data);
+  endGameEvent(userId: string, gameInfo: GameDto) {
+    const socket1: Socket = this.inGamePage.get(userId);
+    if (socket1)
+      this.server.to(socket1.id).emit('endGame', gameInfo);
   }
 
-  startGameEvent(payload: GameDto) {
-    const socket1: Socket = this.inGamePage.get(payload.player1.id);
-    const socket2: Socket = this.inGamePage.get(payload.player2.id);
-    setTimeout(() => {
-      this.server.to([socket1.id, socket2.id]).emit('startGame', payload);
-    }, 3000);
-    this.ready.delete(payload.player1.id);
-    this.ready.delete(payload.player2.id);
-  }
-
-  async endOfGame(gameId: string) {
+/*  async endOfGame(gameId: string) {
     const payload: GameEntity = await this.gameService.findGameById(gameId);
     if (!payload) /////// a mieux gerer
       return;
@@ -299,15 +311,19 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       this.server.to(socket1.id).emit('endOfGame', game);
     if (socket2)
       this.server.to(socket2.id).emit('endOfGame', game);
-  }
+  }*/
 
   @SubscribeMessage('paddleMove')  
-  async paddleMoveEvent(@MessageBody() data: {game: GameDto, e: MouseEvent}, @ConnectedSocket() socket: Socket) {
-    const author: string = (this.inGamePage.get(data.game.player1.id) === socket) ? data.game.player1.id : data.game.player2.id;
-    await this.gameService.paddleMove(author, data.game, data.e);
+  async paddleMoveEvent(@MessageBody() data: {gameId: string, e: MouseEvent}, @ConnectedSocket() socket: Socket) {
+    const author: string = this.getIdBySocket(socket);
+    if (!author) {
+      this.logger.error('Not recognize socket emitter');
+      return;
+    }
+    await this.gameService.paddleMove(author, data.gameId, data.e);
   }
 
-  paddleEvent(payload: moveObject[], author: string) {
+  paddleEvent(payload: MoveObject[], author: string) {
     payload.forEach((e) => {
       const socket: Socket = this.inGamePage.get(e.userId);
       if (socket)

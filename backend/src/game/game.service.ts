@@ -1,5 +1,6 @@
 import { forwardRef, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { timeInterval } from 'rxjs';
 import { AppGateway, GameDto, PlayerDto } from 'src/chat/app.gateway';
 import { UserEntity } from 'src/entity/user.entity';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
@@ -97,7 +98,7 @@ abstract class CanvasObject {
         this._dimensions = dimensions;
     }
         
-    protected get color() {
+    public get color() {
         if (!this._color)
             throw new Error('The dimen_color have not been set up')
         return this._color;
@@ -377,7 +378,7 @@ const PADDLE_XSPACE: number = 10;
 export class Paddle extends CanvasObject {
 
     constructor(    
-     //   private _player?: Player,
+        private _player?: Player,
         height: number = 100,
         color: string = 'black',
         canvasWidth?: number,
@@ -395,13 +396,13 @@ export class Paddle extends CanvasObject {
     }
 
     public bindToplayer(player: Player) {
-//        this._player = player;
+        this._player = player;
     }
     
     public get player(): Player {
-  //      if (!this._player)
+        if (!this._player)
             throw new Error('The player have not been set up');
-    //    return this._player;
+        return this._player;
     }
 
 
@@ -597,8 +598,10 @@ export class Referee {
 }
 
 export class Game {
-    player1ID: string;
-    player2ID: string;
+    // 3 canvas -> pos -> dimensions -> color
+    id: string;
+    user1: PlayerDto; //-> to player
+    user2: PlayerDto; //-> to player
     player1: Player
     player2: Player;
     ball: Ball
@@ -606,14 +609,16 @@ export class Game {
     score: [number, number];
     reqAnim: number;
 
-    constructor(userId1: string, userId2: string, width: number, height: number, y: number) {
-        this.player1ID = userId1;
-        this.player2ID = userId2;
-        this.player1 = new Player(PlayerSide.Left, new Paddle(110, 'blue', width, height, y), userId1);
-        this.player2 = new Player(PlayerSide.Right, new Paddle(110, 'red', width, height, y), userId2);
+    constructor(id: string, user1: PlayerDto, user2: PlayerDto, width: number, height: number, y: number) {
+        this.id = id
+        this.user1 = user1;
+        this.user2 = user2;
+        this.player1 = new Player(PlayerSide.Left, new Paddle(undefined, 110, 'blue', width, height, y), user1.id);
+        this.player2 = new Player(PlayerSide.Right, new Paddle(undefined, 110, 'red', width, height, y), user2.id);
         this.ball = new Ball(10, 'grey', width, height, y);
         this.referee = new Referee([this.player1, this.player2], this.ball, 3);
         this.score = [0, 0];
+        this.setUpGame(width, height, y);
     }
 
     setUpGame(canvasWidth: number, canvasHeight: number, canvasPosY: number) {
@@ -629,25 +634,6 @@ export class Game {
         this.ball.updatePos([this.player1.paddle, this.player2.paddle]);
     }
 
-    gameLoop(width: number, height: number, y: number) {
-        if (this.referee.gamestate == GameState.WaitingForStart)
-        {
-            try {
-                this.setUpGame(width, height, y)
-            } catch (e) {
-                console.log('ERROR: setupgame :', e);
-            }
-        }
-        if (this.referee.gamestate == GameState.Running)
-            this.updateGame();
-        try {
-            this.referee.referee();
-        } catch (e) {
-            console.log('ERROR: ', e);
-        }
-        this.reqAnim = requestAnimationFrame(() => this.gameLoop(width, height, y))
-        // console.log('reqAnim = ', reqAnim)
-    }
 }
 
 export class Challenge {
@@ -662,12 +648,17 @@ export class Challenge {
     }
 }
 
-export class moveObject {
-    userId: string;
+export class MoveObject {
+    userId: string = null;
     pos: Point;
-    constructor(id: string, pos: Point) {
-        this.userId = id;
-        this.pos = pos;
+    dimensions: Dimensions;
+    color: string;
+    constructor(paddle: Paddle = null, ball: Ball = null, id: string = null) {
+        if (id)
+            this.userId = id;
+        this.pos = (paddle) ? paddle.pos : ball.pos;
+        this.dimensions = (paddle) ? paddle.dimensions : ball.dimensions;
+        this.color = (paddle) ? paddle.color : ball.color;
     }
 }
 
@@ -680,56 +671,87 @@ export class GameService {
         this.matchmaking.set(Difficulty.EASY, new Set<string>());
         this.matchmaking.set(Difficulty.MEDIUM, new Set<string>());
         this.matchmaking.set(Difficulty.HARD, new Set<string>());
-        this.games = new Map<[string, string], Map<string, Game>>();
+        this.games = new Map<string, Map<string, Game>>();
         this.matchs = new Set<[string, string]>();
         this.challenges = [];
     }
                     // Player1  //Player2    socket   dessin
-    private games: Map<[string, string], Map<string, Game> >; //concept
+    private games: Map<string, Map<string, Game> >; //concept
     private matchmaking: Map<Difficulty, Set<string> >;
     private challenges: Challenge[];
     private matchs: Set<[string, string]>;
     private logger: Logger = new Logger("GAME");
 
     async buildGame(payload: GameDto, viewer: string, width: number, height: number, y: number): Promise<Game> {
-        const game: Game = new Game(payload.player1.id, payload.player2.id, width, height, y);
-        if (game.player1ID === viewer)
+        const game: Game = new Game(payload.id, payload.player1, payload.player2, width, height, y);
             game.player1.ready = true;
-        else
             game.player2.ready = true;
-        if (!this.games.has([payload.player1.id, payload.player2.id]))
-            this.games.set([payload.player1.id, payload.player2.id], new Map<string, Game>().set(viewer, game));
+        if (!this.games.has(payload.id))
+            this.games.set(payload.id, new Map<string, Game>().set(viewer, game));
         else
-            this.games.get([payload.player1.id, payload.player2.id]).set(viewer, game);
+            this.games.get(payload.id).set(viewer, game);
         return game;
     }
 
-    async startGame(gameInfos: GameDto, viewer: string, width: number, height: number, y: number) {
-        const game: Game = await this.buildGame(gameInfos, viewer, width, height, y);
-        if (game.player1.ready === true && game.player2.ready === true) {
-            this.appGateway.startGameEvent(gameInfos);
-            game.gameLoop(width, height, y);
+    gameLoop(game: Game, width: number, height: number, y: number, gameInfos: GameDto) {
+        if (game.referee.gamestate == GameState.WaitingForStart)
+        {
+            try {
+                game.setUpGame(width, height, y)
+            } catch (e) {
+                console.log('ERROR: setupgame :', e);
+            }
+        }
+        if (game.referee.gamestate == GameState.Running) {
+            game.updateGame();
+            //---------------------------> emit ici -> LA BALLE besoin de pos, dimensions, color
+           // this.appGateway.updateGame(gameInfos)
+        }
+        try {
+            game.referee.referee();
+        } catch (e) {
+            console.log('ERROR: ', e);
+        }
+       // game.reqAnim = requestAnimationFrame(() => this.gameLoop(game, width, height, y))
+    }
+
+    getObjectsPositions(games: Map<string, Game>) {
+        for (let game of games.values()) {
+
         }
     }
 
-    getGames(player1: string, player2: string): Map<string, Game> {
-        return this.games.get([player1, player2]);
-    /*    const uids: string[] = Array.from(payload.keys());
-        let games: Game[];
-        for (let game of payload.values())
-            games.push(game);
-        return { games, uids};*/
+    async setReadyGame(gameInfos: GameDto, viewer: string, width: number, height: number, y: number) {
+        // a verif !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        const game: Game = await this.buildGame(gameInfos, viewer, width, height, y);
+
+       // if (game.player1.ready === true && game.player2.ready === true) {
+        if  (this.getGamesById(gameInfos.id).size === 2) {
+            for (let e of this.games.get(gameInfos.id)) {
+                const ball: MoveObject = new MoveObject(null, game.ball);
+                const left: MoveObject = new MoveObject(game.player1.paddle, null, game.player1.userId);
+                const right: MoveObject = new MoveObject(game.player2.paddle, null, game.player2.userId);
+                const emmiter: string = (e[0] === gameInfos.player1.id) ? e[0] : gameInfos.player2.id; 
+                this.appGateway.preStartGameEvent(emmiter, left, right, ball);
+            }
+        }
+          //  this.gameLoop(game, width, height, y, gameInfos);
+    }
+
+    getGamesById(gameId: string): Map<string, Game> {
+        return this.games.get(gameId);
     }
     //===============EVENTS GAMEEEE==================================
     //===============================================================
 
-    async paddleMove(author: string, payload: GameDto, e: MouseEvent) {
-        const ctx: Map<string, Game> = this.getGames(payload.player1.id, payload.player2.id);
-        let moves: moveObject[];
+    async paddleMove(author: string, gameId: string, e: MouseEvent) {
+        const ctx: Map<string, Game> = this.getGamesById(gameId);
+
+        let moves: MoveObject[];
         ctx.forEach((game, uid) => {
-            const emitter: Player = (game.player1ID === author) ? game.player1 : game.player2;
+            const emitter: Player = (game.user1.id === author) ? game.player1 : game.player2;
             emitter.paddle.onMouseMove(e);
-            moves.push(new moveObject(uid, emitter.paddle.pos));
+            moves.push(new MoveObject(emitter.paddle, null, emitter.userId));
         })
         this.appGateway.paddleEvent(moves, author);
     }
@@ -750,6 +772,23 @@ export class GameService {
         } catch (e) {
             throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
         }
+    }
+    
+    async updateEndingGame(gameId: string, forfeit: string = null) {
+        if (forfeit) {
+            await this.setForfeit(gameId);
+            await this.updateForfeitScore(gameId, forfeit);
+        }
+        await this.updateResults(gameId, forfeit);
+        return this.findGameById(gameId);
+    }
+
+    async endGame(gameId: string, forfeit: string = null) {
+        const games: Map<string, Game> = this.getGamesById(gameId);
+        const gameData: GameEntity = await this.updateEndingGame(gameId, forfeit);
+        const gameInfo: GameDto = await this.gameToDto(gameData);
+        for (let userId of games.keys())
+            this.appGateway.endGameEvent(userId, gameInfo); // socket event avertir fin game
     }
 
     createChallenge(author: string, invited: string, difficulty: Difficulty) {
@@ -956,8 +995,9 @@ export class GameService {
         }
     }
 
-    async updateForfeitScore(game: GameEntity, disconnected: string) {
+    async updateForfeitScore(gameId: string, disconnected: string) {
         try {
+            const game: GameEntity = await this.findGameById(gameId);
             if (game.player1Id === disconnected) {
                 await this.gameRepository.update(game.id, { score1: 0 });
                 await this.gameRepository.update(game.id, { score2: 42 });
@@ -985,9 +1025,9 @@ export class GameService {
         }
     }
 
-    async setForfeit(game: GameEntity) {
+    async setForfeit(gameId: string) {
         try {
-            await this.gameRepository.update(game.id, { forfeit: true });
+            await this.gameRepository.update(gameId, { forfeit: true });
         } catch (e) {
             throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
         }
