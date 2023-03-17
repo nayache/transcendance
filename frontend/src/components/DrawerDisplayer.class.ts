@@ -2,50 +2,46 @@ import BallDisplayer from "./BallDisplayer.class";
 import PlayerDisplayer from "./PlayerDisplayer.class";
 import PaddleDisplayer from "./PaddleDisplayer.class";
 import RefereeDisplayer, { GameState } from "./RefereeDisplayer.class";
+import { MoveObject, MoveObjects } from "../interface/IGame";
 
 
 class DrawerDisplayer {
 
 	private _reqAnim?: number;
 
+
 	constructor(
-		private _ref: RefereeDisplayer,
+		private _leftPlayer: PlayerDisplayer,
+		private _rightPlayer: PlayerDisplayer,
+		private _ball: BallDisplayer,
+		private _maxGoals: number = 5
+		// private _ref: RefereeDisplayer,
 	) {
 		console.log("avant print (dans constructor drawer)")
-		console.log("this._ref = ", this._ref)
+		// console.log("this._ref = ", this._ref)
 		console.log("apres print (dans constructor drawer)")
 	}
 	
-	public get player_left(): PlayerDisplayer {
-		return this.ref.player_left
+	public get leftPlayer(): PlayerDisplayer {
+		return this._leftPlayer
 	}
 	
-	public get player_right(): PlayerDisplayer {
-		return this.ref.player_right
+	public get rightPlayer(): PlayerDisplayer {
+		return this._rightPlayer
 	}
 	
-	public get paddle_left(): PaddleDisplayer {
-		return this.player_left.paddle
+	public get leftPaddle(): PaddleDisplayer {
+		return this.leftPlayer.paddle
 	}
 	
-	public get paddle_right(): PaddleDisplayer {
-		return this.player_right.paddle
+	public get rightPaddle(): PaddleDisplayer {
+		return this.rightPlayer.paddle
 	}
 	
 	public get ball(): BallDisplayer {
-		return this.ref.ball
+		return this._ball
 	}
 	
-	public get ref(): RefereeDisplayer {
-		if (!this._ref)
-			throw new Error('The ref have not been set up')
-		return this._ref
-	}
-	
-	public get gamestate(): GameState {
-		return this.ref.gamestate
-	}
-
 	private set reqAnim(reqAnim: number) {
 		this._reqAnim = reqAnim
 	}
@@ -63,23 +59,6 @@ class DrawerDisplayer {
 		canvasHeight: number
 	) {
 		context.clearRect(0, 0, canvasWidth, canvasHeight);
-	}
-	
-	private setUpGame(
-		context: CanvasRenderingContext2D,
-		canvasWidth: number,
-		canvasHeight: number,
-		canvas: HTMLCanvasElement
-	) {
-		this.drawBgnd(context, canvasWidth, canvasHeight)
-		this.paddle_left.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
-		this.paddle_right.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
-		this.ball.setUp(context, canvasWidth, canvasHeight, undefined);
-		//on va set 2 boutons qui vont permettre de mettre respectivement les 2 joueurs prets a jouer,
-		// quand les 2 joueurs sont prets, ca demarre
-		this.player_left.ready = true
-		this.player_right.ready = true
-		// if (player1.isReadyToPlay && player2.isReadyToPlay || true)
 	}
 
 	private drawMiddleLine(
@@ -107,6 +86,20 @@ class DrawerDisplayer {
 		context.fillRect(0, 0, canvasWidth, canvasHeight);
 		this.drawMiddleLine(context, canvasWidth, canvasHeight);
 	}
+	
+	
+	public setUpGame(
+		context: CanvasRenderingContext2D,
+		canvasWidth: number,
+		canvasHeight: number,
+		canvas: HTMLCanvasElement,
+		moveObjects?: MoveObjects
+	) {
+		this.drawBgnd(context, canvasWidth, canvasHeight)
+		this.leftPaddle.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top, moveObjects?.leftPaddle);
+		this.rightPaddle.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top, moveObjects?.rightPaddle);
+		this.ball.setUp(context, canvasWidth, canvasHeight, undefined, moveObjects?.ball);
+	}
 
 	private updateGame(
 		context: CanvasRenderingContext2D,
@@ -114,14 +107,13 @@ class DrawerDisplayer {
 		canvasHeight: number,
 		canvas: HTMLCanvasElement
 	) {
-		const { paddle_left, paddle_right, ball } = this
 		
 		this.clearBgnd(context, canvasWidth, canvasHeight);
 		this.drawBgnd(context, canvasWidth, canvasHeight);
-		paddle_left.display(canvas.getBoundingClientRect().top);
-		paddle_right.display(canvas.getBoundingClientRect().top);
-		ball.display();
-		ball.updatePos([paddle_left, paddle_right]);
+		this.leftPaddle.display();
+		this.rightPaddle.display();
+		this.ball.display();
+		// ball.updatePos([leftPaddle, rightPaddle]);
 	}
 
 	public gameLoop(
@@ -130,20 +122,7 @@ class DrawerDisplayer {
 		canvasHeight: number,
 		canvas: HTMLCanvasElement
 	) {
-		console.log("avant print")
-		console.log("this = ", this);
-		console.log("apres print")
-		if (this.gamestate == GameState.WaitingForStart)
-		{
-			try {
-				this.setUpGame(context, canvasWidth, canvasHeight, canvas)
-			} catch (e) {}
-		}
-		if (this.gamestate == GameState.Running)
-			this.updateGame(context, canvasWidth, canvasHeight, canvas)
-		try {
-			this.ref.referee();
-		} catch (e) {}
+		this.updateGame(context, canvasWidth, canvasHeight, canvas)
 		this.reqAnim = requestAnimationFrame(() => this.gameLoop(context, canvasWidth, canvasHeight, canvas))
 		// console.log('reqAnim = ', reqAnim);
 	}

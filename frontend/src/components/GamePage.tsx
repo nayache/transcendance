@@ -7,8 +7,10 @@ import GoPlay from "./GoPlay";
 import { API_GAME_SEARCH, BASE_URL } from "../constants/RoutesApi";
 import { useParams } from "react-router-dom";
 import { usePseudo } from "../hooks/usePseudo";
-import { Difficulty, GameDto } from "../interface/IGame";
+import { Difficulty, GameDto, PlayerDto } from "../interface/IGame";
 import { useSocket } from "../hooks/useSocket";
+import PaddleDisplayer from "./PaddleDisplayer.class";
+import PlayerDisplayer, { PlayerSide } from "./PlayerDisplayer.class";
 
 const GamePage: React.FC = () => {
 
@@ -17,12 +19,39 @@ const GamePage: React.FC = () => {
 	const gameMode: Difficulty = useParams().mode as Difficulty
 	const [go, setGo] = useState<boolean>(false)
 	const [clicked, setClicked] = useState<boolean>(false)
+	const [leftPlayer, setleftPlayer] = useState<PlayerDisplayer>()
+	const [rightPlayer, setrightPlayer] = useState<PlayerDisplayer>()
 	const [infos, setInfos] = useState<GameDto>()
 	
 	useEffect(() => {
 		if (clicked) {
-			socket?.on('matchEvent', (gameInfos: GameDto) => {
+			socket?.on('matchEvent', ({game: gameInfos, me}: {game: GameDto, me: PlayerDto}) => {
 				console.log("(matchEvent) gameInfos = ", gameInfos)
+				console.log("(matchEvent) me = ", me)
+				if (gameInfos.player1.id === me.id) {
+					const leftPaddle: PaddleDisplayer = new PaddleDisplayer(
+						socket,
+						undefined,
+					)
+					setleftPlayer(new PlayerDisplayer(PlayerSide.Left, leftPaddle, me))
+					const rightPaddle: PaddleDisplayer = new PaddleDisplayer(
+						socket,
+						undefined,
+					)
+					setrightPlayer(new PlayerDisplayer(PlayerSide.Right, rightPaddle, gameInfos.player2))
+				}
+				else {
+					const rightPaddle: PaddleDisplayer = new PaddleDisplayer(
+						socket,
+						undefined,
+					)
+					setrightPlayer(new PlayerDisplayer(PlayerSide.Right, rightPaddle, me))
+					const leftPaddle: PaddleDisplayer = new PaddleDisplayer(
+						socket,
+						undefined,
+					)
+					setleftPlayer(new PlayerDisplayer(PlayerSide.Left, leftPaddle, gameInfos.player1))
+				}
 				setInfos(gameInfos);
 				setGo(true)
 			})
@@ -59,11 +88,11 @@ const GamePage: React.FC = () => {
 			{ !go &&
 				<GoPlay gameMode={gameMode} onClick={() => setClicked(true)} /> ||
 
-			go && infos !== undefined && (
+			go && infos !== undefined && leftPlayer && rightPlayer && (
 				<React.Fragment>
 					<Background />
-					<Baseline title="Ping pong mais dans gamepage"/>
-					<Playground socket={socket} infos={infos}/>
+					<Playground socket={socket} infos={infos} leftPlayer={leftPlayer}
+					rightPlayer={rightPlayer} />
 				</React.Fragment>
 			) }
 		</React.Fragment>

@@ -1,3 +1,6 @@
+import { Socket } from "socket.io-client"
+import { MoveObject } from "../interface/IGame"
+
 export type Point = {
 	x: number,
 	y: number
@@ -26,6 +29,7 @@ abstract class CanvasObjectDisplayer {
 	private _startingSpeed?: Vector2D;
 
 	constructor(
+		private _socket: Socket,
 		private _dimensions?: Dimensions,
 		private _pos?: Point,
 		private _color?: string,
@@ -37,6 +41,13 @@ abstract class CanvasObjectDisplayer {
 		console.log("CanvasObjectDisplayer creation")
 	}
 
+	public get socket(): Socket {
+		return this._socket
+	}
+	
+	private set socket(socket: Socket) {
+		this._socket = socket
+	}
 
 	protected get context() {
 		if (!this._context)
@@ -107,82 +118,34 @@ abstract class CanvasObjectDisplayer {
 	protected set color(color: string) {
 		this._color = color;
 	}
-	
-	public get startingSpeed() {
-		if (!this._startingSpeed)
-			throw new Error('The startingSpeed have not been set up')
-		return this._startingSpeed;
-	}
 
-	protected set startingSpeed(startingSpeed: Vector2D) {
-		this._startingSpeed = startingSpeed;
-	}
-
-	protected setUp(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, canvasPosY?: number): void {
+	protected setUp(
+		ctx: CanvasRenderingContext2D,
+		canvasWidth: number,
+		canvasHeight: number,
+		canvasPosY?: number,
+		moveObject?: MoveObject,
+	): void {
 		this.context = ctx;
 		this.canvasWidth = canvasWidth;
 		this.canvasHeight = canvasHeight;
 		if (canvasPosY)
 			this.canvasPosY = canvasPosY;
-	}
-
-	protected static isBetween<T>(myItem: T, limitInf: T, limitSup: T, inclusive: boolean = true): boolean {
-		if (!inclusive)
-			return (myItem > limitInf && myItem < limitSup)
-		return (myItem >= limitInf && myItem <= limitSup)
-	}
-
-	protected static randomIntFromInterval(min: number, max: number): number {
-		return Math.floor(Math.random() * (max - min + 1) + min)
-	}
-
-	protected static randomIntFrom2Intervals(interval1: [number, number], interval2: [number, number]): number {
-		if (Math.random() > 0.5)
-			return CanvasObjectDisplayer.randomIntFromInterval(interval1[0], interval1[1])
-		else
-			return CanvasObjectDisplayer.randomIntFromInterval(interval2[0], interval2[1])
-	}
-
-	public isInsideX(solidObject: CanvasObjectDisplayer): boolean {
-		if (
-			(this.pos.x - this.dimensions.width <= solidObject.pos.x + solidObject.dimensions.width &&
-			this.pos.x + this.dimensions.width >= solidObject.pos.x) &&
-			(this.pos.y - this.dimensions.height <= solidObject.pos.y + solidObject.dimensions.height &&
-			this.pos.y + this.dimensions.height >= solidObject.pos.y)// &&
-			// (this.oldPos.y - this.dimensions.height <= solidObject.pos.y + solidObject.dimensions.height &&
-			// this.oldPos.y + this.dimensions.height >= solidObject.pos.y)
-		)
-			return (true);
-		return (false);
-	}
-	
-	// !!! DEPRECATED !!! //
-	/*
-	protected isInsideY(solidObject: CanvasObjectDisplayer): Side {
-		const absDistanceUp: number = Math.abs(this.pos.y - solidObject.pos.y);
-		const absDistanceDown: number = Math.abs(this.pos.y - (solidObject.pos.y + solidObject.dimensions.height));
-		
-		if (
-			(this.pos.y - this.dimensions.height <= solidObject.pos.y + solidObject.dimensions.height &&
-			this.pos.y + this.dimensions.height >= solidObject.pos.y) &&
-			(this.pos.x - this.dimensions.width <= solidObject.pos.x + solidObject.dimensions.width &&
-			this.pos.x + this.dimensions.width >= solidObject.pos.x) &&
-			(this.oldPos.x - this.dimensions.width <= solidObject.pos.x + solidObject.dimensions.width &&
-			this.oldPos.x + this.dimensions.width >= solidObject.pos.x)
-		)
-		{
-			if (absDistanceUp < absDistanceDown)
-				return (Side.Top);
-			else
-				return (Side.Bottom);
+		if (moveObject) {
+			this.pos = moveObject.pos
+			this.dimensions = moveObject.dimensions
+			this.color = moveObject.color
 		}
-		return (Side.NoSide);
 	}
-	*/
 
-	display(): void {
+	display(moveObject?: MoveObject): void {
 		this.context.beginPath();
 		this.context.fillStyle = this.color;
+		if (moveObject) {
+			this.pos = moveObject.pos
+			this.dimensions = moveObject.dimensions
+			this.color = moveObject.color
+		}
 	}
 
 	//collision, etc..

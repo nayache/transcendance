@@ -65,22 +65,22 @@ class DrawerDisplayer {
 		context.clearRect(0, 0, canvasWidth, canvasHeight);
 	}
 	
-	private setUpGame(
-		context: CanvasRenderingContext2D,
-		canvasWidth: number,
-		canvasHeight: number,
-		canvas: HTMLCanvasElement
-	) {
-		this.drawBgnd(context, canvasWidth, canvasHeight)
-		this.paddle_left.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
-		this.paddle_right.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
-		this.ball.setUp(context, canvasWidth, canvasHeight, undefined);
-		//on va set 2 boutons qui vont permettre de mettre respectivement les 2 joueurs prets a jouer,
-		// quand les 2 joueurs sont prets, ca demarre
-		this.player_left.ready = true
-		this.player_right.ready = true
-		// if (player1.isReadyToPlay && player2.isReadyToPlay || true)
-	}
+	// private setUpGame(
+	// 	context: CanvasRenderingContext2D,
+	// 	canvasWidth: number,
+	// 	canvasHeight: number,
+	// 	canvas: HTMLCanvasElement
+	// ) {
+	// 	this.drawBgnd(context, canvasWidth, canvasHeight)
+	// 	this.paddle_left.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
+	// 	this.paddle_right.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
+	// 	this.ball.setUp(context, canvasWidth, canvasHeight, undefined);
+	// 	//on va set 2 boutons qui vont permettre de mettre respectivement les 2 joueurs prets a jouer,
+	// 	// quand les 2 joueurs sont prets, ca demarre
+	// 	this.player_left.ready = true
+	// 	this.player_right.ready = true
+	// 	// if (player1.isReadyToPlay && player2.isReadyToPlay || true)
+	// }
 
 	private drawMiddleLine(
 		context: CanvasRenderingContext2D,
@@ -118,10 +118,10 @@ class DrawerDisplayer {
 		
 		this.clearBgnd(context, canvasWidth, canvasHeight);
 		this.drawBgnd(context, canvasWidth, canvasHeight);
-		paddle_left.display(canvas.getBoundingClientRect().top);
-		paddle_right.display(canvas.getBoundingClientRect().top);
-		ball.display();
-		ball.updatePos([paddle_left, paddle_right]);
+		// paddle_left.display(canvas.getBoundingClientRect().top);
+		// paddle_right.display(canvas.getBoundingClientRect().top);
+		// ball.display();
+		// ball.updatePos([paddle_left, paddle_right]);
 	}
 
 	public gameLoop(
@@ -136,7 +136,7 @@ class DrawerDisplayer {
 		if (this.gamestate == GameState.WaitingForStart)
 		{
 			try {
-				this.setUpGame(context, canvasWidth, canvasHeight, canvas)
+				// this.setUpGame(context, canvasWidth, canvasHeight, canvas)
 			} catch (e) {}
 		}
 		if (this.gamestate == GameState.Running)

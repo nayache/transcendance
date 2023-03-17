@@ -87,7 +87,7 @@ abstract class CanvasObject {
 		this._dimensions = dimensions;
 	}
 	
-	protected get color() {
+	public get color() {
 		if (!this._color)
 			throw new Error('The dimen_color have not been set up')
 		return this._color;

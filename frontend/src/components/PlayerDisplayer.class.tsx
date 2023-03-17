@@ -1,3 +1,4 @@
+import { PlayerDto } from "../interface/IGame";
 import PaddleDisplayer from "./PaddleDisplayer.class";
 
 export enum PlayerSide {
@@ -5,7 +6,7 @@ export enum PlayerSide {
 	Right
 }
 
-class Player {
+class PlayerDisplayer {
 
 	private _nbGoals: number;
 	private _ready: boolean;
@@ -13,7 +14,9 @@ class Player {
 	constructor(
 		private _playerSide: PlayerSide,
 		private _paddle: PaddleDisplayer,
+		private _playerDto: PlayerDto,
 	) {
+		this._paddle.bindToplayer(this)
 		this._nbGoals = 0;
 		this._ready = false;
 	}
@@ -43,10 +46,20 @@ class Player {
 		this._ready = ready;
 	}
 
+	private set playerDto(playerDto: PlayerDto) {
+		this._playerDto = playerDto
+	}
+	
+	public get playerDto(): PlayerDto {
+		if (!this._playerDto)
+			throw new Error('The playerDto have not been set up')
+		return this._playerDto
+	}
+
 
 	public addOneGoal() {
 		this.nbGoals++;
 	}
 }
 
-export default Player;
+export default PlayerDisplayer;

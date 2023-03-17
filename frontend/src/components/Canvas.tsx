@@ -2,19 +2,19 @@ import React, { useEffect, useRef } from 'react'
 import { CanvasStyled } from '../styles/Canvas.style'
 
 type MyProps = {
-	onInit: (context: CanvasRenderingContext2D,
-		canvasWidth: number,
-		canvasHeight: number,
-		canvas: HTMLCanvasElement) => void,
 	display: (context: CanvasRenderingContext2D,
 		canvasWidth: number,
 		canvasHeight: number,
 		canvas: HTMLCanvasElement) => void,
-}
+	onInit?: (context: CanvasRenderingContext2D,
+		canvasWidth: number,
+		canvasHeight: number,
+		canvas: HTMLCanvasElement) => void,
+	}
 type Props = React.ComponentPropsWithoutRef<'canvas'> & MyProps
 
 
-const Canvas = ({onInit, display, ...rest}: Props) => {
+const Canvas = ({display, onInit, ...rest}: Props) => {
 	
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	useEffect(() => {
@@ -27,7 +27,8 @@ const Canvas = ({onInit, display, ...rest}: Props) => {
 		if (!context)
 			return ;
 		console.log("canvas.getBoundingClientRect().top = ", canvas.getBoundingClientRect().top, "  canvas.getBoundingClientRect().y = ", canvas.getBoundingClientRect().y)
-		onInit(context, canvas.width, canvas.height, canvas);
+		if (onInit)
+			onInit(context, canvas.width, canvas.height, canvas);
 		display(context, canvas.width, canvas.height, canvas);
 	}, [canvasRef, display])
 

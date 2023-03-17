@@ -1,6 +1,27 @@
+import { Dimensions, Point } from "../components/CanvasObjectDisplayer.class";
+
+export interface MoveObject {
+	userId: string
+	pos: Point
+	dimensions: Dimensions,
+	color: string
+}
+
 export interface PlayerDto {
 	id: string,
 	pseudo: string;
+}
+
+export interface MoveObjects {
+	leftPaddle: MoveObject,
+	rightPaddle: MoveObject,
+	ball: MoveObject
+}
+
+export interface CanvasUtils {
+	w: number,
+	h: number,
+	y: number,
 }
 
 export enum Difficulty {
