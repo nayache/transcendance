@@ -51,12 +51,13 @@ const Playground = ({ socket, infos, leftPlayer, rightPlayer }: Props) => {
 
 
 	useStartGameListener(socket, ({leftPaddle, rightPaddle, ball: _ball}: MoveObjects) => {
-		leftPlayer.paddle.plugMove = true;
-		rightPlayer.paddle.plugMove = true;
 		leftPlayer.paddle.display(leftPaddle)
 		rightPlayer.paddle.display(rightPaddle)
 		ball.display(_ball)
 		setStartBtn("good")
+	}, () => {
+		leftPlayer.paddle.plugMove = true;
+		rightPlayer.paddle.plugMove = true;
 	})
 	
 	useUpdateGameListener(socket, (moveObjects: MoveObjects) => {
