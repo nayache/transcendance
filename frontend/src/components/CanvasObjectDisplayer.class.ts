@@ -30,7 +30,7 @@ abstract class CanvasObjectDisplayer {
 
 	constructor(
 		private _socket: Socket,
-		private _gameInfos: GameDto,
+		private _gameInfos?: GameDto,
 		private _dimensions?: Dimensions,
 		private _pos?: Point,
 		private _color?: string,
@@ -52,6 +52,8 @@ abstract class CanvasObjectDisplayer {
 	}
 
 	public get gameInfos(): GameDto {
+		if (!this._gameInfos)
+			throw new Error('The gameInfos have not been set up')
 		return this._gameInfos
 	}
 	

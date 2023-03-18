@@ -57,6 +57,7 @@ export const API_CHAT_CHANNEL_SETADMIN_ROUTE = API_BASE_CHAT + '/channel/setAdmi
 
 export const API_GAME_SEARCH = API_BASE_GAME + '/search' /* + /:difficulty */
 export const API_GAME_VIEW = API_BASE_GAME + '/view' /* + /:pseudo */
+export const API_GAME_INFOS = API_BASE_GAME + '/infos' /* + /:pseudo */
 
 
 export const API_SOCKET_URL = 'ws://localhost:3042'

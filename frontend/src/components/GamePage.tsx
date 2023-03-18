@@ -31,28 +31,28 @@ const GamePage: React.FC = () => {
 				if (gameInfos.player1.id === me.id) {
 					const leftPaddle: PaddleDisplayer = new PaddleDisplayer(
 						socket,
-						gameInfos,
 						undefined,
+						gameInfos,
 					)
 					setleftPlayer(new PlayerDisplayer(PlayerSide.Left, leftPaddle, me))
 					const rightPaddle: PaddleDisplayer = new PaddleDisplayer(
 						socket,
-						gameInfos,
 						undefined,
+						gameInfos,
 					)
 					setrightPlayer(new PlayerDisplayer(PlayerSide.Right, rightPaddle, gameInfos.player2))
 				}
 				else {
 					const rightPaddle: PaddleDisplayer = new PaddleDisplayer(
 						socket,
-						gameInfos,
 						undefined,
+						gameInfos,
 					)
 					setrightPlayer(new PlayerDisplayer(PlayerSide.Right, rightPaddle, me))
 					const leftPaddle: PaddleDisplayer = new PaddleDisplayer(
 						socket,
-						gameInfos,
 						undefined,
+						gameInfos,
 					)
 					setleftPlayer(new PlayerDisplayer(PlayerSide.Left, leftPaddle, gameInfos.player1))
 				}

@@ -45,9 +45,9 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 
 	const ball: BallDisplayer = new BallDisplayer(
 		socket,
-		infos,
 		50,
 		"grey",
+		infos,
 	)
 	const drawer: DrawerDisplayer = new DrawerDisplayer(
 		leftPlayer,

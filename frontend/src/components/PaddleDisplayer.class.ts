@@ -13,8 +13,8 @@ class PaddleDisplayer extends CanvasObjectDisplayer {
 
 	constructor(
 		socket: Socket,
-		gameInfos: GameDto,
 		private _player?: PlayerDisplayer,
+		gameInfos?: GameDto,
 		height: number = 100,
 		color: string = 'black',
 		canvas?: HTMLCanvasElement,
@@ -35,7 +35,7 @@ class PaddleDisplayer extends CanvasObjectDisplayer {
 			canvasHeight,
 			canvasPosY,
 		);
-		if (canvas && this.plugMove)
+		if (canvas && this.gameInfos)
 			canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
 	}
 
@@ -74,7 +74,7 @@ class PaddleDisplayer extends CanvasObjectDisplayer {
 		let y: number;
 
 		super.setUp(canvas, ctx, canvasWidth, canvasHeight, canvasPosY, moveObject);
-		if (canvas)
+		if (canvas && this.gameInfos)
 			canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
 		try {
 			y = this.pos.y;

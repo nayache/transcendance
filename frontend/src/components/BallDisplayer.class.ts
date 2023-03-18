@@ -7,9 +7,9 @@ class BallDisplayer extends CanvasObjectDisplayer {
 
 	constructor(
 		socket: Socket,
-		gameInfos: GameDto,
 		radius: number = 10,
 		color: string = 'grey',
+		gameInfos?: GameDto,
 		canvas?: HTMLCanvasElement,
 		context?: CanvasRenderingContext2D,
 		canvasWidth?: number,

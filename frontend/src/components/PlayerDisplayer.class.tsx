@@ -14,7 +14,7 @@ class PlayerDisplayer {
 	constructor(
 		private _playerSide: PlayerSide,
 		private _paddle: PaddleDisplayer,
-		private _playerDto: PlayerDto,
+		private _playerDto?: PlayerDto,
 	) {
 		this._paddle.bindToplayer(this)
 		this._nbGoals = 0;

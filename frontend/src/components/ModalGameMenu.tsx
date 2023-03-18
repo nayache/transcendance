@@ -4,7 +4,8 @@ import '../styles/ModalGameMenu.css'
 import EndGameMenu from './EndGameMenu';
 
 export enum ModalGameType {
-	ENDGAME
+	ENDGAME,
+	OTHERENDGAME
 }
 
 interface Props {
@@ -47,7 +48,10 @@ const ModalGameMenu = ({ active, type, pseudo, gameInfos, callback, callbackFail
 				className="close-GameMenu">&times;</span>
 				{
 					type === ModalGameType.ENDGAME && gameInfos
-					&& <EndGameMenu gameInfos={gameInfos} pseudo={pseudo} onEndGame={onEndGame} /> 
+					&& <EndGameMenu gameInfos={gameInfos} pseudo={pseudo} onEndGame={onEndGame} /> ||
+
+					type === ModalGameType.OTHERENDGAME && gameInfos
+					&& <EndGameMenu gameInfos={gameInfos} pseudo={pseudo} onEndGame={onEndGame} />
 				}
 			</div>
 		</div>
