@@ -676,13 +676,14 @@ export class GameService {
         this.matchmaking.set(Difficulty.EASY, new Set<string>());
         this.matchmaking.set(Difficulty.MEDIUM, new Set<string>());
         this.matchmaking.set(Difficulty.HARD, new Set<string>());
-        this.games = new Map<string, Map<string, Game>>();
+        this.games = new Map<string, Game>();
         this.matchs = new Set<[string, string]>();
         this.speeds = new Map<string, Vector2D>();
         this.challenges = [];
     }
                     // gameID  //   viewer  DESSIN  
-    private games: Map<string, Map<string, Game> >; //concept
+    //private games: Map<string, Map<string, Game> >; //concept
+    private games: Map<string, Game>; //concept
     private speeds: Map<string, Vector2D>;
     private matchmaking: Map<Difficulty, Set<string> >;
     private challenges: Challenge[];
@@ -700,18 +701,14 @@ export class GameService {
         return this.speeds.get(gameId);
     }
 
-    async buildGame(payload: GameDto, viewer: string, width: number, height: number, y: number): Promise<Game> {
+    async buildGame(payload: GameDto, userId: string, width: number, height: number, y: number): Promise<Game> {
         const game: Game = new Game(payload.id, payload.player1, payload.player2, this.addStartingSpeed(payload.id), width, height, y);
-        game.player1.ready = true;
-        game.player2.ready = true;
         if (!this.games.has(payload.id))
-            this.games.set(payload.id, new Map<string, Game>().set(viewer, game));
-        else
-            this.games.get(payload.id).set(viewer, game);
+            this.games.set(payload.id, game);
         return game;
     }
 
-    updateGame(userId: string, game: Game, width: number, height: number, y: number/*, gameInfos: GameDto*/) {
+    updateGame(game: Game, width: number, height: number, y: number/*, gameInfos: GameDto*/) {
         if (game.referee.gamestate == GameState.WaitingForStart)
         {
             console.log('WAITINGSTART');
@@ -728,7 +725,7 @@ export class GameService {
             const ball: MoveObject = new MoveObject(null, game.ball);
             const left: MoveObject = new MoveObject(game.player1.paddle, null, game.player1.userId);
             const right: MoveObject = new MoveObject(game.player2.paddle, null, game.player2.userId);
-            this.appGateway.updateGame(userId, left, right, ball);
+            this.appGateway.updateGame(game.user1.id, game.user2.id, left, right, ball);
         }
         try {
             game.referee.referee();
@@ -738,11 +735,8 @@ export class GameService {
        // game.reqAnim = requestAnimationFrame(() => this.gameLoop(game, width, height, y))
     }
 
-    run(games: Map<string, Game>) {
-        games.forEach((game, userId) => {
-            console.log('RUN');
-            setInterval(() => {this.updateGame(userId, game, game.w, game.h, game.y)}, 10)
-        })
+    run(game: Game) {
+        setInterval(() => {this.updateGame(game, game.w, game.h, game.y)}, 16)
     }
 
     getObjectsPositions(games: Map<string, Game>) {
@@ -751,44 +745,39 @@ export class GameService {
         }
     }
 
-    alreadyViewer(gameId: string, viewer: string): boolean {
-        const payload: Map<string, Game> = this.games.get(gameId);
-        return (payload) ? payload.has(viewer) : false;
+    setReady(game: Game, userId: string) {
+        if (userId === game.player1.userId)
+            game.player1.ready = true;
+        else
+           game.player2.ready = true;
     }
 
     async setReadyGame(gameInfos: GameDto, viewer: string, width: number, height: number, y: number) {
         // a verif !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        if (this.alreadyViewer(gameInfos.id, viewer))
-           throw new ErrorException(HttpStatus.CONFLICT, AboutErr.GAME, TypeErr.DUPLICATED, 'user already build game');
-        const game: Game = await this.buildGame(gameInfos, viewer, width, height, y);
-
-        if  (this.getGamesById(gameInfos.id).size === 2) {
-            for (let e of this.games.get(gameInfos.id)) {
-                const ball: MoveObject = new MoveObject(null, game.ball);
-                const left: MoveObject = new MoveObject(game.player1.paddle, null, game.player1.userId);
-                const right: MoveObject = new MoveObject(game.player2.paddle, null, game.player2.userId);
-                const emmiter: string = (e[0] === gameInfos.player1.id) ? e[0] : gameInfos.player2.id; 
-                this.appGateway.preStartGameEvent(emmiter, left, right, ball);
-            }
-            this.run(this.games.get(gameInfos.id));
+        let game: Game = this.games.get(gameInfos.id);
+        if (game) {
+            this.setReady(game, viewer);
+            const ball: MoveObject = new MoveObject(null, game.ball);
+            const left: MoveObject = new MoveObject(game.player1.paddle, null, game.player1.userId);
+            const right: MoveObject = new MoveObject(game.player2.paddle, null, game.player2.userId);
+            this.appGateway.preStartGameEvent(gameInfos.player1.id, gameInfos.player2.id, left, right, ball);
+            this.run(game);
+        } else {
+            game = await this.buildGame(gameInfos, viewer, width, height, y);
+            this.setReady(game, viewer);
         }
     }
 
-    getGamesById(gameId: string): Map<string, Game> {
-        return this.games.get(gameId);
-    }
     //===============EVENTS GAMEEEE==================================
     //===============================================================
 
     async paddleMove(author: string, gameId: string, e: MouseEvent) {
-        const ctx: Map<string, Game> = this.getGamesById(gameId);
+        const game: Game = this.games.get(gameId);
 
         let moves: MoveObject[];
-        ctx.forEach((game, uid) => {
-            const emitter: Player = (game.user1.id === author) ? game.player1 : game.player2;
-            emitter.paddle.onMouseMove(e);
-            moves.push(new MoveObject(emitter.paddle, null, emitter.userId));
-        })
+        const emitter: Player = (game.user1.id === author) ? game.player1 : game.player2;
+        emitter.paddle.onMouseMove(e);
+        moves.push(new MoveObject(emitter.paddle, null, emitter.userId));
         this.appGateway.paddleEvent(moves, author);
     }
 
@@ -820,17 +809,16 @@ export class GameService {
     }
 
     async endGame(gameId: string, forfeit: string = null) {
-        const games: Map<string, Game> = this.getGamesById(gameId);
+        const game = this.games.get(gameId);
         const gameData: GameEntity = await this.updateEndingGame(gameId, forfeit);
         const gameInfo: GameDto = await this.gameToDto(gameData);
-        if (games)
-            console.log('endgames, games => ', games.size);
+        if (game)
+            console.log('endgames, game');
         else {
             console.log('endgames nogames!!!!!!! ');
             return
         }
-        for (let userId of games.keys())
-            this.appGateway.endGameEvent(userId, gameInfo); // socket event avertir fin game
+        this.appGateway.endGameEvent(gameInfo.player1.id, gameInfo.player2.id, gameInfo); // socket event avertir fin game
     }
 
     createChallenge(author: string, invited: string, difficulty: Difficulty) {

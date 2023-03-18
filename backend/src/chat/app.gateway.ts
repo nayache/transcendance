@@ -273,20 +273,21 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       this.preStartGameEvent(data);
   }*/
 
-  preStartGameEvent(userId: string, left: MoveObject, right: MoveObject, ball: MoveObject) {
+  preStartGameEvent(userId1: string, userId2: string, left: MoveObject, right: MoveObject, ball: MoveObject) {
     console.log('===========================================================PRESTARTTTTTTTTTTTTTTTTTTTT call')
-    const socket: Socket = this.inGamePage.get(userId);
+    const socket1: Socket = this.inGamePage.get(userId1);
+    const socket2: Socket = this.inGamePage.get(userId2);
     //setTimeout(() => {
-    this.server.to(socket.id).emit('preStartGame', {leftPaddle: left, rightPaddle: right, ball});
+    this.server.to([socket1.id, socket2.id]).emit('preStartGame', {leftPaddle: left, rightPaddle: right, ball});
     //}, 3000);
-    this.ready.delete(userId);
+    this.ready.delete(userId1);
+    this.ready.delete(userId2);
   }
   
-  updateGame(userId: string, left: MoveObject, right: MoveObject, ball: MoveObject) {
+  updateGame(userId: string, userId2, left: MoveObject, right: MoveObject, ball: MoveObject) {
     const socket: Socket = this.inGamePage.get(userId);
-    console.log('ici');
-    if (socket)
-      this.server.to(socket.id).emit('preStartGame', {leftPaddle: left, rightPaddle: right, ball});
+    const socket2: Socket = this.inGamePage.get(userId2);
+      this.server.to([socket.id, socket2.id]).emit('preStartGame', {leftPaddle: left, rightPaddle: right, ball});
   }
 
   async cleanGame(userId: string) {
@@ -303,10 +304,10 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     }
   }
 
-  endGameEvent(userId: string, gameInfo: GameDto) {
+  endGameEvent(userId: string, userId2, gameInfo: GameDto) {
     const socket1: Socket = this.inGamePage.get(userId);
-    if (socket1)
-      this.server.to(socket1.id).emit('endGame', gameInfo);
+    const socket2: Socket = this.inGamePage.get(userId2);
+      this.server.to([socket1.id, socket2.id]).emit('endGame', gameInfo);
   }
 
 /*  async endOfGame(gameId: string) {
