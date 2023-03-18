@@ -17,6 +17,7 @@ class PaddleDisplayer extends CanvasObjectDisplayer {
 		private _player?: PlayerDisplayer,
 		height: number = 100,
 		color: string = 'black',
+		canvas?: HTMLCanvasElement,
 		context?: CanvasRenderingContext2D,
 		canvasWidth?: number,
 		canvasHeight?: number,
@@ -28,12 +29,14 @@ class PaddleDisplayer extends CanvasObjectDisplayer {
 			{ width: PADDLE_WIDTH, height },
 			undefined,
 			color,
+			canvas,
 			context,
 			canvasWidth,
 			canvasHeight,
 			canvasPosY,
 		);
-		document.addEventListener('mousemove', this.onMouseMove.bind(this));
+		if (canvas && this.plugMove)
+			canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
 	}
 
 	public bindToplayer(player: PlayerDisplayer) {
@@ -56,11 +59,12 @@ class PaddleDisplayer extends CanvasObjectDisplayer {
 
 
 	onMouseMove(e: MouseEvent): void {
-		if (this.plugMove)
-			this.socket.emit('paddleMove', {gameId: this.gameInfos.id, e})
+		// if (this.plugMove)
+			this.socket.emit('paddleMove', {gameId: this.gameInfos.id, clientY: e.clientY, canvasPosY: this.canvas.getBoundingClientRect().top})
 	}
 
 	setUp(
+		canvas: HTMLCanvasElement,
 		ctx: CanvasRenderingContext2D,
 		canvasWidth: number,
 		canvasHeight: number,
@@ -69,7 +73,9 @@ class PaddleDisplayer extends CanvasObjectDisplayer {
 	): void {
 		let y: number;
 
-		super.setUp(ctx, canvasWidth, canvasHeight, canvasPosY, moveObject);
+		super.setUp(canvas, ctx, canvasWidth, canvasHeight, canvasPosY, moveObject);
+		if (canvas)
+			canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
 		try {
 			y = this.pos.y;
 		} catch (err) {

@@ -10,6 +10,7 @@ class BallDisplayer extends CanvasObjectDisplayer {
 		gameInfos: GameDto,
 		radius: number = 10,
 		color: string = 'grey',
+		canvas?: HTMLCanvasElement,
 		context?: CanvasRenderingContext2D,
 		canvasWidth?: number,
 		canvasHeight?: number,
@@ -21,6 +22,7 @@ class BallDisplayer extends CanvasObjectDisplayer {
 			{ width: radius, height: radius },
 			undefined,
 			color,
+			canvas,
 			context,
 			canvasWidth,
 			canvasHeight,
@@ -40,13 +42,14 @@ class BallDisplayer extends CanvasObjectDisplayer {
 
 
 	public setUp(
+		canvas: HTMLCanvasElement,
 		ctx: CanvasRenderingContext2D,
 		canvasWidth: number,
 		canvasHeight: number,
 		canvasPosY?: number,
 		moveObject?: MoveObject,
 	): void {
-		super.setUp(ctx, canvasWidth, canvasHeight, canvasPosY, moveObject);
+		super.setUp(canvas, ctx, canvasWidth, canvasHeight, canvasPosY, moveObject);
 		this.pos = { x: canvasWidth / 2, y: canvasHeight / 2 }
 		super.display(moveObject);
 		this.context.arc(

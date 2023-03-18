@@ -139,9 +139,9 @@ class DrawerDisplayer {
 		this.canvasHeight = canvasHeight;
 		this.canvas = canvas;
 		this.drawBgnd()
-		this.leftPaddle.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top, moveObjects?.leftPaddle);
-		this.rightPaddle.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top, moveObjects?.rightPaddle);
-		this.ball.setUp(context, canvasWidth, canvasHeight, undefined, moveObjects?.ball);
+		this.leftPaddle.setUp(canvas, context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top, moveObjects?.leftPaddle);
+		this.rightPaddle.setUp(canvas, context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top, moveObjects?.rightPaddle);
+		this.ball.setUp(canvas, context, canvasWidth, canvasHeight, undefined, moveObjects?.ball);
 	}
 
 	public updateGame(moveObjects: MoveObjects) {

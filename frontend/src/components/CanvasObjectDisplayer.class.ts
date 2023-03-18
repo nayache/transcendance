@@ -34,6 +34,7 @@ abstract class CanvasObjectDisplayer {
 		private _dimensions?: Dimensions,
 		private _pos?: Point,
 		private _color?: string,
+		private _canvas?: HTMLCanvasElement,
 		private _context?: CanvasRenderingContext2D,
 		private _canvasWidth?: number,
 		private _canvasHeight?: number,
@@ -56,6 +57,16 @@ abstract class CanvasObjectDisplayer {
 	
 	private set gameInfos(gameInfos: GameDto) {
 		this._gameInfos = gameInfos
+	}
+
+	public get canvas(): HTMLCanvasElement {
+		if (!this._canvas)
+			throw new Error('The canvas have not been set up')
+		return this._canvas
+	}
+	
+	public set canvas(canvas: HTMLCanvasElement) {
+		this._canvas = canvas
 	}
 
 	protected get context() {
@@ -129,12 +140,14 @@ abstract class CanvasObjectDisplayer {
 	}
 
 	protected setUp(
+		canvas: HTMLCanvasElement,
 		ctx: CanvasRenderingContext2D,
 		canvasWidth: number,
 		canvasHeight: number,
 		canvasPosY?: number,
 		moveObject?: MoveObject,
 	): void {
+		this.canvas = canvas
 		this.context = ctx;
 		this.canvasWidth = canvasWidth;
 		this.canvasHeight = canvasHeight;
