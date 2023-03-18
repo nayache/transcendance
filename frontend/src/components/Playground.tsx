@@ -7,18 +7,20 @@ import RefereeDisplayer from './RefereeDisplayer.class'
 import PlayerDisplayer, { PlayerSide } from './PlayerDisplayer.class'
 import DrawerDisplayer from './DrawerDisplayer.class'
 import { Socket } from 'socket.io-client'
-import { GameDto, MoveObjects } from '../interface/IGame'
+import { Difficulty, GameDto, MoveObjects } from '../interface/IGame'
 import '../styles/Playground.css'
 import '../styles/Game.css'
 import { useRef, useState } from 'react'
 import { BtnStatus } from './Button'
 import { useStartGameListener } from '../hooks/useStartGameListener'
 import { useUpdateGameListener } from '../hooks/useUpdateGameListener'
+import { useUpdateScoreListener } from '../hooks/useUpdateScoreListener'
 
 const MAX_GOALS: number = 4;
 
 interface Props {
 	socket: Socket;
+	gameMode: Difficulty,
 	infos: GameDto;
 	leftPlayer: PlayerDisplayer,
 	rightPlayer: PlayerDisplayer,
@@ -30,7 +32,7 @@ interface CanvasDimensions {
 	y: number
 }
 
-const Playground = ({ socket, infos, leftPlayer, rightPlayer }: Props) => {
+const Playground = ({ socket, gameMode, infos, leftPlayer, rightPlayer }: Props) => {
 
 	const dimensions = useRef<CanvasDimensions>();
 	const [startBtn, setStartBtn] = useState<BtnStatus>("idle")
@@ -64,30 +66,33 @@ const Playground = ({ socket, infos, leftPlayer, rightPlayer }: Props) => {
 		drawer.updateGame(moveObjects)
 	})
 
+	const score = useUpdateScoreListener(socket)
+
 
 
 	return (
 		<div className="playground-container">
 
 			<div className="game-container">
-				<p className="mode-game">Classic Game</p>
+				<p className="mode-game">{gameMode} Game</p>
 				<div className="all-game"> 
 					<div className="login-score">
 						<div className="login-container">
-							<p className="first-login">AlanTiaCapté</p>
-							<p className="second-login">Leodu69</p>
+							<p className="first-login">{infos.player1.pseudo}</p>
+							<p className="second-login">{infos.player2.pseudo}</p>
 						</div>
 						<div className="game-pdv" >
-							<p className="scoregreen ">SCORE: 00</p>
+							<p className="scoregreen ">SCORE: {score[0]}</p>
 							{/* <FontAwesomeIcon className="heartgreen" icon={faHeartBroken} />
 							<FontAwesomeIcon className="heartgreen" icon={faHeartBroken} />
 							<FontAwesomeIcon className="heartgreen" icon={faHeartBroken} /> */}
 
-							<p className="game-time">00:00</p>
+							{/* <p className="game-time">00:00</p> */}
+
 							{/* <FontAwesomeIcon className="heartred" icon={faHeartBroken} />
 							<FontAwesomeIcon className="heartred" icon={faHeartBroken} />
 							<FontAwesomeIcon className="heartred" icon={faHeartBroken} /> */}
-							<p className="scorered">SCORE: 00</p>
+							<p className="scorered">SCORE: {score[1]}</p>
 						</div>
 						<div className="game-frame">
 							<Container>

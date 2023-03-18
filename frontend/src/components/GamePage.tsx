@@ -95,7 +95,7 @@ const GamePage: React.FC = () => {
 			go && infos !== undefined && leftPlayer && rightPlayer && (
 				<React.Fragment>
 					<Background />
-					<Playground socket={socket} infos={infos} leftPlayer={leftPlayer}
+					<Playground gameMode={gameMode} socket={socket} infos={infos} leftPlayer={leftPlayer}
 					rightPlayer={rightPlayer} />
 				</React.Fragment>
 			) }

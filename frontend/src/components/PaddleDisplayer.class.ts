@@ -101,7 +101,6 @@ class PaddleDisplayer extends CanvasObjectDisplayer {
 	// }
 
 	display(moveObject?: MoveObject): void {
-		console.log("this.pos dans display paddle = ", this.pos)
 		super.display(moveObject)
 		this.context.rect(this.pos.x, this.pos.y, this.dimensions.width, this.dimensions.height)
 		this.context.fill();

@@ -4,37 +4,31 @@
 
 
 .game-container {
-	position: relative;
 	--game-width: 800px;
+	position: relative;
+	margin: 40px auto 10px;
 }
 
 .all-game {
 	position: relative;
-	float: left;
+	width: fit-content;
+    min-width: fit-content;
+    margin: auto;
 }
 
 .game-frame {
 	border: 5px solid white;
-	width: fit-content;
-	height: fit-content;
+	min-width: fit-content;
+	min-height: fit-content;
 	position: relative;
 }
 
-
-.channel-frame {
-	border: 2px solid white;
-	position: relative;
-	width: 500px;
-	height: 600px;
-	float: right;
-	bottom: auto;
-	right: 1%;
-}
 
 .mode-game {
 	position:relative;
 	text-align: center;
 	font-size: 40px;
+	margin: 0;
 	font-family: 'Bebas Neue', cursive;
 }
 
@@ -46,40 +40,52 @@
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
-	margin-left: 25px;
-	width: calc(var(--game-width) - 85px);
+	margin: 3px auto;
+	width: var(--game-width);
+	font-family: 'Mukta', sans-serif;
+	font-size : 20px;
+	font-style: italic;
+	font-weight: bolder;
 	margin-bottom: 0;
+	text-shadow: 1px 1px black;
 }
 
 .first-login {
 	display: inline-block;
 	position: relative;
 	margin-bottom: 0;
-	font-family: 'Mukta', sans-serif;
-	font-size : 20px;
-	font-style: italic;
-	font-weight: bolder;
-	-webkit-text-stroke: 1px rgb(109, 255, 248);
-	color: white;
-	
+	font-family: inherit;
+	font-size: inherit;
+	font-style: inherit;
+	font-weight: inherit;
+	color: rgb(109, 255, 248);
+	/* color: white; */
+	text-shadow: inherit;
 }
 
 .second-login {
 	display: inline-block;
 	position: relative;
 	margin-bottom: 0;
-	font-family: 'Mukta', sans-serif;
-	font-size : 20px;
-	font-style: italic;
-	font-weight: bolder;
-	-webkit-text-stroke: 1px rgb(255, 95, 122);
-	color: white;
+	font-family: inherit;
+	font-size: inherit;
+	font-style: inherit;
+	font-weight: inherit;
+	color: rgb(255, 95, 122);
+	/* color: white; */
+	text-shadow: inherit;
+}
+
+.game-pdv {
+	display: flex;
+	justify-content: space-between;
+	margin: 5px auto;
 }
 
 .scoregreen {
-	display:inline-block;
+	display: inline-block;
 	font-family: 'Tilt Neon', cursive;
-	margin: 0 3%;
+	margin: 0;
 	font-size: 18px;
 	border: 1px solid white;
 	border-color: white;
@@ -91,7 +97,7 @@
 }
 
 .heartgreen {
-	display:inline-block;
+	display: inline-block;
 	background-color: rgb(109, 255, 248);
 	color: white;
 	font-size: 18px;
@@ -104,7 +110,7 @@
 .game-time {
 	display:inline-block;
 	border: 1.5px solid white;
-	margin: 5px 3%;
+	margin: 0;
 	font-family: 'Tilt Neon', cursive;
 	text-align: center;
 	font-size: 25px;
@@ -128,7 +134,7 @@
 	display:inline-block;
 	flex: right;
 	font-family: 'Tilt Neon', cursive;
-	margin: 0 3%;
+	margin: 0;
 	font-size: 18px;
 	border: 1px solid white;
 	border-color: white;
@@ -138,66 +144,51 @@
 	color: rgb(255, 95, 122);
 }
 
-.title-chats { 
-	display: none;
-}
 
-
-@media screen and (max-width: 1282px) {
-	.channel-frame {
-		width: 380px;
-	}
-
-}
-
-
-@media screen and (max-width: 1329px) {
-	.channel-frame {
-		float: left;
-		margin: 20%;
-	}
-}
-
-
-@media screen and (max-width: 805px) {
+/* @media screen and (max-width: 805px) { */
 	
-	.game-container { 
-		--game-width: 550px;
-	}
+	/* .game-container { 
+		--game-width: 400px;
+	} */
 
-	.all-game, .game-pdv {
+	/* .all-game {
 		width: 100%;
-	}
+	} */
 
-	.login-container {
+	/* .game-pdv {
+		display: flex;
+		justify-content: space-between;
+	} */
+
+	/* .login-container {
 		width: calc(var(--game-width) - 30px) ;
 		margin-left: 10px;
-	}
+	} */
 
-	.game-frame {
+	/* .game-frame {
 		width: var(--game-width);
 		height:320px;
-	}
+	} */
 	
-	.scoregreen, .scorered {
+	/* .scoregreen, .scorered {
 		margin: 10px;
-	}
-	.heartgreen, .heartred {
+	} */
+	/* .heartgreen, .heartred {
 		margin: 0;
 	}
 	.game-time {
 		padding: 0 5px;
 		margin: 0.1;
-	}
+	} */
 
-	.barre {
+	/* .barre {
 		border: 3px solid white;
 		position: relative;
 		display: inherit;
 		top:0;
-	}
+	} */
 
-	.title-chats {
+	/* .title-chats {
 		font-family: 'Mukta', sans-serif;
 		font-size : 25px;
 		color: white;
@@ -205,6 +196,6 @@
 		position: relative;
 		text-align:center;
 		display: inherit;
-	}
+	} */
 
-}
+/* } */
