@@ -80,6 +80,9 @@ export const REGISTER_ROUTE = BASE_URL + REGISTER_EP
 export const GAMEPAGE_EP = '/gamepage';
 export const GAMEPAGE_ROUTE = BASE_URL + GAMEPAGE_EP
 
+export const VIEWERGAMEPAGE_EP = '/view-gamepage';
+export const VIEWERGAMEPAGE_ROUTE = BASE_URL + VIEWERGAMEPAGE_EP
+
 export const TWOFA_EP = '/twofa'
 export const TWOFA_ROUTE = BASE_URL + TWOFA_EP
 
