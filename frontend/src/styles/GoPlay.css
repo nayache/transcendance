@@ -61,6 +61,7 @@
 .button-24 {
   background: #FF4742;
   border: 1px solid #FF4742;
+  margin-top: 40px;
   border-radius: 6px;
   box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
   box-sizing: border-box;

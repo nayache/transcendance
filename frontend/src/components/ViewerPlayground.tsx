@@ -24,7 +24,6 @@ const MAX_GOALS: number = 4;
 
 interface Props {
 	socket: Socket;
-	gameMode: Difficulty,
 	pseudo: string,
 	infos: GameDto;
 	leftPlayer: PlayerDisplayer,
@@ -37,7 +36,7 @@ interface CanvasDimensions {
 	y: number
 }
 
-const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }: Props) => {
+const Playground = ({ socket, pseudo, infos, leftPlayer, rightPlayer }: Props) => {
 
 	const dimensions = useRef<CanvasDimensions>();
 	const [startBtn, setStartBtn] = useState<BtnStatus>("idle")
@@ -84,7 +83,7 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 		<div className="playground-container">
 
 			<div className="game-container">
-				<p className="mode-game">{gameMode} Game</p>
+				<p className="mode-game"> Game</p>
 				<div className="all-game"> 
 					<div className="login-score">
 						<div className="login-container">

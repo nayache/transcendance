@@ -42,6 +42,7 @@ export const EndGameMenu = ({ gameInfos, pseudo, onEndGame }: Props) => {
 						<p className="endGame-player-title">{gameInfos.ranked ? "Ranked game infos" : "Game infos"}</p>
 						<p>Difficulty: {gameInfos.difficulty}</p>
 						<p>Xp won: {playerSide.current === 1 ? gameInfos.xp1 : gameInfos.xp2}</p>
+						<p>Score: {playerSide.current === 1 ? gameInfos.score1 : gameInfos.score2}</p>
 					</div>
 				</div>
 			}

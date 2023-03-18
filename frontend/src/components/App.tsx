@@ -50,7 +50,7 @@ const router = createBrowserRouter([
 		element: <GamePage />
 	},
 	{
-		path: VIEWERGAMEPAGE_EP + '/:mode',
+		path: VIEWERGAMEPAGE_EP,
 		element: <ViewerGamePage />
 	},
 	{
