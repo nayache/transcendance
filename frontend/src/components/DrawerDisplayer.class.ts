@@ -102,38 +102,28 @@ class DrawerDisplayer {
 	}
 
 
-	private clearBgnd(
-		context: CanvasRenderingContext2D,
-		canvasWidth: number,
-		canvasHeight: number
-	) {
-		context.clearRect(0, 0, canvasWidth, canvasHeight);
+	public clearBgnd() {
+		this.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 	}
 
 	private drawMiddleLine(
-		context: CanvasRenderingContext2D,
-		canvasWidth: number,
-		canvasHeight: number
 	) {
-		const middleWidth = canvasWidth / 2;
-		const lineWidth = canvasWidth / 100;
+		const middleWidth = this.canvasWidth / 2;
+		const lineWidth = this.canvasWidth / 100;
 	
-		context.beginPath();
-		context.lineWidth = lineWidth;
-		context.setLineDash([20, 15]);
-		context.moveTo(middleWidth, 0);
-		context.lineTo(middleWidth, canvasHeight);
-		context.stroke();
+		this.context.beginPath();
+		this.context.lineWidth = lineWidth;
+		this.context.setLineDash([20, 15]);
+		this.context.moveTo(middleWidth, 0);
+		this.context.lineTo(middleWidth, this.canvasHeight);
+		this.context.stroke();
 	}
 	
 	private drawBgnd(
-		context: CanvasRenderingContext2D,
-		canvasWidth: number,
-		canvasHeight: number
 	) {
-		context.fillStyle = 'white';
-		context.fillRect(0, 0, canvasWidth, canvasHeight);
-		this.drawMiddleLine(context, canvasWidth, canvasHeight);
+		this.context.fillStyle = 'white';
+		this.context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+		this.drawMiddleLine();
 	}
 	
 	
@@ -148,37 +138,22 @@ class DrawerDisplayer {
 		this.canvasWidth = canvasWidth;
 		this.canvasHeight = canvasHeight;
 		this.canvas = canvas;
-		this.drawBgnd(context, canvasWidth, canvasHeight)
+		this.drawBgnd()
 		this.leftPaddle.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top, moveObjects?.leftPaddle);
 		this.rightPaddle.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top, moveObjects?.rightPaddle);
 		this.ball.setUp(context, canvasWidth, canvasHeight, undefined, moveObjects?.ball);
 	}
 
-	private updateGame(
-		context: CanvasRenderingContext2D,
-		canvasWidth: number,
-		canvasHeight: number,
-		canvas: HTMLCanvasElement
-	) {
+	public updateGame(moveObjects: MoveObjects) {
 		
-		this.clearBgnd(context, canvasWidth, canvasHeight);
-		this.drawBgnd(context, canvasWidth, canvasHeight);
-		this.leftPaddle.display();
-		this.rightPaddle.display();
-		this.ball.display();
+		this.clearBgnd();
+		this.drawBgnd();
+		this.leftPaddle.display(moveObjects.leftPaddle);
+		this.rightPaddle.display(moveObjects.rightPaddle);
+		this.ball.display(moveObjects.ball);
 		// ball.updatePos([leftPaddle, rightPaddle]);
 	}
 
-	public gameLoop(
-		context: CanvasRenderingContext2D,
-		canvasWidth: number,
-		canvasHeight: number,
-		canvas: HTMLCanvasElement
-	) {
-		this.updateGame(context, canvasWidth, canvasHeight, canvas)
-		// this.reqAnim = requestAnimationFrame(() => this.gameLoop(context, canvasWidth, canvasHeight, canvas))
-		// console.log('reqAnim = ', reqAnim);
-	}
 }
 
 export default DrawerDisplayer;

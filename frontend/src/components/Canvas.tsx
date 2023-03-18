@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { CanvasStyled } from '../styles/Canvas.style'
 
 type MyProps = {
-	display: (context: CanvasRenderingContext2D,
+	display?: (context: CanvasRenderingContext2D,
 		canvasWidth: number,
 		canvasHeight: number,
 		canvas: HTMLCanvasElement) => void,
@@ -29,7 +29,8 @@ const Canvas = ({display, onInit, ...rest}: Props) => {
 		console.log("canvas.getBoundingClientRect().top = ", canvas.getBoundingClientRect().top, "  canvas.getBoundingClientRect().y = ", canvas.getBoundingClientRect().y)
 		if (onInit)
 			onInit(context, canvas.width, canvas.height, canvas);
-		display(context, canvas.width, canvas.height, canvas);
+		if (display)
+			display(context, canvas.width, canvas.height, canvas);
 	}, [canvasRef, display])
 
 	return (

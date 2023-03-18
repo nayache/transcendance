@@ -7,9 +7,6 @@ import { MoveObject, MoveObjects } from "../interface/IGame";
 
 export const useStartGameListener = (
 	socket: Socket | undefined,
-	leftPlayer: PlayerDisplayer,
-	rightPlayer: PlayerDisplayer,
-	ball: BallDisplayer,
 	onPreStartGame?: (props?: any) => void,
 	onStartGame?: (props?: any) => void,
 ) => {

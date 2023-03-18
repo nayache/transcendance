@@ -1,0 +1,210 @@
+@import url('https://fonts.googleapis.com/css2?family=Tilt+Neon&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Mukta&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
+
+.game-container {
+	position: relative;
+	--game-width: 800px;
+}
+
+.all-game {
+	position: relative;
+	float: left;
+}
+
+.game-frame {
+	border: 5px solid white;
+	width: fit-content;
+	height: fit-content;
+	position: relative;
+}
+
+
+.channel-frame {
+	border: 2px solid white;
+	position: relative;
+	width: 500px;
+	height: 600px;
+	float: right;
+	bottom: auto;
+	right: 1%;
+}
+
+.mode-game {
+	position:relative;
+	text-align: center;
+	font-size: 40px;
+	font-family: 'Bebas Neue', cursive;
+}
+
+.login-score {
+	position: relative;
+}
+
+.login-container {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	margin-left: 25px;
+	width: calc(var(--game-width) - 85px);
+	margin-bottom: 0;
+}
+
+.first-login {
+	display: inline-block;
+	position: relative;
+	margin-bottom: 0;
+	font-family: 'Mukta', sans-serif;
+	font-size : 20px;
+	font-style: italic;
+	font-weight: bolder;
+	-webkit-text-stroke: 1px rgb(109, 255, 248);
+	color: white;
+	
+}
+
+.second-login {
+	display: inline-block;
+	position: relative;
+	margin-bottom: 0;
+	font-family: 'Mukta', sans-serif;
+	font-size : 20px;
+	font-style: italic;
+	font-weight: bolder;
+	-webkit-text-stroke: 1px rgb(255, 95, 122);
+	color: white;
+}
+
+.scoregreen {
+	display:inline-block;
+	font-family: 'Tilt Neon', cursive;
+	margin: 0 3%;
+	font-size: 18px;
+	border: 1px solid white;
+	border-color: white;
+	border-radius: 15px;
+	padding: 0 10px;
+	background-color: white;
+	color: rgb(109, 255, 248);
+
+}
+
+.heartgreen {
+	display:inline-block;
+	background-color: rgb(109, 255, 248);
+	color: white;
+	font-size: 18px;
+	margin: 0.5%;
+	border: 1px solid rgb(109, 255, 248);
+	border-radius: 50px;
+	padding: 5px
+}
+
+.game-time {
+	display:inline-block;
+	border: 1.5px solid white;
+	margin: 5px 3%;
+	font-family: 'Tilt Neon', cursive;
+	text-align: center;
+	font-size: 25px;
+	padding: 0 60px;
+	color: white;
+	font-weight: bolder;
+}
+
+.heartred {
+	display:inline-block;
+	background-color: rgb(255, 95, 122);
+	color: white;
+	font-size: 18px;
+	margin: 0.5%;
+	border: 1px solid rgb(255, 95, 122);
+	border-radius: 50px;
+	padding: 5px;
+}
+
+.scorered {
+	display:inline-block;
+	flex: right;
+	font-family: 'Tilt Neon', cursive;
+	margin: 0 3%;
+	font-size: 18px;
+	border: 1px solid white;
+	border-color: white;
+	border-radius: 15px;
+	padding: 0 10px;
+	background-color: white;
+	color: rgb(255, 95, 122);
+}
+
+.title-chats { 
+	display: none;
+}
+
+
+@media screen and (max-width: 1282px) {
+	.channel-frame {
+		width: 380px;
+	}
+
+}
+
+
+@media screen and (max-width: 1329px) {
+	.channel-frame {
+		float: left;
+		margin: 20%;
+	}
+}
+
+
+@media screen and (max-width: 805px) {
+	
+	.game-container { 
+		--game-width: 550px;
+	}
+
+	.all-game, .game-pdv {
+		width: 100%;
+	}
+
+	.login-container {
+		width: calc(var(--game-width) - 30px) ;
+		margin-left: 10px;
+	}
+
+	.game-frame {
+		width: var(--game-width);
+		height:320px;
+	}
+	
+	.scoregreen, .scorered {
+		margin: 10px;
+	}
+	.heartgreen, .heartred {
+		margin: 0;
+	}
+	.game-time {
+		padding: 0 5px;
+		margin: 0.1;
+	}
+
+	.barre {
+		border: 3px solid white;
+		position: relative;
+		display: inherit;
+		top:0;
+	}
+
+	.title-chats {
+		font-family: 'Mukta', sans-serif;
+		font-size : 25px;
+		color: white;
+		margin: 0;
+		position: relative;
+		text-align:center;
+		display: inherit;
+	}
+
+}

@@ -38,7 +38,8 @@ class Paddle extends CanvasObject {
 
 	onMouseMove(e: MouseEvent): void {
 		try {
-			this.pos.y = e.clientY - this.canvasPosY - this.dimensions.height / 2;
+			// this.pos.y = e.clientY - this.canvasPosY - this.dimensions.height / 2;
+			this.pos.y = e.clientY;
 		} catch (err) {
 		}
 	}

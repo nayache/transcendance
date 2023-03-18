@@ -12,6 +12,10 @@
 	}
 }
 
+body {
+    background : linear-gradient(to right, lightskyblue, lightblue);
+}
+
 .playground-container {
 	min-height: calc(100% + 300px);
 }
