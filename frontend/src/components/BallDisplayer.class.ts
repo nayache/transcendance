@@ -1,12 +1,13 @@
 import React from 'react'
 import { Socket } from 'socket.io-client';
-import { MoveObject } from '../interface/IGame';
+import { GameDto, MoveObject } from '../interface/IGame';
 import CanvasObjectDisplayer, { Point, Dimensions, Vector2D, Side } from './CanvasObjectDisplayer.class';
 
 class BallDisplayer extends CanvasObjectDisplayer {
 
 	constructor(
 		socket: Socket,
+		gameInfos: GameDto,
 		radius: number = 10,
 		color: string = 'grey',
 		context?: CanvasRenderingContext2D,
@@ -16,6 +17,7 @@ class BallDisplayer extends CanvasObjectDisplayer {
 	) {
 		super(
 			socket,
+			gameInfos,
 			{ width: radius, height: radius },
 			undefined,
 			color,

@@ -1,5 +1,5 @@
 import { Socket } from "socket.io-client";
-import { MoveObject } from "../interface/IGame";
+import { GameDto, MoveObject } from "../interface/IGame";
 import CanvasObjectDisplayer, { Point, Dimensions } from "./CanvasObjectDisplayer.class";
 import PlayerDisplayer, { PlayerSide } from "./PlayerDisplayer.class";
 
@@ -11,6 +11,7 @@ class PaddleDisplayer extends CanvasObjectDisplayer {
 
 	constructor(
 		socket: Socket,
+		gameInfos: GameDto,
 		private _player?: PlayerDisplayer,
 		height: number = 100,
 		color: string = 'black',
@@ -21,6 +22,7 @@ class PaddleDisplayer extends CanvasObjectDisplayer {
 	) {
 		super(
 			socket,
+			gameInfos,
 			{ width: PADDLE_WIDTH, height },
 			undefined,
 			color,
@@ -44,7 +46,7 @@ class PaddleDisplayer extends CanvasObjectDisplayer {
 
 
 	onMouseMove(e: MouseEvent): void {
-		this.socket.emit('paddleMove', e)
+		this.socket.emit('paddleMove', {gameId: this.gameInfos.id, e})
 	}
 
 	setUp(

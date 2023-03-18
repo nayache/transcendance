@@ -1,5 +1,5 @@
 import { Socket } from "socket.io-client"
-import { MoveObject } from "../interface/IGame"
+import { GameDto, MoveObject } from "../interface/IGame"
 
 export type Point = {
 	x: number,
@@ -30,6 +30,7 @@ abstract class CanvasObjectDisplayer {
 
 	constructor(
 		private _socket: Socket,
+		private _gameInfos: GameDto,
 		private _dimensions?: Dimensions,
 		private _pos?: Point,
 		private _color?: string,
@@ -47,6 +48,14 @@ abstract class CanvasObjectDisplayer {
 	
 	private set socket(socket: Socket) {
 		this._socket = socket
+	}
+
+	public get gameInfos(): GameDto {
+		return this._gameInfos
+	}
+	
+	private set gameInfos(gameInfos: GameDto) {
+		this._gameInfos = gameInfos
 	}
 
 	protected get context() {

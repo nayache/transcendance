@@ -37,6 +37,7 @@ const Playground = ({ socket, infos, leftPlayer, rightPlayer }: Props) => {
 
 	const ball: BallDisplayer = new BallDisplayer(
 		socket,
+		infos,
 		50,
 		"grey",
 	)
