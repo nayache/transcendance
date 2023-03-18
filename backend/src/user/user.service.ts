@@ -511,6 +511,7 @@ export class UserService {
         try {
             const unlockedAchievement: string = this.deserveOneAchievement(dataUser.achievements, dataUser.level, winning, cleansheet);
             if (unlockedAchievement) {
+                console.log('==================> ACHIEVEMENT UNLOCKED <==========================')
                 await this.dataUserRepository.update(dataUser.id, {achievements: [...dataUser.achievements, ...[unlockedAchievement]]});
             }
         } catch(e) {

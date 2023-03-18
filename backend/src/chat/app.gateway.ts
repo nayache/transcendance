@@ -107,10 +107,9 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   getStatus(userId: string): Status {
-    if (!this.users.get(userId))
+    if (!this.users.get(userId) || !this.users.get(userId).size)
       return Status.OFFLINE;
     return (this.inGamePage.get(userId) && this.gameService.isInGame(userId)) ? Status.INGAME : Status.ONLINE;
-    //return (this.users.get(userId).size) ? Status.ONLINE : Status.OFFLINE;
   }
 
   async joinSocketToRooms(userId: string, socket: Socket) {
@@ -313,14 +312,8 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     }
   }
 
-  endGameEvent(userId: string, userId2, gameInfo: GameDto) {
-    const socket1: Socket = this.inGamePage.get(userId);
-    const socket2: Socket = this.inGamePage.get(userId2);
-
-    if (socket1)
-      this.server.to(socket1.id).emit('endGame', gameInfo);
-    if (socket2)
-      this.server.to(socket2.id).emit('endGame', gameInfo);
+  endGameEvent(gameInfo: GameDto) {
+      this.server.to(gameInfo.id).emit('endGame', gameInfo);
   }
 
 /*  async endOfGame(gameId: string) {
@@ -335,15 +328,15 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     if (socket2)
       this.server.to(socket2.id).emit('endOfGame', game);
   }*/
-
   @SubscribeMessage('paddleMove')  
-  async paddleMoveEvent(@MessageBody() data: {gameId: string, e: MouseEvent}, @ConnectedSocket() socket: Socket) {
+  async paddleMoveEvent(@MessageBody() data: {gameId: string, clientY: number, canvasPosY: number}, @ConnectedSocket() socket: Socket) {
     const author: string = this.getIdBySocket(socket);
     if (!author) {
       this.logger.error('Not recognize socket emitter');
       return;
     }
-    await this.gameService.paddleMove(author, data.gameId, data.e);
+    // console.log("clientY = ", data.clientY)
+    await this.gameService.paddleMove(author, data.gameId, data.clientY, data.canvasPosY);
   }
 
   paddleEvent(payload: MoveObject[], author: string) {
@@ -367,6 +360,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
         this.users.get(user.id).delete(user.socket); // supprimer le socket associer
       }
     }
+    console.log(this.server.of('/').adapter.rooms);
     this.logger.log(`DISCONNECTED: ${socket.id}`, "Gateway");
     this.server.emit('DISCONNECTED', socket.id);
   }

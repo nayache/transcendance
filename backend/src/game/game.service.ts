@@ -409,9 +409,10 @@ export class Paddle extends CanvasObject {
     }
 
 
-    onMouseMove(e: MouseEvent): void {
+    onMouseMove(clientY: number, canvasPosY: number): void {
         try {
-            this.pos.y = e.clientY - this.canvasPosY - this.dimensions.height / 2;
+            this.canvasPosY = canvasPosY
+            this.pos.y = clientY - canvasPosY - this.dimensions.height / 2;
         } catch (err) {
         }
     }
@@ -693,30 +694,27 @@ export class GameService {
     private matchs: Set<[string, string]>;
     private logger: Logger = new Logger("GAME");
 
-    addStartingSpeed(gameId: string): Vector2D {
-       // if (!this.speeds.get(gameId)) {
+    generateStartingSpeed(): Vector2D {
             const startingSpeed = {
                 x: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5]),
                 y: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5])
             }
-         //   this.speeds.set(gameId, startingSpeed);
-        //return this.speeds.get(gameId);
         return startingSpeed;
     }
 
-    async buildGame(payload: GameDto, userId: string, width: number, height: number, y: number): Promise<Game> {
-        const game: Game = new Game(payload.id, payload.player1, payload.player2, this.addStartingSpeed(payload.id), width, height, y);
+    async buildGame(payload: GameDto, width: number, height: number, y: number): Promise<Game> {
+        const game: Game = new Game(payload.id, payload.player1, payload.player2, this.generateStartingSpeed(), width, height, y);
         if (!this.games.has(payload.id))
             this.games.set(payload.id, game);
         return game;
     }
 
-    updateGame(game: Game, width: number, height: number, y: number/*, gameInfos: GameDto*/) {
+    async updateGame(game: Game, width: number, height: number, y: number/*, gameInfos: GameDto*/) {
         if (game.referee.gamestate == GameState.WaitingForStart)
         {
             this.logger.log(`WAITING FOR START`)
             try {
-                game.setUpGame(this.addStartingSpeed(game.id), width, height, y)
+                game.setUpGame(this.generateStartingSpeed(), width, height, y)
             } catch (e) {
                 console.log('ERROR: setupgame :', e);
             }
@@ -730,18 +728,25 @@ export class GameService {
         }
         if (game.referee.gamestate === GameState.WaitingForResume)
                 this.logger.log(`WAITING FOR RESUME`)
-        if (game.referee.gamestate === GameState.PermanentStop)
+        if (game.referee.gamestate === GameState.PermanentStop) {
                 this.logger.log(`PERMANENT STOP`)
+                const gameData: GameEntity = await this.findGameById(game.id);
+                if (gameData) {
+                    const gameInfo: GameDto = await this.gameToDto(gameData);
+                    this.appGateway.endGameEvent(gameInfo);
+                }
+        }
         if (game.referee.gamestate === GameState.Pause)
                 this.logger.log(`PAUSE`)
         try {
             const oldScore: [number, number] = [game.player1.nbGoals, game.player2.nbGoals];
             game.referee.referee();
             const newScore: [number, number] = [game.player1.nbGoals, game.player2.nbGoals];
-            if (oldScore[0] !== newScore[0] || oldScore[1] !== newScore[1]) {
-                const user: PlayerDto = (oldScore[0] != game.score[0]) ? game.user2 : game.user2;
+            if (oldScore[0] != newScore[0] || oldScore[1] != newScore[1]) {
+                const user: PlayerDto = (oldScore[0] != newScore[0]) ? game.user1 : game.user2;
                 this.logger.log(`SCORE !! by (${user.pseudo})  score now: ${newScore}`)
                 this.appGateway.updateScore(game.id, newScore);
+                await this.scoreGoal(game.id, user.id);
             }
         } catch (e) {
             console.log('ERROR: ', e);
@@ -751,10 +756,13 @@ export class GameService {
 
     run(game: Game) {
         //-------------------> CONDITION ADRRET
+        this.matchs.add([game.user1.id, game.user2.id]);
         const intervalId: NodeJS.Timer = setInterval(() => {
             this.updateGame(game, game.w, game.h, game.y)
-            if (game.referee.gamestate === GameState.PermanentStop)
+            if (game.referee.gamestate === GameState.PermanentStop) {
                 clearInterval(intervalId);
+                this.matchs.delete([game.user1.id, game.user2.id]);
+            }
         }, 16);
     }
 
@@ -782,7 +790,7 @@ export class GameService {
             this.appGateway.preStartGameEvent(gameInfos.player1.id, gameInfos.player2.id, left, right, ball);
             this.run(game);
         } else {
-            game = await this.buildGame(gameInfos, viewer, width, height, y);
+            game = await this.buildGame(gameInfos, width, height, y);
             this.setReady(game, viewer);
         }
     }
@@ -790,13 +798,13 @@ export class GameService {
     //===============EVENTS GAMEEEE==================================
     //===============================================================
 
-    async paddleMove(author: string, gameId: string, e: MouseEvent) {
+    async paddleMove(author: string, gameId: string, clientY: number, canvasPosY: number) {
         const game: Game = this.games.get(gameId);
         if (!game)
             return this.logger.error('game not found')
         //let moves: MoveObject[];
         const emitter: Player = (game.user1.id === author) ? game.player1 : game.player2;
-        emitter.paddle.onMouseMove(e);
+        emitter.paddle.onMouseMove(clientY, canvasPosY);
         //moves.push(new MoveObject(emitter.paddle, null, emitter.userId));
     }
 
@@ -811,7 +819,6 @@ export class GameService {
             throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND);
         try {
             const game: GameEntity = await this.gameRepository.save(new GameEntity(player1, player2, difficulty, ranked));
-            this.matchs.add([user1, user2]);
             return game;
         } catch (e) {
             throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
@@ -837,7 +844,7 @@ export class GameService {
             console.log('endgames nogames!!!!!!! ');
             return
         }
-        this.appGateway.endGameEvent(gameInfo.player1.id, gameInfo.player2.id, gameInfo); // socket event avertir fin game
+        this.appGateway.endGameEvent(gameInfo); // socket event avertir fin game
     }
 
     createChallenge(author: string, invited: string, difficulty: Difficulty) {
