@@ -9,6 +9,8 @@ const PADDLE_XSPACE: number = 10;
 
 class PaddleDisplayer extends CanvasObjectDisplayer {
 
+	private _plugMove: boolean = false;
+
 	constructor(
 		socket: Socket,
 		gameInfos: GameDto,
@@ -31,6 +33,7 @@ class PaddleDisplayer extends CanvasObjectDisplayer {
 			canvasHeight,
 			canvasPosY,
 		);
+		if (this.plugMove)
 		document.addEventListener('mousemove', this.onMouseMove.bind(this));
 	}
 
@@ -42,6 +45,14 @@ class PaddleDisplayer extends CanvasObjectDisplayer {
 		if (!this._player)
 			throw new Error('The player have not been set up');
 		return this._player;
+	}
+
+	public get plugMove(): boolean {
+		return this._plugMove
+	}
+	
+	public set plugMove(plugMove: boolean) {
+		this._plugMove = plugMove
 	}
 
 
