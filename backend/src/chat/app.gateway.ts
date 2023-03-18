@@ -259,6 +259,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   @SubscribeMessage('setReady')
   async buildGame(@MessageBody() payload: {game: GameDto, w: number, h: number, y: number}, @ConnectedSocket() socket: Socket) {
     const userId: string = this.getIdBySocket(socket);
+    console.log('===========================================================setReady caller: ', userId)
     const author: string = (payload.game.player1.id === userId) ? userId : payload.game.player2.id;
     await this.gameService.setReadyGame(payload.game, author, payload.w, payload.h, payload.y);
   }
@@ -273,6 +274,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }*/
 
   preStartGameEvent(userId: string, left: MoveObject, right: MoveObject, ball: MoveObject) {
+    console.log('===========================================================PRESTARTTTTTTTTTTTTTTTTTTTT call')
     const socket: Socket = this.inGamePage.get(userId);
     //setTimeout(() => {
     this.server.to(socket.id).emit('preStartGame', {leftPaddle: left, rightPaddle: right, ball});
@@ -280,6 +282,13 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     this.ready.delete(userId);
   }
   
+  updateGame(userId: string, left: MoveObject, right: MoveObject, ball: MoveObject) {
+    const socket: Socket = this.inGamePage.get(userId);
+    console.log('ici');
+    if (socket)
+      this.server.to(socket.id).emit('preStartGame', {leftPaddle: left, rightPaddle: right, ball});
+  }
+
   async cleanGame(userId: string) {
     if (!this.gameService.isInGame(userId)) // si pas en partie supprimer de la liste d'attente
       await this.gameService.removePlayerFromMatchmaking(userId);

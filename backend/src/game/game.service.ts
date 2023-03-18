@@ -131,11 +131,11 @@ abstract class CanvasObject {
         return (myItem >= limitInf && myItem <= limitSup)
     }
     
-    protected static randomIntFromInterval(min: number, max: number): number {
+    public static randomIntFromInterval(min: number, max: number): number {
         return Math.floor(Math.random() * (max - min + 1) + min)
     }
     
-    protected static randomIntFrom2Intervals(interval1: [number, number], interval2: [number, number]): number {
+    public static randomIntFrom2Intervals(interval1: [number, number], interval2: [number, number]): number {
         if (Math.random() > 0.5)
             return CanvasObject.randomIntFromInterval(interval1[0], interval1[1])
         else
@@ -598,10 +598,12 @@ export class Referee {
 }
 
 export class Game {
-    // 3 canvas -> pos -> dimensions -> color
     id: string;
-    user1: PlayerDto; //-> to player
-    user2: PlayerDto; //-> to player
+    w: number;
+    h: number;
+    y: number;
+    user1: PlayerDto;
+    user2: PlayerDto;
     player1: Player
     player2: Player;
     ball: Ball
@@ -609,7 +611,7 @@ export class Game {
     score: [number, number];
     reqAnim: number;
 
-    constructor(id: string, user1: PlayerDto, user2: PlayerDto, width: number, height: number, y: number) {
+    constructor(id: string, user1: PlayerDto, user2: PlayerDto, ss: Vector2D, width: number, height: number, y: number) {
         this.id = id
         this.user1 = user1;
         this.user2 = user2;
@@ -618,13 +620,16 @@ export class Game {
         this.ball = new Ball(10, 'grey', width, height, y);
         this.referee = new Referee([this.player1, this.player2], this.ball, 3);
         this.score = [0, 0];
-        this.setUpGame(width, height, y);
+        this.w = width;
+        this.h = height;
+        this.y = y;
+        this.setUpGame(ss, width, height, y);
     }
 
-    setUpGame(canvasWidth: number, canvasHeight: number, canvasPosY: number) {
+    setUpGame(startingSpeed: Vector2D, canvasWidth: number, canvasHeight: number, canvasPosY: number) {
 		this.player1.paddle.setUp(canvasWidth, canvasHeight, canvasPosY);
 		this.player2.paddle.setUp(canvasWidth, canvasHeight, canvasPosY);
-		this.ball.setUp(canvasWidth, canvasHeight, canvasPosY);
+		this.ball.setUp(canvasWidth, canvasHeight, canvasPosY, startingSpeed);
 		//on va set 2 boutons qui vont permettre de mettre respectivement les 2 joueurs prets a jouer,
 		// quand les 2 joueurs sont prets, ca demarre
 		// if (player1.isReadyToPlay && player2.isReadyToPlay || true)
@@ -673,19 +678,32 @@ export class GameService {
         this.matchmaking.set(Difficulty.HARD, new Set<string>());
         this.games = new Map<string, Map<string, Game>>();
         this.matchs = new Set<[string, string]>();
+        this.speeds = new Map<string, Vector2D>();
         this.challenges = [];
     }
-                    // Player1  //Player2    socket   dessin
+                    // gameID  //   viewer  DESSIN  
     private games: Map<string, Map<string, Game> >; //concept
+    private speeds: Map<string, Vector2D>;
     private matchmaking: Map<Difficulty, Set<string> >;
     private challenges: Challenge[];
     private matchs: Set<[string, string]>;
     private logger: Logger = new Logger("GAME");
 
+    addStartingSpeed(gameId: string): Vector2D {
+        if (!this.speeds.get(gameId)) {
+            const startingSpeed = {
+                x: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5]),
+                y: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5])
+            }
+            this.speeds.set(gameId, startingSpeed);
+        }
+        return this.speeds.get(gameId);
+    }
+
     async buildGame(payload: GameDto, viewer: string, width: number, height: number, y: number): Promise<Game> {
-        const game: Game = new Game(payload.id, payload.player1, payload.player2, width, height, y);
-            game.player1.ready = true;
-            game.player2.ready = true;
+        const game: Game = new Game(payload.id, payload.player1, payload.player2, this.addStartingSpeed(payload.id), width, height, y);
+        game.player1.ready = true;
+        game.player2.ready = true;
         if (!this.games.has(payload.id))
             this.games.set(payload.id, new Map<string, Game>().set(viewer, game));
         else
@@ -693,19 +711,24 @@ export class GameService {
         return game;
     }
 
-    gameLoop(game: Game, width: number, height: number, y: number, gameInfos: GameDto) {
+    updateGame(userId: string, game: Game, width: number, height: number, y: number/*, gameInfos: GameDto*/) {
         if (game.referee.gamestate == GameState.WaitingForStart)
         {
+            console.log('WAITINGSTART');
             try {
-                game.setUpGame(width, height, y)
+                game.setUpGame(this.addStartingSpeed(game.id), width, height, y)
             } catch (e) {
                 console.log('ERROR: setupgame :', e);
             }
         }
         if (game.referee.gamestate == GameState.Running) {
+            console.log('RUNNING UPDATE');
             game.updateGame();
             //---------------------------> emit ici -> LA BALLE besoin de pos, dimensions, color
-           // this.appGateway.updateGame(gameInfos)
+            const ball: MoveObject = new MoveObject(null, game.ball);
+            const left: MoveObject = new MoveObject(game.player1.paddle, null, game.player1.userId);
+            const right: MoveObject = new MoveObject(game.player2.paddle, null, game.player2.userId);
+            this.appGateway.updateGame(userId, left, right, ball);
         }
         try {
             game.referee.referee();
@@ -715,17 +738,30 @@ export class GameService {
        // game.reqAnim = requestAnimationFrame(() => this.gameLoop(game, width, height, y))
     }
 
+    run(games: Map<string, Game>) {
+        games.forEach((game, userId) => {
+            console.log('RUN');
+            setInterval(() => {this.updateGame(userId, game, game.w, game.h, game.y)}, 10)
+        })
+    }
+
     getObjectsPositions(games: Map<string, Game>) {
         for (let game of games.values()) {
 
         }
     }
 
+    alreadyViewer(gameId: string, viewer: string): boolean {
+        const payload: Map<string, Game> = this.games.get(gameId);
+        return (payload) ? payload.has(viewer) : false;
+    }
+
     async setReadyGame(gameInfos: GameDto, viewer: string, width: number, height: number, y: number) {
         // a verif !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if (this.alreadyViewer(gameInfos.id, viewer))
+           throw new ErrorException(HttpStatus.CONFLICT, AboutErr.GAME, TypeErr.DUPLICATED, 'user already build game');
         const game: Game = await this.buildGame(gameInfos, viewer, width, height, y);
 
-       // if (game.player1.ready === true && game.player2.ready === true) {
         if  (this.getGamesById(gameInfos.id).size === 2) {
             for (let e of this.games.get(gameInfos.id)) {
                 const ball: MoveObject = new MoveObject(null, game.ball);
@@ -734,8 +770,8 @@ export class GameService {
                 const emmiter: string = (e[0] === gameInfos.player1.id) ? e[0] : gameInfos.player2.id; 
                 this.appGateway.preStartGameEvent(emmiter, left, right, ball);
             }
+            this.run(this.games.get(gameInfos.id));
         }
-          //  this.gameLoop(game, width, height, y, gameInfos);
     }
 
     getGamesById(gameId: string): Map<string, Game> {
