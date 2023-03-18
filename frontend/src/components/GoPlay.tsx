@@ -4,6 +4,8 @@ import Navbar from "./Navbar";
 import { useState, useEffect } from "react";
 import Loader from "../img/pong.gif"
 import { Difficulty } from "../interface/IGame";
+import ClientApi from "./ClientApi.class";
+import { BASE_URL } from "../constants/RoutesApi";
 
 
 interface Props {
@@ -34,8 +36,11 @@ const GoPlay = ({gameMode, onClick}: Props) => {
 						</button> :
 						<div>
 							<img className="loaderPong-img" src={Loader}/>
-							<p>Loading...</p>
+							<p>Searching player...</p>
 						</div>}
+						<button className="button-24" onClick={() =>
+							ClientApi.redirect = new URL(BASE_URL)
+						}>Cancel</button>
 				</div>
 			</div>
 		}
