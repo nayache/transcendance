@@ -1,0 +1,17 @@
+
+.endGame-container {
+	display: flex;
+	margin: 10px;
+	justify-content: space-around;
+	align-items: flex-start;
+	min-height: 200px;
+	box-sizing: border-box;
+}
+
+.endGame-child {
+
+}
+
+.endGame-player-title {
+	font-size: large;
+}

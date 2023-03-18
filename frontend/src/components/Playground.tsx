@@ -15,12 +15,17 @@ import { BtnStatus } from './Button'
 import { useStartGameListener } from '../hooks/useStartGameListener'
 import { useUpdateGameListener } from '../hooks/useUpdateGameListener'
 import { useUpdateScoreListener } from '../hooks/useUpdateScoreListener'
+import { useEndGameListener } from '../hooks/useEndGameListener'
+import ModalGameMenu, { ModalGameType } from './ModalGameMenu'
+import ClientApi from './ClientApi.class'
+import { BASE_URL } from '../constants/RoutesApi'
 
 const MAX_GOALS: number = 4;
 
 interface Props {
 	socket: Socket;
 	gameMode: Difficulty,
+	pseudo: string,
 	infos: GameDto;
 	leftPlayer: PlayerDisplayer,
 	rightPlayer: PlayerDisplayer,
@@ -32,10 +37,11 @@ interface CanvasDimensions {
 	y: number
 }
 
-const Playground = ({ socket, gameMode, infos, leftPlayer, rightPlayer }: Props) => {
+const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }: Props) => {
 
 	const dimensions = useRef<CanvasDimensions>();
 	const [startBtn, setStartBtn] = useState<BtnStatus>("idle")
+	const [newInfos, setNewInfos] = useState<GameDto>();
 
 	const ball: BallDisplayer = new BallDisplayer(
 		socket,
@@ -67,6 +73,10 @@ const Playground = ({ socket, gameMode, infos, leftPlayer, rightPlayer }: Props)
 	})
 
 	const score = useUpdateScoreListener(socket)
+
+	const isFinished = useEndGameListener(socket, (gameInfos) => {
+		setNewInfos(gameInfos);
+	})
 
 
 
@@ -106,23 +116,25 @@ const Playground = ({ socket, gameMode, infos, leftPlayer, rightPlayer }: Props)
 									id="playground" />
 							</Container>
 						</div>
-						{ startBtn === "idle" && 
-								<div className="pulseBtn-wrap">
-									<button className="pulseBtn-button" onClick={() => {
-										console.log("dimensions.current = ", dimensions.current)
-										console.log("drawer.isCanvasUtilsSet() = ", drawer.isCanvasUtilsSet())
-										if (drawer.isCanvasUtilsSet())
-											socket.emit('setReady', {
-												game: infos,
-												w: drawer.canvasWidth,
-												h: drawer.canvasHeight,
-												y: drawer.canvas.getBoundingClientRect().top
-											});
-										setStartBtn("loading")
-									}}>Start</button>
-								</div> ||
+						{
+							startBtn === "idle" && 
+							<div className="pulseBtn-wrap">
+								<button className="pulseBtn-button" onClick={() => {
+									console.log("dimensions.current = ", dimensions.current)
+									console.log("drawer.isCanvasUtilsSet() = ", drawer.isCanvasUtilsSet())
+									if (drawer.isCanvasUtilsSet())
+										socket.emit('setReady', {
+											game: infos,
+											w: drawer.canvasWidth,
+											h: drawer.canvasHeight,
+											y: drawer.canvas.getBoundingClientRect().top
+										});
+									setStartBtn("loading")
+								}}>Start</button>
+							</div> ||
 
-								startBtn === "loading" &&
+							startBtn === "loading" &&
+							<div className="pulseBtn-wrap">
 								<div className="form-btn-container">
 									<svg id="loading-spinner" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
 										<defs>
@@ -138,7 +150,21 @@ const Playground = ({ socket, gameMode, infos, leftPlayer, rightPlayer }: Props)
 										</g>
 									</svg>
 								</div>
-							}
+							</div> ||
+
+							<div className="pulseBtn-wrap" />
+						}
+						{
+							isFinished && pseudo && newInfos &&
+							<ModalGameMenu active={isFinished} type={ModalGameType.ENDGAME}
+							gameInfos={newInfos} pseudo={pseudo}
+							callback={() => {
+								ClientApi.redirect = new URL(BASE_URL)
+							}}
+							callbackFail={() => {
+								ClientApi.redirect = new URL(BASE_URL)
+							}} />
+						}
 					</div>
 				</div>
 			</div>

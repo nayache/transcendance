@@ -92,10 +92,11 @@ const GamePage: React.FC = () => {
 			{ !go &&
 				<GoPlay gameMode={gameMode} onClick={() => setClicked(true)} /> ||
 
-			go && infos !== undefined && leftPlayer && rightPlayer && (
+			go && pseudo && infos !== undefined && leftPlayer && rightPlayer && (
 				<React.Fragment>
 					<Background />
-					<Playground gameMode={gameMode} socket={socket} infos={infos} leftPlayer={leftPlayer}
+					<Playground socket={socket} gameMode={gameMode} pseudo={pseudo}
+					infos={infos} leftPlayer={leftPlayer}
 					rightPlayer={rightPlayer} />
 				</React.Fragment>
 			) }
