@@ -265,15 +265,6 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     socket.join(payload.game.id);
   }
 
- /* @SubscribeMessage('readyForGame')
-  async readyEvent(@MessageBody() data: GameDto, @ConnectedSocket() socket: Socket) {
-    // a gerer SI ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR
-    if (!this.ready.has(data.player1.id))
-      this.ready.add(data.player1.id);
-    if (this.ready.has(data.player2.id))
-      this.preStartGameEvent(data);
-  }*/
-
   preStartGameEvent(userId1: string, userId2: string, left: MoveObject, right: MoveObject, ball: MoveObject) {
     const socket1: Socket = this.inGamePage.get(userId1);
     const socket2: Socket = this.inGamePage.get(userId2);
@@ -303,7 +294,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   endGameEvent(gameInfo: GameDto) {
-      this.server.to(gameInfo.id).emit('endGame', gameInfo);
+    this.server.to(gameInfo.id).emit('endGame', gameInfo);
   }
 
   @SubscribeMessage('paddleMove')  

@@ -1,6 +1,6 @@
-import { Body, Controller, forwardRef, HttpStatus, Inject, Param, Post, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, forwardRef, Get, HttpStatus, Inject, Param, Post, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { AppGateway } from 'src/chat/app.gateway';
+import { AppGateway, GameDto } from 'src/chat/app.gateway';
 import { ValidationFilter } from 'src/chat/filter/validation-filter';
 import { User } from 'src/decorators/user.decorator';
 import { UserEntity } from 'src/entity/user.entity';
@@ -122,6 +122,17 @@ export class GameController {
         return { gameId: game.id }
     }
 
+    @Get('infos/:id')
+    async getGameInfos(@Param('id') id: string) {
+        if (!id)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.EMPTY, 'empty arg');
+        const game: GameDto = await this.gameService.getGameInfos(id);
+        if (!game)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.GAME, TypeErr.NOT_FOUND, 'game not found');
+        return { infos: game };
+    }
+
+    @Delete('view')
 
     @Post('create')
     async createGame(@User() userId: string, @Body() infos: startInfosDto) {

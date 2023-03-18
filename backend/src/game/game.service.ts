@@ -529,7 +529,7 @@ export class Referee {
 		return this._ball
 	}
 
-	private set gamestate(gamestate: GameState) {
+	public set gamestate(gamestate: GameState) {
 		this._gamestate = gamestate
 	}
 	
@@ -589,13 +589,15 @@ export class Referee {
 	}
 
 	public referee() {
-		if (this.gamestate == GameState.Running)
-			this.stopActivator()
-		else if (
-			this.gamestate == GameState.WaitingForStart ||
-			this.gamestate == GameState.WaitingForResume
-		)
+        if (this.gamestate !== GameState.PermanentStop) {
+		    if (this.gamestate == GameState.Running)
+			    this.stopActivator()
+		    else if (
+			    this.gamestate == GameState.WaitingForStart ||
+			    this.gamestate == GameState.WaitingForResume
+		    )
 			this.startActivator()
+        }
 	}
 
 	//dans cette classe qu'on va gerer les scores des players
@@ -622,7 +624,7 @@ export class Game {
         this.player1 = new Player(PlayerSide.Left, new Paddle(undefined, 110, 'blue', width / 6, height, y), user1.id);
         this.player2 = new Player(PlayerSide.Right, new Paddle(undefined, 110, 'red', width / 6, height, y), user2.id);
         this.ball = new Ball(15, 'black', width, height, y);
-        this.referee = new Referee([this.player1, this.player2], this.ball, 10);
+        this.referee = new Referee([this.player1, this.player2], this.ball, 2);
         this.score = [0, 0];
         this.w = width;
         this.h = height;
@@ -726,14 +728,6 @@ export class GameService {
             const right: MoveObject = new MoveObject(game.player2.paddle, null, game.player2.userId);
             this.appGateway.updateGame(game.id, left, right, ball);
         }
-        if (game.referee.gamestate === GameState.WaitingForResume)
-                this.logger.log(`WAITING FOR RESUME`)
-        if (game.referee.gamestate === GameState.PermanentStop) {
-                this.logger.log(`PERMANENT STOP`)
-                await this.endGame(game.id)
-        }
-        if (game.referee.gamestate === GameState.Pause)
-                this.logger.log(`PAUSE`)
         try {
             const oldScore: [number, number] = [game.player1.nbGoals, game.player2.nbGoals];
             game.referee.referee();
@@ -747,25 +741,22 @@ export class GameService {
         } catch (e) {
             console.log('ERROR: ', e);
         }
+        if (game.referee.gamestate === GameState.PermanentStop) {
+            this.logger.log(`PERMANENT STOP`)
+            await this.endGame(game.id);
+        }
        // game.reqAnim = requestAnimationFrame(() => this.gameLoop(game, width, height, y))
     }
 
     run(game: Game) {
         //-------------------> CONDITION ADRRET
         this.matchs.add([game.user1.id, game.user2.id]);
-        const intervalId: NodeJS.Timer = setInterval(() => {
-            this.updateGame(game, game.w, game.h, game.y)
+        const intervalId: NodeJS.Timer = setInterval(async () => {
+            await this.updateGame(game, game.w, game.h, game.y)
             if (game.referee.gamestate === GameState.PermanentStop) {
                 clearInterval(intervalId);
-                this.matchs.delete([game.user1.id, game.user2.id]);
             }
         }, 16);
-    }
-
-    getObjectsPositions(games: Map<string, Game>) {
-        for (let game of games.values()) {
-
-        }
     }
 
     setReady(game: Game, userId: string) {
@@ -791,22 +782,13 @@ export class GameService {
         }
     }
 
-    //===============EVENTS GAMEEEE==================================
-    //===============================================================
-
     async paddleMove(author: string, gameId: string, clientY: number, canvasPosY: number) {
         const game: Game = this.games.get(gameId);
         if (!game)
             return this.logger.error('game not found')
-        //let moves: MoveObject[];
         const emitter: Player = (game.user1.id === author) ? game.player1 : game.player2;
         emitter.paddle.onMouseMove(clientY, canvasPosY);
-        //moves.push(new MoveObject(emitter.paddle, null, emitter.userId));
     }
-
-
-    //==============================================================
-    //==============================================================
     
     async createGame(user1: string, user2: string, difficulty: Difficulty, ranked: boolean = true): Promise<GameEntity> {
         const player1: UserEntity = await this.userService.findById(user1);
@@ -832,6 +814,8 @@ export class GameService {
 
     async endGame(gameId: string, forfeit: string = null) {
         const game = this.games.get(gameId);
+        if (forfeit)
+            game.referee.gamestate = GameState.PermanentStop;
         const gameData: GameEntity = await this.updateEndingGame(gameId, forfeit);
         const gameInfo: GameDto = await this.gameToDto(gameData);
         if (game)
@@ -840,6 +824,7 @@ export class GameService {
             console.log('endgames nogames!!!!!!! ');
             return
         }
+        this.removeMatch(gameInfo.player1.id);
         this.appGateway.endGameEvent(gameInfo); // socket event avertir fin game
     }
 
@@ -1031,6 +1016,13 @@ export class GameService {
 
     async findGameById(id: string): Promise<GameEntity> {
         return this.gameRepository.findOneBy({id: id});
+    }
+
+    async getGameInfos(id: string): Promise<GameDto> {
+        const game: GameEntity = await this.findGameById(id);
+        if (!game)
+            return null;
+        return this.gameToDto(game);
     }
 
     async updateGameXp(game: GameEntity, winner: string, winnerXp: number, looserXp: number) {

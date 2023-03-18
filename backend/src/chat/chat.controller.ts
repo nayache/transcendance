@@ -378,4 +378,16 @@ export class ChatController {
         await this.appGateway.sendMessageToChannel(userId, payload.target, payload.msg, color);
         return {}
     }
+
+    @Get('status/:pseudo')
+    async getStatus(@User() userId: string, @Param('pseudo') pseudo: string) {
+        if (!pseudo)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'argument empty');
+        const target: UserEntity = await this.userService.findByPseudo(pseudo);
+        if (!target)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
+        if (target.id === userId)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'target must different than user');
+        return {status: this.appGateway.getStatus(target.id)};
+    }
 }
