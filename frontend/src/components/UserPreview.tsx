@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import '../styles/UserPreview.css'
 import { ChannelRole, Status } from "../constants/EMessage"
-import { API_CHAT_CHANNEL_BAN_ROUTE, API_CHAT_CHANNEL_KICK_ROUTE, API_CHAT_CHANNEL_MUTE_ROUTE, API_USER_ADD_FRIEND, API_USER_BLOCK, API_USER_DEL_FRIEND, API_USER_FRIEND_RELATION, BASE_URL, MESSAGES_EP, PROFILE_EP } from "../constants/RoutesApi"
+import { API_CHAT_STATUS, API_GAME_VIEW, API_USER_ADD_FRIEND, API_USER_BLOCK, API_USER_DEL_FRIEND, API_USER_FRIEND_RELATION, BASE_URL, MESSAGES_EP, PROFILE_EP, VIEWERGAMEPAGE_ROUTE } from "../constants/RoutesApi"
 import { IChannel, IChannelUser } from "../interface/IChannel"
 import ClientApi from "./ClientApi.class"
 import ModalChannelMenu, { ModalChannelType } from "./ModalChannelMenu"
@@ -31,6 +31,16 @@ const getUserRelation = async (target: IChannelUser): Promise<UserRelation | nul
 	}
 }
 
+const getUserStatus = async (target: IChannelUser): Promise<Status | null> => {
+	try {
+		// si erreur on cherche pas a comprendre et on renvoie false
+		const ret = await ClientApi.get(API_CHAT_STATUS + '/' + target.pseudo)
+		return ret
+	} catch (err) {
+		return null
+	}
+}
+
 const userSitutation = {
 	isSelf: (chanUser: IChannelUser, target: IChannelUser): boolean => {
 		return (chanUser.pseudo === target.pseudo)
@@ -40,6 +50,9 @@ const userSitutation = {
 	},
 	isBlocked: (relation: UserRelation) => {
 		return (relation.blocked)
+	},
+	canViewGame: (status: Status) => {
+		return (status === Status.INGAME)
 	},
 	canNameAdmin: (chanUser: IChannelUser, target: IChannelUser) => {
 		return (
@@ -134,6 +147,7 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 		(async () => {
 			try {
 				const relation = await getUserRelation(player)
+				const status = await getUserStatus(player)
 
 				setButtons([
 					{
@@ -159,7 +173,24 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 							}
 						},
 						role: ChannelRole.USER,
-						canPrint: (chanUser !== undefined && relation !== null &&
+						canPrint: (chanUser !== undefined && relation !== null && status !== null &&
+							status !== Status.INGAME &&
+							!userSitutation.isSelf(chanUser, player) && !userSitutation.isBlocked(relation)),
+					},
+					{
+						content: "View game",
+						action: async () => {
+							if (!clicked.current) {
+								clicked.current = true
+								const { gameId } = await ClientApi.post(API_GAME_VIEW + '/' + playerName)
+								ClientApi.redirect = new URL(VIEWERGAMEPAGE_ROUTE + '/' + gameId)
+								if (callback)
+									callback(playerName)
+							}
+						},
+						role: ChannelRole.USER,
+						canPrint: (chanUser !== undefined && relation !== null && status !== null &&
+							status === Status.INGAME &&
 							!userSitutation.isSelf(chanUser, player) && !userSitutation.isBlocked(relation)),
 					},
 					{

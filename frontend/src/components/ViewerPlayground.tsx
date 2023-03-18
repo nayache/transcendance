@@ -1,145 +1,143 @@
-// import { Container } from '../styles/ViewerPlayground.style'
-// import Canvas from './Canvas'
-// import PaddleDisplayer from './PaddleDisplayer.class'
-// import BallDisplayer from './BallDisplayer.class'
-// import RefereeDisplayer from './RefereeDisplayer.class'
-// // import DrawerDisplayer from './DrawerDisplayer.class'
-// import PlayerDisplayer, { PlayerSide } from './PlayerDisplayer.class'
+import { Container } from '../styles/Playground.style'
+import Canvas from './Canvas'
+import PaddleDisplayer from './PaddleDisplayer.class'
+import BallDisplayer from './BallDisplayer.class'
+import RefereeDisplayer from './RefereeDisplayer.class'
 // import DrawerDisplayer from './DrawerDisplayer.class'
-// import { Socket } from 'socket.io-client'
-// import { Difficulty, GameDto, MoveObjects } from '../interface/IGame'
-// import '../styles/ViewerPlayground.css'
-// import '../styles/Game.css'
-// import { useRef, useState } from 'react'
-// import { BtnStatus } from './Button'
-// import { useStartGameListener } from '../hooks/useStartGameListener'
-// import { useUpdateGameListener } from '../hooks/useUpdateGameListener'
-// import { useUpdateScoreListener } from '../hooks/useUpdateScoreListener'
-// import { useEndGameListener } from '../hooks/useEndGameListener'
-// import ModalGameMenu, { ModalGameType } from './ModalGameMenu'
-// import ClientApi from './ClientApi.class'
-// import { BASE_URL } from '../constants/RoutesApi'
+import PlayerDisplayer, { PlayerSide } from './PlayerDisplayer.class'
+import DrawerDisplayer from './DrawerDisplayer.class'
+import { Socket } from 'socket.io-client'
+import { Difficulty, GameDto, MoveObjects } from '../interface/IGame'
+import '../styles/Playground.css'
+import '../styles/Game.css'
+import { useRef, useState } from 'react'
+import { BtnStatus } from './Button'
+import { useStartGameListener } from '../hooks/useStartGameListener'
+import { useUpdateGameListener } from '../hooks/useUpdateGameListener'
+import { useUpdateScoreListener } from '../hooks/useUpdateScoreListener'
+import { useEndGameListener } from '../hooks/useEndGameListener'
+import ModalGameMenu, { ModalGameType } from './ModalGameMenu'
+import ClientApi from './ClientApi.class'
+import { BASE_URL } from '../constants/RoutesApi'
 
-// const MAX_GOALS: number = 4;
+const MAX_GOALS: number = 4;
 
-// interface Props {
-// 	socket: Socket;
-// 	pseudo: string,
-// 	infos: GameDto
-// }
+interface Props {
+	socket: Socket;
+	pseudo: string,
+	infos: GameDto
+}
 
-// interface CanvasDimensions {
-// 	width: number,
-// 	height: number;
-// 	y: number
-// }
+interface CanvasDimensions {
+	width: number,
+	height: number;
+	y: number
+}
 
-// const ViewerPlayground = ({ socket, pseudo, infos }: Props) => {
+const Playground = ({ socket, pseudo, infos }: Props) => {
 
-// 	const dimensions = useRef<CanvasDimensions>();
-// 	const [newInfos, setNewInfos] = useState<GameDto>();
+	const dimensions = useRef<CanvasDimensions>();
+	const [newInfos, setNewInfos] = useState<GameDto>();
 
 	
-// 	const leftPaddle: PaddleDisplayer = new PaddleDisplayer(
-// 		socket,
-// 		undefined,
-// 	)
-// 	const leftPlayer = new PlayerDisplayer(PlayerSide.Left, leftPaddle)
-// 	const rightPaddle: PaddleDisplayer = new PaddleDisplayer(
-// 		socket,
-// 		undefined,
-// 	)
-// 	const rightPlayer = new PlayerDisplayer(PlayerSide.Right, rightPaddle)
+	const leftPaddle: PaddleDisplayer = new PaddleDisplayer(
+		socket,
+		undefined,
+	)
+	const leftPlayer = new PlayerDisplayer(PlayerSide.Left, leftPaddle)
+	const rightPaddle: PaddleDisplayer = new PaddleDisplayer(
+		socket,
+		undefined,
+	)
+	const rightPlayer = new PlayerDisplayer(PlayerSide.Right, rightPaddle)
 
-// 	const ball: BallDisplayer = new BallDisplayer(
-// 		socket,
-// 		50,
-// 		"grey",
-// 	)
-// 	const drawer: DrawerDisplayer = new DrawerDisplayer(
-// 		leftPlayer,
-// 		rightPlayer,
-// 		ball
-// 	)
-
-
+	const ball: BallDisplayer = new BallDisplayer(
+		socket,
+		50,
+		"grey",
+	)
+	const drawer: DrawerDisplayer = new DrawerDisplayer(
+		leftPlayer,
+		rightPlayer,
+		ball
+	)
 
 
-// 	useStartGameListener(socket, ({leftPaddle, rightPaddle, ball: _ball}: MoveObjects) => {
-// 		leftPlayer.paddle.display(leftPaddle)
-// 		rightPlayer.paddle.display(rightPaddle)
-// 		ball.display(_ball)
-// 	}, () => {
-// 		leftPlayer.paddle.plugMove = true;
-// 		rightPlayer.paddle.plugMove = true;
-// 	})
+
+
+	useStartGameListener(socket, ({leftPaddle, rightPaddle, ball: _ball}: MoveObjects) => {
+		leftPlayer.paddle.display(leftPaddle)
+		rightPlayer.paddle.display(rightPaddle)
+		ball.display(_ball)
+	}, () => {
+		leftPlayer.paddle.plugMove = true;
+		rightPlayer.paddle.plugMove = true;
+	})
 	
-// 	useUpdateGameListener(socket, (moveObjects: MoveObjects) => {
-// 		drawer.updateGame(moveObjects)
-// 	})
+	useUpdateGameListener(socket, (moveObjects: MoveObjects) => {
+		drawer.updateGame(moveObjects)
+	})
 
-// 	const score = useUpdateScoreListener(socket)
+	const score = useUpdateScoreListener(socket)
 
-// 	const isFinished = useEndGameListener(socket, (gameInfos) => {
-// 		setNewInfos(gameInfos);
-// 	})
+	const isFinished = useEndGameListener(socket, (gameInfos) => {
+		setNewInfos(gameInfos);
+	})
 
 
 
-// 	return (
-// 		<div className="playground-container">
+	return (
+		<div className="playground-container">
 
-// 			<div className="game-container">
-// 				<p className="mode-game"> Game</p>
-// 				<div className="all-game"> 
-// 					<div className="login-score">
-// 						<div className="login-container">
-// 							<p className="first-login">{infos.player1.pseudo}</p>
-// 							<p className="second-login">{infos.player2.pseudo}</p>
-// 						</div>
-// 						<div className="game-pdv" >
-// 							<p className="scoregreen ">SCORE: {score[0]}</p>
-// 							{/* <FontAwesomeIcon className="heartgreen" icon={faHeartBroken} />
-// 							<FontAwesomeIcon className="heartgreen" icon={faHeartBroken} />
-// 							<FontAwesomeIcon className="heartgreen" icon={faHeartBroken} /> */}
+			<div className="game-container">
+				<p className="mode-game"> Game</p>
+				<div className="all-game"> 
+					<div className="login-score">
+						<div className="login-container">
+							<p className="first-login">{infos.player1.pseudo}</p>
+							<p className="second-login">{infos.player2.pseudo}</p>
+						</div>
+						<div className="game-pdv" >
+							<p className="scoregreen ">SCORE: {score[0]}</p>
+							{/* <FontAwesomeIcon className="heartgreen" icon={faHeartBroken} />
+							<FontAwesomeIcon className="heartgreen" icon={faHeartBroken} />
+							<FontAwesomeIcon className="heartgreen" icon={faHeartBroken} /> */}
 
-// 							{/* <p className="game-time">00:00</p> */}
+							{/* <p className="game-time">00:00</p> */}
 
-// 							{/* <FontAwesomeIcon className="heartred" icon={faHeartBroken} />
-// 							<FontAwesomeIcon className="heartred" icon={faHeartBroken} />
-// 							<FontAwesomeIcon className="heartred" icon={faHeartBroken} /> */}
-// 							<p className="scorered">SCORE: {score[1]}</p>
-// 						</div>
-// 						<div className="game-frame">
-// 							<Container>
-// 								{/* {isCanvasReady([playgroundWidth, playgroundHeight]) &&
-// 								<Canvas display={gameLoop} id="playground"
-// 								width={playgroundWidth} height={playgroundHeight} />} */}
-// 								<Canvas
-// 									onInit={(context, canvasWidth, canvasHeight, canvas) => 
-// 										drawer.setUpGame(context, canvasWidth, canvasHeight, canvas)
-// 									}
-// 									id="playground" />
-// 							</Container>
-// 						</div>
-// 						{
-// 							isFinished && pseudo && newInfos &&
-// 							<ModalGameMenu active={isFinished} type={ModalGameType.OTHERENDGAME}
-// 							gameInfos={newInfos} pseudo={pseudo}
-// 							callback={() => {
-// 								ClientApi.redirect = new URL(BASE_URL)
-// 							}}
-// 							callbackFail={() => {
-// 								ClientApi.redirect = new URL(BASE_URL)
-// 							}} />
-// 						}
-// 					</div>
-// 				</div>
-// 			</div>
-// 		</div>
-// 	)
-// };
+							{/* <FontAwesomeIcon className="heartred" icon={faHeartBroken} />
+							<FontAwesomeIcon className="heartred" icon={faHeartBroken} />
+							<FontAwesomeIcon className="heartred" icon={faHeartBroken} /> */}
+							<p className="scorered">SCORE: {score[1]}</p>
+						</div>
+						<div className="game-frame">
+							<Container>
+								{/* {isCanvasReady([playgroundWidth, playgroundHeight]) &&
+								<Canvas display={gameLoop} id="playground"
+								width={playgroundWidth} height={playgroundHeight} />} */}
+								<Canvas
+									onInit={(context, canvasWidth, canvasHeight, canvas) => 
+										drawer.setUpGame(context, canvasWidth, canvasHeight, canvas)
+									}
+									id="playground" />
+							</Container>
+						</div>
+						{
+							isFinished && pseudo && newInfos &&
+							<ModalGameMenu active={isFinished} type={ModalGameType.OTHERENDGAME}
+							gameInfos={newInfos} pseudo={pseudo}
+							callback={() => {
+								ClientApi.redirect = new URL(BASE_URL)
+							}}
+							callbackFail={() => {
+								ClientApi.redirect = new URL(BASE_URL)
+							}} />
+						}
+					</div>
+				</div>
+			</div>
+		</div>
+	)
+};
 
-// export default ViewerPlayground;
-const ViewerPlayground = () => {}
-export default ViewerPlayground
+export default Playground;

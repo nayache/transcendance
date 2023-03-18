@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { GameDto, PlayerDto } from '../interface/IGame';
 import '../styles/ModalGameMenu.css'
 import EndGameMenu from './EndGameMenu';
+import OtherEndGameMenu from './OtherEndGameMenu';
 
 export enum ModalGameType {
 	ENDGAME,
@@ -51,7 +52,7 @@ const ModalGameMenu = ({ active, type, pseudo, gameInfos, callback, callbackFail
 					&& <EndGameMenu gameInfos={gameInfos} pseudo={pseudo} onEndGame={onEndGame} /> ||
 
 					type === ModalGameType.OTHERENDGAME && gameInfos
-					&& <EndGameMenu gameInfos={gameInfos} pseudo={pseudo} onEndGame={onEndGame} />
+					&& <OtherEndGameMenu gameInfos={gameInfos} pseudo={pseudo} onEndGame={onEndGame} />
 				}
 			</div>
 		</div>

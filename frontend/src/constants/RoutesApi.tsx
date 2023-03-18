@@ -39,6 +39,7 @@ export const API_USER_ALL = API_BASE_USER + '/all'
 
 export const API_CHAT_DISCUSSIONS_RELATION = API_BASE_CHAT + '/discussions'
 export const API_CHAT_DM = API_BASE_CHAT + '/message' /* + '/:pseudo' */
+export const API_CHAT_STATUS = API_BASE_CHAT + '/status' /* + '/:pseudo' */
 export const API_CHAT_MARK_READ = API_BASE_CHAT + '/message/read' /* + /:pseudo */
 export const API_CHAT_MESSAGES_CHANNEL_ROUTE = API_BASE_CHAT + '/channel/message'
 export const API_CHAT_USER_CHANNELS_ROUTE = API_BASE_CHAT + '/channels'
