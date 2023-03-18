@@ -57,7 +57,6 @@ const Playground = ({ socket, infos, leftPlayer, rightPlayer }: Props) => {
 	})
 	
 	useUpdateGameListener(socket, (moveObjects: MoveObjects) => {
-		drawer.clearBgnd()
 		drawer.updateGame(moveObjects)
 	})
 

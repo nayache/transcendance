@@ -147,7 +147,7 @@ class Referee {
 	private stopActivator() {
 		if (this.isBallOutsideOfField() && !this.isGameFinished())
 			this.gamestate = GameState.WaitingForStart;
-		else if (this.isBallOutsideOfField() && this.isGameFinished())
+		else if (this.isGameFinished())
 			this.gamestate = GameState.PermanentStop;
 	}
 
