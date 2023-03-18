@@ -105,6 +105,24 @@ export class GameController {
         return {}
     }
 
+    @Post('view/:pseudo')
+    async viewGame(@User() userId: string, @Param('pseudo') pseudo: string) {
+        if (!pseudo)        
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'empty arg');
+        const target: UserEntity = await this.userService.findByPseudo(pseudo);
+        if (!target)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
+        if (target.id === userId)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'cant view himself');
+        if (!this.gameService.isInGame(target.id))
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'target is not in a game');
+        const game: GameEntity = await this.gameService.getLastGame(target.id);
+        if (!game)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.GAME, TypeErr.NOT_FOUND, 'game not found');
+        return { gameId: game.id }
+    }
+
+
     @Post('create')
     async createGame(@User() userId: string, @Body() infos: startInfosDto) {
        //this.gameService.createGame(userId, infos);

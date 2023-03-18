@@ -141,10 +141,6 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       this.users.get(userId).forEach((socket) => socket.leave(channel));
   }
 
-  event() {
-    this.server.emit('updateRooms');
-  }
-
   channelEvent(channelName: string, info: string) {
     this.server.to(channelName).emit('roomEvent', channelName, info);
   }
@@ -231,6 +227,11 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     }
   }
 
+  @SubscribeMessage('viewer')
+  addViewer(@MessageBody() gameId: string, @ConnectedSocket() Socket: Socket) {
+    Socket.join(gameId);
+  }
+
   async inviteGame(authorId: string, invitedId: string, invited: string, difficulty: Difficulty) {
     const author: string = await this.userService.getPseudoById(authorId);
     if (!author || !this.users.get(invitedId)) 
@@ -288,27 +289,16 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   updateGame(gameId: string, left: MoveObject, right: MoveObject, ball: MoveObject) {
-    //const socket: Socket = this.inGamePage.get(userId);
-    //const socket2: Socket = this.inGamePage.get(userId2);
       this.server.to(gameId).emit('updateGame', {leftPaddle: left, rightPaddle: right, ball});
-   /* if (socket)
-      this.server.to(socket.id).emit('updateGame', {leftPaddle: left, rightPaddle: right, ball});
-    if (socket2)
-      this.server.to(socket2.id).emit('updateGame', {leftPaddle: left, rightPaddle: right, ball});
-      */
   }
 
   async cleanGame(userId: string) {
     if (!this.gameService.isInGame(userId)) // si pas en partie supprimer de la liste d'attente
       await this.gameService.removePlayerFromMatchmaking(userId);
     else { // sinon informer l'adversaire de la deconnection et supprimer la partie du service
-      this.alertOpponent(userId);
       const game: GameEntity = await this.gameService.getLastGame(userId);
-      if (game) {
-        this.gameService.removeMatch(userId);
+      if (game)
         await this.gameService.endGame(game.id, userId);
-      //  await this.endOfGame(game.id);
-      }
     }
   }
 
@@ -316,18 +306,6 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       this.server.to(gameInfo.id).emit('endGame', gameInfo);
   }
 
-/*  async endOfGame(gameId: string) {
-    const payload: GameEntity = await this.gameService.findGameById(gameId);
-    if (!payload) /////// a mieux gerer
-      return;
-    const socket1: Socket = this.inGamePage.get(payload.player1.id);
-    const socket2: Socket = this.inGamePage.get(payload.player2.id);
-    const game: GameDto = await this.gameService.gameToDto(payload);
-    if (socket1)
-      this.server.to(socket1.id).emit('endOfGame', game);
-    if (socket2)
-      this.server.to(socket2.id).emit('endOfGame', game);
-  }*/
   @SubscribeMessage('paddleMove')  
   async paddleMoveEvent(@MessageBody() data: {gameId: string, clientY: number, canvasPosY: number}, @ConnectedSocket() socket: Socket) {
     const author: string = this.getIdBySocket(socket);
@@ -335,21 +313,11 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       this.logger.error('Not recognize socket emitter');
       return;
     }
-    // console.log("clientY = ", data.clientY)
     await this.gameService.paddleMove(author, data.gameId, data.clientY, data.canvasPosY);
   }
 
-  paddleEvent(payload: MoveObject[], author: string) {
-    payload.forEach((e) => {
-      const socket: Socket = this.inGamePage.get(e.userId);
-      if (socket)
-        this.server.to(socket.id).emit('paddleEvent', { author, pos: e.pos })
-    })
-  }
-  
   async handleDisconnect(socket: Socket) {
     const user: userDto = await this.authentication(socket);
-    //CAS DERREUR POSSIBLE ????
     if (user) {
       if (this.users.get(user.id).has(user.socket)) {
         if (this.inGamePage.has(user.id)) {

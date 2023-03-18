@@ -730,11 +730,7 @@ export class GameService {
                 this.logger.log(`WAITING FOR RESUME`)
         if (game.referee.gamestate === GameState.PermanentStop) {
                 this.logger.log(`PERMANENT STOP`)
-                const gameData: GameEntity = await this.findGameById(game.id);
-                if (gameData) {
-                    const gameInfo: GameDto = await this.gameToDto(gameData);
-                    this.appGateway.endGameEvent(gameInfo);
-                }
+                await this.endGame(game.id)
         }
         if (game.referee.gamestate === GameState.Pause)
                 this.logger.log(`PAUSE`)
