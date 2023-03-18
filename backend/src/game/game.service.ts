@@ -253,9 +253,9 @@ export class Ball extends CanvasObject {
 		{
 			for (let i = 0; i < solidObjects.length; i++) {
 				const solidObject = solidObjects[i];
-				console.log("this.startingSpeed.x dans if = ", this.startingSpeed.x);
+//				console.log("this.startingSpeed.x dans if = ", this.startingSpeed.x);
 				// console.log("this.pos.x - this.radius = ", this.pos.x - this.radius)
-				console.log("solidObject.pos.x = ", solidObject.pos.x);
+//				console.log("solidObject.pos.x = ", solidObject.pos.x);
 				if (this.isInsideX(solidObject))
 				{
 					startingSpeed = { ...this.startingSpeed, x: -this.startingSpeed.x }
@@ -263,9 +263,9 @@ export class Ball extends CanvasObject {
 						this.pos.x = solidObject.pos.x + solidObject.dimensions.width + this.radius;
 					else if (this.startingSpeed.x > 0)
 					{
-						console.log("this.pos.x dans le iffffffffffffffffffffffff tu connais = ", this.pos.x)
+//						console.log("this.pos.x dans le iffffffffffffffffffffffff tu connais = ", this.pos.x)
 						this.pos.x = solidObject.pos.x - this.radius;
-						console.log("this.pos.x dans le iffffffffffffffffffffffff tu connais apres = ", this.pos.x)
+//						console.log("this.pos.x dans le iffffffffffffffffffffffff tu connais apres = ", this.pos.x)
 					}
 				}
 				/*
@@ -300,11 +300,12 @@ export class Ball extends CanvasObject {
 			}
 			this.startingSpeed = startingSpeed;
 		}
-		console.log("this.startingSpeed.x a l'exterieur du if = ", this.startingSpeed.x, " et this.pos = ", this.pos);
+//      console.log("this.startingSpeed.x a l'exterieur du if = ", this.startingSpeed.x, " et this.pos = ", this.pos);
 		if (this.pos.y - this.radius < 0 || this.pos.y + this.radius > this.canvasHeight)
 			this.startingSpeed.y = -this.startingSpeed.y;
-		else
-			console.log("nope y, this.pos = ", this.pos, " et this.canvasHeight = ", this.canvasHeight);
+		else {
+			//console.log("nope y, this.pos = ", this.pos, " et this.canvasHeight = ", this.canvasHeight);
+        }
 		this.pos = {
 			x: this.pos.x + this.startingSpeed.x,
 			y: this.pos.y + this.startingSpeed.y,
@@ -367,7 +368,9 @@ export class Player {
     }
     
     public addOneGoal() {
+        console.log('nbGoal before', this._nbGoals);
         this.nbGoals++;
+        console.log('nbGoal after', this._nbGoals);
     }
 }
 
@@ -580,7 +583,7 @@ export class Referee {
 	private stopActivator() {
 		if (this.isBallOutsideOfField() && !this.isGameFinished())
 			this.gamestate = GameState.WaitingForStart;
-		else if (this.isBallOutsideOfField() && this.isGameFinished())
+		else if (this.isGameFinished())
 			this.gamestate = GameState.PermanentStop;
 	}
 
@@ -615,10 +618,10 @@ export class Game {
         this.id = id
         this.user1 = user1;
         this.user2 = user2;
-        this.player1 = new Player(PlayerSide.Left, new Paddle(undefined, 110, 'blue', width, height, y), user1.id);
-        this.player2 = new Player(PlayerSide.Right, new Paddle(undefined, 110, 'red', width, height, y), user2.id);
-        this.ball = new Ball(10, 'grey', width, height, y);
-        this.referee = new Referee([this.player1, this.player2], this.ball, 3);
+        this.player1 = new Player(PlayerSide.Left, new Paddle(undefined, 110, 'blue', width / 6, height, y), user1.id);
+        this.player2 = new Player(PlayerSide.Right, new Paddle(undefined, 110, 'red', width / 6, height, y), user2.id);
+        this.ball = new Ball(15, 'black', width, height, y);
+        this.referee = new Referee([this.player1, this.player2], this.ball, 10);
         this.score = [0, 0];
         this.w = width;
         this.h = height;
@@ -691,14 +694,14 @@ export class GameService {
     private logger: Logger = new Logger("GAME");
 
     addStartingSpeed(gameId: string): Vector2D {
-        if (!this.speeds.get(gameId)) {
+       // if (!this.speeds.get(gameId)) {
             const startingSpeed = {
                 x: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5]),
                 y: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5])
             }
-            this.speeds.set(gameId, startingSpeed);
-        }
-        return this.speeds.get(gameId);
+         //   this.speeds.set(gameId, startingSpeed);
+        //return this.speeds.get(gameId);
+        return startingSpeed;
     }
 
     async buildGame(payload: GameDto, userId: string, width: number, height: number, y: number): Promise<Game> {
@@ -711,7 +714,7 @@ export class GameService {
     updateGame(game: Game, width: number, height: number, y: number/*, gameInfos: GameDto*/) {
         if (game.referee.gamestate == GameState.WaitingForStart)
         {
-            console.log('WAITINGSTART');
+            this.logger.log(`WAITING FOR START`)
             try {
                 game.setUpGame(this.addStartingSpeed(game.id), width, height, y)
             } catch (e) {
@@ -719,16 +722,27 @@ export class GameService {
             }
         }
         if (game.referee.gamestate == GameState.Running) {
-            console.log('RUNNING UPDATE');
             game.updateGame();
-            //---------------------------> emit ici -> LA BALLE besoin de pos, dimensions, color
             const ball: MoveObject = new MoveObject(null, game.ball);
             const left: MoveObject = new MoveObject(game.player1.paddle, null, game.player1.userId);
             const right: MoveObject = new MoveObject(game.player2.paddle, null, game.player2.userId);
-            this.appGateway.updateGame(game.user1.id, game.user2.id, left, right, ball);
+            this.appGateway.updateGame(game.id, left, right, ball);
         }
+        if (game.referee.gamestate === GameState.WaitingForResume)
+                this.logger.log(`WAITING FOR RESUME`)
+        if (game.referee.gamestate === GameState.PermanentStop)
+                this.logger.log(`PERMANENT STOP`)
+        if (game.referee.gamestate === GameState.Pause)
+                this.logger.log(`PAUSE`)
         try {
+            const oldScore: [number, number] = [game.player1.nbGoals, game.player2.nbGoals];
             game.referee.referee();
+            const newScore: [number, number] = [game.player1.nbGoals, game.player2.nbGoals];
+            if (oldScore[0] !== newScore[0] || oldScore[1] !== newScore[1]) {
+                const user: PlayerDto = (oldScore[0] != game.score[0]) ? game.user2 : game.user2;
+                this.logger.log(`SCORE !! by (${user.pseudo})  score now: ${newScore}`)
+                this.appGateway.updateScore(game.id, newScore);
+            }
         } catch (e) {
             console.log('ERROR: ', e);
         }
@@ -736,7 +750,12 @@ export class GameService {
     }
 
     run(game: Game) {
-        setInterval(() => {this.updateGame(game, game.w, game.h, game.y)}, 16)
+        //-------------------> CONDITION ADRRET
+        const intervalId: NodeJS.Timer = setInterval(() => {
+            this.updateGame(game, game.w, game.h, game.y)
+            if (game.referee.gamestate === GameState.PermanentStop)
+                clearInterval(intervalId);
+        }, 16);
     }
 
     getObjectsPositions(games: Map<string, Game>) {
@@ -773,12 +792,12 @@ export class GameService {
 
     async paddleMove(author: string, gameId: string, e: MouseEvent) {
         const game: Game = this.games.get(gameId);
-
-        let moves: MoveObject[];
+        if (!game)
+            return this.logger.error('game not found')
+        //let moves: MoveObject[];
         const emitter: Player = (game.user1.id === author) ? game.player1 : game.player2;
         emitter.paddle.onMouseMove(e);
-        moves.push(new MoveObject(emitter.paddle, null, emitter.userId));
-        this.appGateway.paddleEvent(moves, author);
+        //moves.push(new MoveObject(emitter.paddle, null, emitter.userId));
     }
 
 

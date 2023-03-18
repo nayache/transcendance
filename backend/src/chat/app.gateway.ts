@@ -262,6 +262,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     console.log('===========================================================setReady caller: ', userId)
     const author: string = (payload.game.player1.id === userId) ? userId : payload.game.player2.id;
     await this.gameService.setReadyGame(payload.game, author, payload.w, payload.h, payload.y);
+    socket.join(payload.game.id);
   }
 
  /* @SubscribeMessage('readyForGame')
@@ -274,7 +275,6 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }*/
 
   preStartGameEvent(userId1: string, userId2: string, left: MoveObject, right: MoveObject, ball: MoveObject) {
-    console.log('===========================================================PRESTARTTTTTTTTTTTTTTTTTTTT call')
     const socket1: Socket = this.inGamePage.get(userId1);
     const socket2: Socket = this.inGamePage.get(userId2);
     //setTimeout(() => {
@@ -284,10 +284,19 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     this.ready.delete(userId2);
   }
   
-  updateGame(userId: string, userId2, left: MoveObject, right: MoveObject, ball: MoveObject) {
-    const socket: Socket = this.inGamePage.get(userId);
-    const socket2: Socket = this.inGamePage.get(userId2);
-      this.server.to([socket.id, socket2.id]).emit('preStartGame', {leftPaddle: left, rightPaddle: right, ball});
+  updateScore(gameId: string, score: [number, number]) {
+      this.server.to(gameId).emit('updateScore', score);
+  }
+
+  updateGame(gameId: string, left: MoveObject, right: MoveObject, ball: MoveObject) {
+    //const socket: Socket = this.inGamePage.get(userId);
+    //const socket2: Socket = this.inGamePage.get(userId2);
+      this.server.to(gameId).emit('updateGame', {leftPaddle: left, rightPaddle: right, ball});
+   /* if (socket)
+      this.server.to(socket.id).emit('updateGame', {leftPaddle: left, rightPaddle: right, ball});
+    if (socket2)
+      this.server.to(socket2.id).emit('updateGame', {leftPaddle: left, rightPaddle: right, ball});
+      */
   }
 
   async cleanGame(userId: string) {
@@ -307,7 +316,11 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   endGameEvent(userId: string, userId2, gameInfo: GameDto) {
     const socket1: Socket = this.inGamePage.get(userId);
     const socket2: Socket = this.inGamePage.get(userId2);
-      this.server.to([socket1.id, socket2.id]).emit('endGame', gameInfo);
+
+    if (socket1)
+      this.server.to(socket1.id).emit('endGame', gameInfo);
+    if (socket2)
+      this.server.to(socket2.id).emit('endGame', gameInfo);
   }
 
 /*  async endOfGame(gameId: string) {
