@@ -260,7 +260,7 @@ export class Ball extends CanvasObject {
 				{
 					startingSpeed = { ...this.startingSpeed, x: -this.startingSpeed.x }
 					if (this.startingSpeed.x < 0)
-						this.pos.x = solidObject.pos.x + solidObject.dimensions.width + this.radius;
+						this.pos.x = solidObject.pos.x + solidObject.dimensions.width + this.radius * 2;
 					else if (this.startingSpeed.x > 0)
 					{
 //						console.log("this.pos.x dans le iffffffffffffffffffffffff tu connais = ", this.pos.x)
@@ -622,7 +622,7 @@ export class Game {
         this.user2 = user2;
         this.player1 = new Player(PlayerSide.Left, new Paddle(undefined, 110, 'DarkTurquoise', width / 6, height, y), user1.id);
         this.player2 = new Player(PlayerSide.Right, new Paddle(undefined, 110, 'OrangeRed', width / 6, height, y), user2.id);
-        this.ball = new Ball(15, 'black', width, height, y);
+        this.ball = new Ball(15, 'MidnightBlue', width, height, y);
         this.referee = new Referee([this.player1, this.player2], this.ball, 7);
         this.score = [0, 0];
         this.w = width;

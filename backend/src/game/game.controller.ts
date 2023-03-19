@@ -95,6 +95,8 @@ export class GameController {
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'cant invite himself');
         if (this.gameService.isInGame(target.id))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.REJECTED, 'target is already ingame');
+        if (this.gameService.isInMatchmaking(target.id))
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.REJECTED, 'target is already looking for a match');
         this.gameService.createChallenge(userId, target.id, difficulty);
         await this.appGateway.inviteGame(userId, target.id, target.pseudo, difficulty);
         return {}
