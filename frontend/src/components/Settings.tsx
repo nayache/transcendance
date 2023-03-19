@@ -6,6 +6,10 @@ import "../styles/Settings.css";
 import { BASE_URL, SETTINGS_BLOCKED_EP, SETTINGS_HELP_EP, SETTINGS_MYPROFILE_EP, SETTINGS_TWOFA_EP } from "../constants/RoutesApi";
 import ClientApi from "./ClientApi.class";
 import { usePseudo } from "../hooks/usePseudo";
+import { useNotification } from "../hooks/useNotification";
+import { useInviteNotification } from "../hooks/useInviteNotification";
+import { useSocket } from "../hooks/useSocket";
+import { useAvatar } from "../hooks/useAvatar";
 
 interface IOptionValue {
 	name: string;
@@ -24,7 +28,6 @@ interface IOption {
 // changer le theme du site (background devient black lightblack ou bien red lightred, etc..)
 const Settings = () => {
 
-	const pseudo = usePseudo()
 	const options: IOption[] = [
 		{
 			header: {
@@ -79,6 +82,12 @@ const Settings = () => {
 		}
 	]
 	const [visibleOptions, setVisibleOptions] = useState(options);
+	const pseudo = usePseudo()
+	const avatar = useAvatar()
+	const socket = useSocket()
+	const notification = useNotification(socket, {pseudo, avatar})
+	const inviteNotification = useInviteNotification(socket, pseudo)
+
 
 
 
@@ -116,6 +125,8 @@ const Settings = () => {
 	return (
 		<div>
 			<Navbar/>
+			{ notification }
+			{ inviteNotification }
 			<div className="settings-container">
 				<h2>
 					<span className="name-settings">

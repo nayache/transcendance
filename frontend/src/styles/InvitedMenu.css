@@ -9,6 +9,11 @@
 	font-size: 1.2em;
 }
 
+.challengeBtn_btns_container {
+	position: relative;
+	display: flex;
+	justify-content: space-around;
+}
 
 .challengeBtn {
 	position: relative;

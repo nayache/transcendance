@@ -9,18 +9,28 @@ import { AboutErr, IError, TypeErr } from "../constants/EError";
 import { printButton, BtnStatus } from "./Button"
 import { usePseudo } from "../hooks/usePseudo";
 import { useAvatar } from "../hooks/useAvatar";
+import { useSocket } from "../hooks/useSocket";
+import { useNotification } from "../hooks/useNotification";
+import { useInviteNotification } from "../hooks/useInviteNotification";
 
 let differenceHeight: number = 0;
 
 const HelpSettings = () => {
 
 	const pseudo = usePseudo();
+	const socket = useSocket()
+	const avatar = useAvatar()
+	const notification = useNotification(socket, {pseudo, avatar})
+	const inviteNotification = useInviteNotification(socket, pseudo)
+
 
 
 
 	return (
 		<React.Fragment>
 			<Navbar />
+			{ notification }
+			{ inviteNotification }
 			<div className="two-factor-content-container">
 				<h3>Help</h3>
 				<p>If you need help, you need to find help. Y'all already know who it is.. It's ya boi Fryzie on the mic</p>

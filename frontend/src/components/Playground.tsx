@@ -75,7 +75,7 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 		drawer.updateGame(moveObjects)
 	})
 
-	const score = useUpdateScoreListener(socket)
+	const score = useUpdateScoreListener(socket, infos)
 
 	const isFinished = useEndGameListener(socket, (gameInfos) => {
 		newInfos.current = gameInfos;

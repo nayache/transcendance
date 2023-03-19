@@ -137,6 +137,23 @@ const GamePage: React.FC = () => {
 		})()
 	}, [gameMode, clicked])
 
+	useEffect(() => () => {
+		(async () => {
+			try {
+				if (gameMode && invited) {
+					await ClientApi.delete(API_GAME_INVITE, JSON.stringify({
+						target: invited,
+						difficulty: gameMode as string
+					}))
+				}
+			}
+			catch (err) {
+				console.log("err = ", err)
+			}
+		})()
+	})
+
+
 
 
 

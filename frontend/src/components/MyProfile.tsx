@@ -14,6 +14,11 @@ import Crown from "../img/crown.png"
 import ClientApi from "./ClientApi.class"
 import { AboutErr, IError, TypeErr } from "../constants/EError"
 import { useProfile } from "../hooks/useProfile"
+import { useNotification } from "../hooks/useNotification"
+import { useSocket } from "../hooks/useSocket"
+import { usePseudo } from "../hooks/usePseudo"
+import { useAvatar } from "../hooks/useAvatar"
+import { useInviteNotification } from "../hooks/useInviteNotification"
 
 enum Stat {
 	WINS,
@@ -45,13 +50,18 @@ interface Props {
 
 const MyProfile = (props: Props) => {
 	const [isOkay, setIsOkay] = useState<boolean | undefined>()
-	const [pseudo, setPseudo] = useState<string>("fabricedu13")
 	const [nbFriends, setNbFriends] = useState<number>(3);
 	const [nbWins, setNbWins] = useState<number>(3);
 	const [nbLoses, setLoses] = useState<number>(2);
 	const [rank, setRank] = useState<number>(12);
 	const [level, setLevel] = useState<number>(6);
 	const [status, setStatus] = useState<string>("En ligne");
+	const socket = useSocket()
+	const pseudo = usePseudo()
+	const avatar = useAvatar()
+	const profile = useProfile()
+	const notification = useNotification(socket, {pseudo, avatar})
+	const inviteNotification = useInviteNotification(socket, pseudo)
 
 	const matches: Match[] = [
 		{
@@ -107,7 +117,6 @@ const MyProfile = (props: Props) => {
 			gameMode: GameMode.MEDIUM,
 		},
 	]
-	const profile = useProfile()
 
 
 
@@ -260,19 +269,19 @@ const MyProfile = (props: Props) => {
 	}
 
 	const getPage = () => (
-		<div>
-			<Navbar/>
-			<div className="container">
-				{ getProfilImagesAndPseudo() }
-				{ getFriendsAndLevel() }
-				{ getStat() }
-				{ getMatchHistory() }
-			</div>
+		<div className="container">
+			{ getProfilImagesAndPseudo() }
+			{ getFriendsAndLevel() }
+			{ getStat() }
+			{ getMatchHistory() }
 		</div>
 	)
 
 	return (
 		<React.Fragment>
+			<Navbar />
+			{ notification }
+			{ inviteNotification }
 			{isOkay && getPage()}
 		</React.Fragment>
 	);

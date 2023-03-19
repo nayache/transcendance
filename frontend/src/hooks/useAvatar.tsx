@@ -22,7 +22,7 @@ export const useAvatar = () => {
 					setAvatar(DefaultImg)
 			}
 		})()
-    }, [avatar])
+    }, [])
 
 
 

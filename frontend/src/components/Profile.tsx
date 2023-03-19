@@ -19,6 +19,11 @@ import { useProfile } from "../hooks/useProfile"
 import { Status } from "../constants/EMessage"
 import { GameDto } from "../interface/IGame"
 import ServerDownPage from "./ServerDownPage"
+import { useNotification } from "../hooks/useNotification"
+import { useInviteNotification } from "../hooks/useInviteNotification"
+import { useSocket } from "../hooks/useSocket"
+import { useAvatar } from "../hooks/useAvatar"
+import { usePseudo } from "../hooks/usePseudo"
 
 enum Stat {
 	WINS,
@@ -54,7 +59,12 @@ const Profile = () => {
 	const [rank, setRank] = useState<number>(12);
 	const [level, setLevel] = useState<number>(6);
 	const [status, setStatus] = useState<string>("En ligne");
+	const socket = useSocket()
+	const pseudo = usePseudo()
+	const avatar = useAvatar()
 	const profile = useProfile(pseudoParam)
+	const notification = useNotification(socket, {pseudo, avatar})
+	const inviteNotification = useInviteNotification(socket, pseudo)
 
 
 
@@ -190,22 +200,28 @@ const Profile = () => {
 		)
 	}
 
+
+
+
 	const getPage = () => (
-		<div>
-			<Navbar/>
-			<div className="container">
-				{ getProfilImagesAndPseudo() }
-				{ getFriendsAndLevel() }
-				{ getStat() }
-				{ getMatchHistory() }
-			</div>
+		<div className="container">
+			{ getProfilImagesAndPseudo() }
+			{ getFriendsAndLevel() }
+			{ getStat() }
+			{ getMatchHistory() }
 		</div>
 	)
 
+
+
+
 	return (
 		<React.Fragment>
-			{profile !== undefined && getPage()}
-			{profile === undefined && <ServerDownPage />}
+			<Navbar />
+			{ notification }
+			{ inviteNotification }
+			{ profile !== undefined && getPage() }
+			{ profile === undefined && <ServerDownPage /> }
 		</React.Fragment>
 	);
 }

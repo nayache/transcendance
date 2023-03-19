@@ -51,13 +51,11 @@ abstract class CanvasObjectDisplayer {
 		this._socket = socket
 	}
 
-	public get gameInfos(): GameDto {
-		if (!this._gameInfos)
-			throw new Error('The gameInfos have not been set up')
+	public get gameInfos(): GameDto | undefined {
 		return this._gameInfos
 	}
 	
-	private set gameInfos(gameInfos: GameDto) {
+	private set gameInfos(gameInfos: GameDto | undefined) {
 		this._gameInfos = gameInfos
 	}
 

@@ -3,17 +3,20 @@ import ClientApi from "../components/ClientApi.class";
 import { AboutErr, IError, TypeErr } from "../constants/EError";
 import { API_PROFILE_ROUTE, API_PSEUDO_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
 import { IProfile } from "../interface/IUser";
+import DefaultImg from "../img/avatar2.jpeg"
 
-export const useProfile = (pseudo?: string) => {
+export const useProfile = (pseudoParam?: string) => {
 	const [profile, setProfile] = useState<IProfile | undefined>()
 
 	
 	useEffect(() => {
 		(async () => {
 			try {
-				const route: string = pseudo ? API_PROFILE_ROUTE + '/' + pseudo : API_PROFILE_ROUTE
-				const data = await ClientApi.get(route)
-				console.log("data.profile = ", data.profile)
+				const route: string = pseudoParam ? API_PROFILE_ROUTE + '/' + pseudoParam : API_PROFILE_ROUTE
+				const data: { profile: IProfile } = await ClientApi.get(route)
+				console.log("data.profile (avant remaniage) = ", data.profile)
+				data.profile.avatar = data.profile.avatar ? data.profile.avatar : DefaultImg
+				console.log("data.profile (apres remaniage) = ", data.profile)
 				setProfile(data.profile)
 				console.log("profile = ", profile)
 			} catch (err) {
@@ -27,7 +30,7 @@ export const useProfile = (pseudo?: string) => {
 					ClientApi.redirect = new URL(SIGNIN_ROUTE)
 			}
 		})()
-    }, [pseudo])
+    }, [pseudoParam])
 
 
 	return profile;

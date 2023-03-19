@@ -9,6 +9,9 @@ import { AboutErr, IError, TypeErr } from "../constants/EError";
 import { printButton, BtnStatus } from "./Button"
 import { usePseudo } from "../hooks/usePseudo";
 import { useAvatar } from "../hooks/useAvatar";
+import { useSocket } from "../hooks/useSocket";
+import { useNotification } from "../hooks/useNotification";
+import { useInviteNotification } from "../hooks/useInviteNotification";
 
 let differenceHeight: number = 0;
 
@@ -16,6 +19,10 @@ const BlockedSettings = () => {
 
 	const pseudo = usePseudo();
 	const [blockeds, setBlockeds] = useState<string[]>([])
+	const socket = useSocket()
+	const avatar = useAvatar()
+	const notification = useNotification(socket, {pseudo, avatar})
+	const inviteNotification = useInviteNotification(socket, pseudo)
 
 
 
@@ -53,8 +60,10 @@ const BlockedSettings = () => {
 	return (
 		<React.Fragment>
 			<Navbar />
+			{ notification }
+			{ inviteNotification }
 			<div className="two-factor-content-container">
-				<div className="two-factor-clickable">
+				<div style={{cursor: 'default'}} className="two-factor-clickable">
 					<p className="two-factor-action">Blocked accounts</p>
 				</div>
 				{ printBlockeds(blockeds) }

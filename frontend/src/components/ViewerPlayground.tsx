@@ -78,7 +78,7 @@ const Playground = ({ socket, pseudo, infos }: Props) => {
 		drawer.updateGame(moveObjects)
 	})
 
-	const score = useUpdateScoreListener(socket)
+	const score = useUpdateScoreListener(socket, infos)
 
 	const isFinished = useEndGameListener(socket, (gameInfos) => {
 		setNewInfos(gameInfos);

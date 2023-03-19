@@ -10,6 +10,9 @@ import { printButton, BtnStatus } from "./Button"
 import DefaultImg from "../img/avatar2.jpeg"
 import { usePseudo } from "../hooks/usePseudo";
 import { useAvatar } from "../hooks/useAvatar";
+import { useSocket } from "../hooks/useSocket";
+import { useNotification } from "../hooks/useNotification";
+import { useInviteNotification } from "../hooks/useInviteNotification";
 
 let differenceHeight: number = 0;
 
@@ -26,6 +29,9 @@ const MyProfileSettings = () => {
 	const [isOkay, setIsOkay] = useState<boolean | undefined>();
 	const [btnPseudoStatus, setBtnPseudoStatus] = useState<BtnStatus>("idle")
 	const [btnAvatarStatus, setBtnAvatarStatus] = useState<BtnStatus>("idle")
+	const socket = useSocket()
+	const notification = useNotification(socket, {pseudo, avatar})
+	const inviteNotification = useInviteNotification(socket, pseudo)
 
 
 
@@ -139,6 +145,8 @@ const MyProfileSettings = () => {
 	return (
 		<React.Fragment>
 			<Navbar />
+			{ notification }
+			{ inviteNotification }
 			<div className="two-factor-content-container">
 				<div className="two-factor-clickable">
 					<p className="two-factor-action">Edit your profile</p>

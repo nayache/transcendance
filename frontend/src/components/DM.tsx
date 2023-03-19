@@ -18,6 +18,8 @@ import { AboutErr, IError } from "../constants/EError";
 import { IGameInviteEv } from "../interface/IGame";
 import { useInviteGame } from "../hooks/useInviteGame";
 import ModalGameMenu, { ModalGameType } from "./ModalGameMenu";
+import { useNotification } from "../hooks/useNotification";
+import { useInviteNotification } from "../hooks/useInviteNotification";
 
 
 
@@ -281,18 +283,7 @@ const DM = () => {
 	}, [receiver])
 
 	useDMListener(socket, user, receiver, updateDiscussions, addChatItem)
-
-	useInviteGame(socket, (data: IGameInviteEv) => {
-		inviteInfos.current = {
-			author: data.author,
-			invited: data.invited,
-			difficulty: data.difficulty
-		}
-		console.log("inviteInfos.current = ", inviteInfos.current)
-		console.log("data = ", data)
-		setModalGameType(ModalGameType.INVITED)
-	})
-
+	const inviteNotification = useInviteNotification(socket, pseudo)
 
 
 
@@ -300,42 +291,7 @@ const DM = () => {
 	return (
 		<React.Fragment>
 			<Navbar />
-				{ modalGameType !== null && inviteInfos.current &&
-					<ModalGameMenu active={modalGameType !== null} type={modalGameType}
-					pseudo={pseudo} author={inviteInfos.current.author} difficulty={inviteInfos.current.difficulty}
-					callback={async ({ response }) => {
-						try {
-							if (inviteInfos.current && response === false) {
-								ClientApi.post(API_GAME_ACCEPT, JSON.stringify({
-									target: inviteInfos.current.author,
-									response: false
-								}), 'application/json')
-							}
-							else if (inviteInfos.current && response === true) {
-								ClientApi.redirect = new URL(GAMEPAGE_ROUTE + '/' + inviteInfos.current.difficulty + '/fromAccept/' + inviteInfos.current.author)
-							}
-						}
-						catch (err) {
-							console.log("err = ", err)
-						}
-						setModalGameType(null)
-					}}
-					callbackFail={({author}) => {
-						try {
-							if (author) {
-								ClientApi.post(API_GAME_ACCEPT, JSON.stringify({
-									target: author,
-									response: false
-								}), 'application/json')
-							}
-						}
-						catch (err) {
-							console.log("err = ", err)
-						}
-						setModalGameType(null)
-					}}
-					/>
-				}
+			{ inviteNotification }
 			<div className="DM-container">
 				<div className="DM-container-bg" />
 				<DMList user={user} updateReceiver={updateReceiver} updateDiscussions={updateDiscussions}
