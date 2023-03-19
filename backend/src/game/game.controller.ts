@@ -16,9 +16,16 @@ export enum Difficulty {
     HARD = "hard"
 }
 
-export function matchDifficulty(difficulty: Difficulty): boolean {
-    return (difficulty === "easy" || difficulty === "medium" || difficulty === "hard");
+export function matchDifficulty(difficulty: string): Difficulty {
+    if (difficulty === "easy")
+        return Difficulty.EASY
+    if (difficulty === "medium")
+        return Difficulty.MEDIUM
+    if (difficulty === "hard")
+        return Difficulty.HARD
+    return null;
 }
+
 
 export class startInfosDto {
     width: number;
@@ -32,7 +39,9 @@ export class inviteGameDto {
     @IsNotEmpty()
     target: string;
     
-    difficulty: Difficulty;
+    @IsString()
+    @IsNotEmpty()
+    difficulty: string;
 }
 
 export class acceptInvitationDto{
@@ -72,8 +81,9 @@ export class GameController {
     @Post('invite')
     async inviteGame(@User() userId: string, @Body() payload: inviteGameDto) {
         console.log(payload);
-        //if (!matchDifficulty(payload.difficulty))
-          //  throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.INVALID, 'invalid difficulty argument');
+        const difficulty: Difficulty = matchDifficulty(payload.difficulty);
+        if (!difficulty)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.INVALID, 'invalid difficulty argument');
         if (this.gameService.isInMatchmaking(userId))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.REJECTED, 'user is already looking for a match');
         if (this.gameService.isInGame(userId))
@@ -85,10 +95,8 @@ export class GameController {
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'cant invite himself');
         if (this.gameService.isInGame(target.id))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.REJECTED, 'target is already ingame');
-        //this.gameService.createChallenge(userId, target.id, payload.difficulty);
-        this.gameService.createChallenge(userId, target.id, Difficulty.MEDIUM);
-        //await this.appGateway.inviteGame(userId, target.id, target.pseudo, payload.difficulty);
-        await this.appGateway.inviteGame(userId, target.id, target.pseudo, Difficulty.MEDIUM);
+        this.gameService.createChallenge(userId, target.id, difficulty);
+        await this.appGateway.inviteGame(userId, target.id, target.pseudo, difficulty);
         return {}
     }
 
