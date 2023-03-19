@@ -146,7 +146,6 @@ export class GameController {
     }
 
 
-
     @Post('view/:pseudo')
     async viewGame(@User() userId: string, @Param('pseudo') pseudo: string) {
         if (!pseudo)        

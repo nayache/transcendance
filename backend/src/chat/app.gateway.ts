@@ -175,7 +175,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       return // a gerer mieux
 
     this.users.get(targetId).forEach((socket) => {
-      this.server.to(socket.id).emit(eventName, pseudo);
+      this.server.to(socket.id).emit(eventName, { pseudo });
     });
   }
 

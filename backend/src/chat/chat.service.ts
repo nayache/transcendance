@@ -272,6 +272,8 @@ export class ChatService {
                 const unmuteDate: Date = (isMuted) ? member.unmuteDate : null;
                 return {pseudo: member.user.pseudo, color: member.color, role: member.role, status, unmuteDate};
             }))
+            if (users.length)
+                users.sort((a, b) => (a.status < b.status) ? 1 : -1);
             return {name: channel.name, prv: channel.private, password: !!channel.password, users, messages};
         }));
         return channs;
@@ -342,6 +344,18 @@ export class ChatService {
             userId: userId,
             channelId: channelId
         }});
+    }
+
+    async membersToDto(members: Member[]): Promise<ChannelUserDto[]> {
+        let membersDto: ChannelUserDto[] = [];
+        membersDto = await Promise.all(members.map(async (user) => {
+            const pseudo: string = await this.userService.getPseudoById(user.userId);
+            const status: Status = this.appGateway.getStatus(user.userId)
+            return { pseudo, color: user.color, role: user.role, status, unmuteDate: user.unmuteDate }
+        }))
+        if (membersDto.length)
+            membersDto = membersDto.sort((a, b) => (a.status < b.status) ? 1 : -1);
+        return membersDto;
     }
 
     async leaveChannel(userId: string, channelName: string): Promise<boolean> {

@@ -99,7 +99,7 @@ export class AuthService {
     }
 
     refreshJwt(payload: JwtDecodedDto, refresh: string) : string {
-        if (!this.decodeJwt(refresh, true))
+        if (!this.decodeJwt(refresh))
             return null;
         else 
             return this.generateJwt(this.decodedToDto(payload));

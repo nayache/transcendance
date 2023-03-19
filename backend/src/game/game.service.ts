@@ -620,10 +620,10 @@ export class Game {
         this.id = id
         this.user1 = user1;
         this.user2 = user2;
-        this.player1 = new Player(PlayerSide.Left, new Paddle(undefined, 110, 'blue', width / 6, height, y), user1.id);
-        this.player2 = new Player(PlayerSide.Right, new Paddle(undefined, 110, 'red', width / 6, height, y), user2.id);
+        this.player1 = new Player(PlayerSide.Left, new Paddle(undefined, 110, 'DarkTurquoise', width / 6, height, y), user1.id);
+        this.player2 = new Player(PlayerSide.Right, new Paddle(undefined, 110, 'OrangeRed', width / 6, height, y), user2.id);
         this.ball = new Ball(15, 'black', width, height, y);
-        this.referee = new Referee([this.player1, this.player2], this.ball, 2);
+        this.referee = new Referee([this.player1, this.player2], this.ball, 7);
         this.score = [0, 0];
         this.w = width;
         this.h = height;
@@ -814,7 +814,7 @@ export class GameService {
     async endGame(gameId: string, forfeit: string = null) {
         console.log('ICIIIIIIIIIIIIIIIIIIIIIIIIIII endgame')
         const game = this.games.get(gameId);
-       // if (!game || game.finished)
+      //  if (!game || game.finished)
         //    return
         game.finished = true;
         console.log('endgame WORKED')
