@@ -27,6 +27,7 @@ const GamePage: React.FC = () => {
 	const [infos, setInfos] = useState<GameDto>()
 	const [activeError, setActiveError] = useState<boolean>(false)
 	const fromInvite = useParams().fromInvite
+	const invited = useParams().invited
 	const fromAccept = useParams().fromAccept
 	const author = useParams().author
 
@@ -34,7 +35,7 @@ const GamePage: React.FC = () => {
 
 
 	useEffect(() => {
-		if (clicked || fromInvite || author) {
+		if (clicked || invited || author) {
 			socket?.on('matchEvent', ({game: gameInfos, me}: {game: GameDto, me: PlayerDto}) => {
 				console.log("(matchEvent) gameInfos = ", gameInfos)
 				console.log("(matchEvent) me = ", me)
@@ -79,7 +80,10 @@ const GamePage: React.FC = () => {
 		(async () => {
 			try {
 				if (author) {
-					await ClientApi.post(API_GAME_ACCEPT + '/' + author)
+					await ClientApi.post(API_GAME_ACCEPT, JSON.stringify({
+						target: author,
+						response: true
+					}), 'application/json')
 				}
 			}
 			catch (err) {

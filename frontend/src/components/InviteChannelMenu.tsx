@@ -39,7 +39,7 @@ export const InviteChannelMenu = ({ target, onInvite, onInviteFail }: Props) => 
 		try {
 			await ClientApi.post(API_GAME_INVITE, JSON.stringify({
 				target,
-				difficulty
+				difficulty: (difficulty as string)
 			}), 'application/json')
 			if (onInvite)
 				onInvite({difficulty})

@@ -16,9 +16,9 @@ interface Props {
 export const InvitedMenu = ({ pseudo, author, difficulty, onInvited, onInvitedFail }: Props) => {
 	
 
-	const handleAccept = async () => {
+	const handleAccept = async (response: boolean) => {
 		if (onInvited)
-			onInvited()
+			onInvited({response})
 	}
 
 
@@ -28,7 +28,9 @@ export const InvitedMenu = ({ pseudo, author, difficulty, onInvited, onInvitedFa
 				<p className="challenge-title">{author} invited you for a game</p>
 				<p className="challenge-text">Do you accept the challenge ? Difficulty: {difficulty}</p>
 				<button style={{'--color': 'blue' } as React.CSSProperties}
-				className="challengeBtn" onClick={handleAccept}>Accept</button>
+				className="challengeBtn" onClick={() => handleAccept(true)}>Accept</button>
+				<button style={{'--color': 'red' } as React.CSSProperties}
+				className="challengeBtn" onClick={() => handleAccept(false)}>Decline</button>
 			</div>
 		</React.Fragment>
 	)

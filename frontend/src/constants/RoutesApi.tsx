@@ -27,6 +27,8 @@ export const API_TOKEN_ROUTE = API_BASE_AUTH + '/token'
 export const API_VERIFY_TOKEN_ROUTE = API_BASE_AUTH + '/verify'
 
 export const API_PSEUDO_ROUTE = API_BASE_USER + '/pseudo'
+export const API_MYPROFILE_ROUTE = API_BASE_USER + '/profile'
+export const API_PROFILE_ROUTE = API_BASE_USER + '/profile' /* + /:pseudo */
 export const API_AVATAR_ROUTE = API_BASE_USER + '/avatar'
 
 export const API_USER_BLOCK = API_BASE_USER + '/block' /* + /:pseudo */

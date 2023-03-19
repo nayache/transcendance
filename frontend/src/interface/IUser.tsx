@@ -12,9 +12,9 @@ export interface IUser {
 }
 
 export enum Achievement {
-	FIRSTMATCH = "First match",
-	PERFECTWIN = "Perfect win",
-	MASTERMIND = "Master mind",
+	FIRSTWIN = "FirstWin",
+	PERFECTWIN = "PerfectWin",
+	MASTERMIND = "MasterMind",
 }
 
 

@@ -13,6 +13,7 @@ import { IUser } from "../interface/IUser"
 import Crown from "../img/crown.png"
 import ClientApi from "./ClientApi.class"
 import { AboutErr, IError, TypeErr } from "../constants/EError"
+import { useProfile } from "../hooks/useProfile"
 
 enum Stat {
 	WINS,
@@ -106,6 +107,10 @@ const MyProfile = (props: Props) => {
 			gameMode: GameMode.MEDIUM,
 		},
 	]
+	const profile = useProfile()
+
+
+
 
 	useEffect(() => {
 		(async () => {

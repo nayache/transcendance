@@ -86,9 +86,15 @@ const Home = () => {
 				{ modalGameType !== null && inviteInfos.current &&
 					<ModalGameMenu active={modalGameType !== null} type={modalGameType}
 					pseudo={pseudo} author={inviteInfos.current.author} difficulty={inviteInfos.current.difficulty}
-					callback={async () => {
+					callback={async ({ response }) => {
 						try {
-							if (inviteInfos.current) {
+							if (inviteInfos.current && response === false) {
+								ClientApi.post(API_GAME_ACCEPT, JSON.stringify({
+									target: inviteInfos.current.author,
+									accept: false
+								}), 'application/json')
+							}
+							else if (inviteInfos.current && response === true) {
 								ClientApi.redirect = new URL(GAMEPAGE_ROUTE + '/' + inviteInfos.current.difficulty + '/fromAccept/' + inviteInfos.current.author)
 							}
 						}

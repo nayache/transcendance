@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ClientApi from "../components/ClientApi.class";
 import { AboutErr, IError, TypeErr } from "../constants/EError";
-import { API_PSEUDO_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
+import { API_MYPROFILE_ROUTE, API_PSEUDO_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
 import { IProfile } from "../interface/IUser";
 
 export const useProfile = () => {
@@ -11,7 +11,7 @@ export const useProfile = () => {
 	useEffect(() => {
 		(async () => {
 			try {
-				const data = await ClientApi.get(API_PSEUDO_ROUTE)
+				const data = await ClientApi.get(API_MYPROFILE_ROUTE)
 				console.log("data.profile = ", data.profile)
 				setProfile(data.profile)
 				console.log("profile = ", profile)
@@ -26,7 +26,7 @@ export const useProfile = () => {
 					ClientApi.redirect = new URL(SIGNIN_ROUTE)
 			}
 		})()
-    }, [profile])
+    }, [])
 
 
 	return profile;

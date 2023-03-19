@@ -15,6 +15,7 @@ import ClientApi from "./ClientApi.class"
 import { AboutErr, IError, TypeErr } from "../constants/EError"
 import { API_BASE_USER } from "../constants/RoutesApi"
 import { useParams, useSearchParams } from "react-router-dom"
+import { useProfile } from "../hooks/useProfile"
 
 enum Stat {
 	WINS,
@@ -105,6 +106,8 @@ const Profile = () => {
 			gameMode: GameMode.MEDIUM,
 		},
 	]
+	const profile = useProfile()
+
 
 
 	useEffect(() => {

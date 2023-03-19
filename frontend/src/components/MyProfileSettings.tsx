@@ -7,6 +7,7 @@ import ClientApi from "./ClientApi.class";
 import { API_AVATAR_ROUTE, API_BASE_USER, API_PSEUDO_ROUTE, API_TWOFA_ROUTE, BASE_URL, SIGNIN_ROUTE } from "../constants/RoutesApi";
 import { AboutErr, IError, TypeErr } from "../constants/EError";
 import { printButton, BtnStatus } from "./Button"
+import DefaultImg from "../img/avatar2.jpeg"
 import { usePseudo } from "../hooks/usePseudo";
 import { useAvatar } from "../hooks/useAvatar";
 
@@ -164,6 +165,7 @@ const MyProfileSettings = () => {
 						onChange={(e) => handleChangeAvatar(e)}/>
 						<img src={newAvatar} alt="Avatar"/>
 					</label>
+					<button>Delete</button>
 				</div>
 				{ printButton({
 					status: btnAvatarStatus,

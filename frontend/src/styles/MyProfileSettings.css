@@ -15,7 +15,10 @@
 
 .img-container-settings {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
+	justify-content: space-around;
+	flex-direction: column;
+	height: calc(fit-content + 100px);
 }
 
 .img-container-settings img {
