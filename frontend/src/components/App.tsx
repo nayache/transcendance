@@ -58,7 +58,7 @@ const router = createBrowserRouter([
 		element: <GamePage />
 	},
 	{
-		path: VIEWERGAMEPAGE_EP,
+		path: VIEWERGAMEPAGE_EP + '/:matchId',
 		element: <ViewerGamePage />
 	},
 	{

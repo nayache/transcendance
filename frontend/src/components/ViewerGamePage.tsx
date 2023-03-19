@@ -17,7 +17,7 @@ const ViewerGamePage: React.FC = () => {
 	const socket = useSocket()
 	const pseudo = usePseudo()
 	const [go, setGo] = useState<boolean>(false)
-	const gameId = useParams().gameId as string
+	const matchId = useParams().matchId as string
 	const [infos, setInfos] = useState<GameDto>()
 	
 
@@ -26,9 +26,9 @@ const ViewerGamePage: React.FC = () => {
 	useEffect(() => {
 		(async () => {
 			try {
-				if (gameId) {
-					socket.emit('viewer', gameId)
-					const data = await ClientApi.get(API_GAME_INFOS)
+				if (matchId) {
+					const data = await ClientApi.get(API_GAME_INFOS + '/' + matchId)
+					socket.emit('viewer', matchId)
 					setInfos(data.infos as GameDto)
 					setGo(true)
 				}
@@ -37,7 +37,7 @@ const ViewerGamePage: React.FC = () => {
 				console.log("err = ", err)
 			}
 		})()
-	}, [gameId])
+	}, [matchId])
 
 
 

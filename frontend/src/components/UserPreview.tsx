@@ -173,7 +173,7 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 						},
 						role: ChannelRole.USER,
 						canPrint: (chanUser !== undefined && relation !== null && status !== null &&
-							status !== Status.INGAME &&
+							player.status !== Status.INGAME &&
 							!userSitutation.isSelf(chanUser, player) && !userSitutation.isBlocked(relation)),
 					},
 					{
@@ -189,7 +189,7 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 						},
 						role: ChannelRole.USER,
 						canPrint: (chanUser !== undefined && relation !== null && status !== null &&
-							status === Status.INGAME &&
+							player.status === Status.INGAME &&
 							!userSitutation.isSelf(chanUser, player) && !userSitutation.isBlocked(relation)),
 					},
 					{
