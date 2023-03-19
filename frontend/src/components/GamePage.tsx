@@ -12,6 +12,7 @@ import { useSocket } from "../hooks/useSocket";
 import PaddleDisplayer from "./PaddleDisplayer.class";
 import PlayerDisplayer, { PlayerSide } from "./PlayerDisplayer.class";
 import ModalGameMenu, { ModalGameType } from "./ModalGameMenu";
+import { AboutErr, IError, TypeErr } from "../constants/EError";
 
 
 
@@ -34,6 +35,10 @@ const GamePage: React.FC = () => {
 
 	useEffect(() => {
 		if (clicked || invited || author) {
+			setTimeout(() => {
+				socket?.removeAllListeners('matchEvent')
+				setActiveError(ModalGameType.ERRORSEARCHPLAYER)
+			}, 20 * 1000)
 			socket?.on('matchEvent', ({game: gameInfos, me}: {game: GameDto, me: PlayerDto}) => {
 				console.log("(matchEvent) gameInfos = ", gameInfos)
 				console.log("(matchEvent) me = ", me)
@@ -106,8 +111,13 @@ const GamePage: React.FC = () => {
 				}
 			}
 			catch (err) {
+				const _error: IError = err as IError;
+
 				console.log("err = ", err);
-				setActiveError(ModalGameType.ERRORSEARCHPLAYER)
+				if (_error.about === AboutErr.TARGET && _error.type === TypeErr.REJECTED)
+					setActiveError(ModalGameType.INVITNOTRESPONDED)
+				else
+					setActiveError(ModalGameType.ERRORSEARCHPLAYER)
 			}
 		})()
 	}, [invited, gameMode])

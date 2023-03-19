@@ -10,7 +10,7 @@ import { Socket } from 'socket.io-client'
 import { Difficulty, GameDto, MoveObjects } from '../interface/IGame'
 import '../styles/Playground.css'
 import '../styles/Game.css'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { BtnStatus } from './Button'
 import { useStartGameListener } from '../hooks/useStartGameListener'
 import { useUpdateGameListener } from '../hooks/useUpdateGameListener'
@@ -19,6 +19,8 @@ import { useEndGameListener } from '../hooks/useEndGameListener'
 import ModalGameStatMenu, { ModalGameStatType } from './ModalGameStatMenu'
 import ClientApi from './ClientApi.class'
 import { BASE_URL } from '../constants/RoutesApi'
+import { ModalChannelType } from './ModalChannelMenu'
+import ModalGameMenu, { ModalGameType } from './ModalGameMenu'
 
 const MAX_GOALS: number = 4;
 
@@ -42,6 +44,8 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 	const dimensions = useRef<CanvasDimensions>();
 	const [startBtn, setStartBtn] = useState<BtnStatus>("idle")
 	const newInfos = useRef<GameDto>();
+	const timer = useRef<NodeJS.Timeout>()
+	const [activeError, setActiveError] = useState<ModalGameType>()
 
 	const ball: BallDisplayer = new BallDisplayer(
 		socket,
@@ -59,6 +63,7 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 
 
 	useStartGameListener(socket, ({leftPaddle, rightPaddle, ball: _ball}: MoveObjects) => {
+		clearTimeout(timer.current)
 		leftPlayer.paddle.display(leftPaddle)
 		rightPlayer.paddle.display(rightPaddle)
 		ball.display(_ball)
@@ -80,6 +85,14 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 	const isFinished = useEndGameListener(socket, (gameInfos) => {
 		newInfos.current = gameInfos;
 	})
+
+
+
+	useEffect(() => {
+		timer.current = setTimeout(() => {
+			setActiveError(ModalGameType.ERRORSEARCHPLAYER)
+		}, 20 * 1000)
+	}, [])
 
 
 
@@ -162,6 +175,16 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 							isFinished && pseudo && newInfos.current !== undefined &&
 							<ModalGameStatMenu active={isFinished} type={ModalGameStatType.ENDGAME}
 							gameInfos={newInfos.current} pseudo={pseudo}
+							callback={() => {
+								ClientApi.redirect = new URL(BASE_URL)
+							}}
+							callbackFail={() => {
+								ClientApi.redirect = new URL(BASE_URL)
+							}} />
+						}
+						{ activeError !== undefined &&
+							<ModalGameMenu active={activeError !== undefined ? true : false}
+							type={activeError}
 							callback={() => {
 								ClientApi.redirect = new URL(BASE_URL)
 							}}

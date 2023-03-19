@@ -4,11 +4,13 @@ import '../styles/ModalGameMenu.css'
 import DeclineInviteMenu from './DeclineInviteMenu';
 import ErrorSearchPlayerMenu from './ErrorSearchPlayerMenu';
 import InvitedMenu from './InvitedMenu';
+import InviteNotRespondedMenu from './InviteNotRespondedMenu';
 
 export enum ModalGameType {
 	INVITED,
 	ERRORSEARCHPLAYER,
 	DECLINEINVIT,
+	INVITNOTRESPONDED,
 }
 
 interface Props {
@@ -73,7 +75,10 @@ const ModalGameMenu = ({ active, type, pseudo, author, difficulty, callback, cal
 					onInvited={onInvited} /> ||
 
 					type === ModalGameType.DECLINEINVIT
-					&& <DeclineInviteMenu />
+					&& <DeclineInviteMenu /> ||
+
+					type === ModalGameType.INVITNOTRESPONDED
+					&& <InviteNotRespondedMenu />
 				}
 			</div>
 		</div>
