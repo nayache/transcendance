@@ -1,5 +1,11 @@
 import { Dimensions, Point } from "../components/CanvasObjectDisplayer.class";
 
+export interface IGameInviteEv {
+	author: string,
+	invited: string,
+	difficulty: Difficulty
+}
+
 export interface MoveObject {
 	userId: string
 	pos: Point

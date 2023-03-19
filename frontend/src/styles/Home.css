@@ -53,10 +53,11 @@
 }
 
 .easy-game {
+	--easy-color: #74ff67;
 	position: relative;
 	font-family: 'Mukta', sans-serif;
 	margin: 0 0 1rem -2rem;
-	background-color: #74ff67;
+	background-color: var(--easy-color);
 	border: 0 solid #E5E7EB;
 	box-sizing: border-box;
 	border-radius: 50%;
@@ -100,10 +101,11 @@
 }
 
 .medium-game {
+	--medium-color: #58fff7;
 	position: relative;
 	font-family: 'Mukta', sans-serif;
 	margin: 0 0 1rem 9rem;
-	background-color: #58fff7;
+	background-color: var(--medium-color);
 	border: 0 solid #E5E7EB;
 	box-sizing: border-box;
 	border-radius: 50%;
@@ -147,10 +149,11 @@
 }
 
 .hard-game {
+	--hard-color: #ff4949;
 	position: relative;
 	font-family: 'Mukta', sans-serif;
 	margin: 0 1rem 0 0;
-	background-color: #ff4949;
+	background-color: var(--hard-color);
 	border: 0 solid #000000;
 	box-sizing: border-box;
 	border-radius: 50%;;

@@ -16,7 +16,7 @@ import { useStartGameListener } from '../hooks/useStartGameListener'
 import { useUpdateGameListener } from '../hooks/useUpdateGameListener'
 import { useUpdateScoreListener } from '../hooks/useUpdateScoreListener'
 import { useEndGameListener } from '../hooks/useEndGameListener'
-import ModalGameMenu, { ModalGameType } from './ModalGameMenu'
+import ModalGameStatMenu, { ModalGameStatType } from './ModalGameStatMenu'
 import ClientApi from './ClientApi.class'
 import { BASE_URL } from '../constants/RoutesApi'
 
@@ -124,7 +124,7 @@ const Playground = ({ socket, pseudo, infos }: Props) => {
 						</div>
 						{
 							isFinished && pseudo && newInfos &&
-							<ModalGameMenu active={isFinished} type={ModalGameType.OTHERENDGAME}
+							<ModalGameStatMenu active={isFinished} type={ModalGameStatType.OTHERENDGAME}
 							gameInfos={newInfos} pseudo={pseudo}
 							callback={() => {
 								ClientApi.redirect = new URL(BASE_URL)

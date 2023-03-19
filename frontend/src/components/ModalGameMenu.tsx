@@ -1,24 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { GameDto, PlayerDto } from '../interface/IGame';
+import { Difficulty, GameDto, PlayerDto } from '../interface/IGame';
 import '../styles/ModalGameMenu.css'
-import EndGameMenu from './EndGameMenu';
-import OtherEndGameMenu from './OtherEndGameMenu';
+import ErrorSearchPlayerMenu from './ErrorSearchPlayerMenu';
+import InvitedMenu from './InvitedMenu';
 
 export enum ModalGameType {
-	ENDGAME,
-	OTHERENDGAME
+	INVITED,
+	ERRORSEARCHPLAYER,
 }
 
 interface Props {
 	active: boolean,
 	type: ModalGameType,
-	pseudo: string,
-	gameInfos?: GameDto,
+	pseudo?: string,
+	author?: string,
+	difficulty?: Difficulty,
 	callback?: (props?: any) => any,
 	callbackFail?: (props?: any) => any,
 }
 
-const ModalGameMenu = ({ active, type, pseudo, gameInfos, callback, callbackFail }: Props) => {
+const ModalGameMenu = ({ active, type, pseudo, author, difficulty, callback, callbackFail }: Props) => {
 
 	const modalRef = useRef<HTMLDivElement>(null);
 
@@ -29,6 +30,11 @@ const ModalGameMenu = ({ active, type, pseudo, gameInfos, callback, callbackFail
 	}
 	
 	const onEndGame = (props?: any) => {
+		if (callback)
+			callback(props);
+	}
+	
+	const onInvited = (props?: any) => {
 		if (callback)
 			callback(props);
 	}
@@ -48,11 +54,12 @@ const ModalGameMenu = ({ active, type, pseudo, gameInfos, callback, callbackFail
 				<span onClick={(e) => handleClick(callbackFail)}
 				className="close-GameMenu">&times;</span>
 				{
-					type === ModalGameType.ENDGAME && gameInfos
-					&& <EndGameMenu gameInfos={gameInfos} pseudo={pseudo} onEndGame={onEndGame} /> ||
+					type === ModalGameType.ERRORSEARCHPLAYER
+					&& <ErrorSearchPlayerMenu /> ||
 
-					type === ModalGameType.OTHERENDGAME && gameInfos
-					&& <OtherEndGameMenu gameInfos={gameInfos} pseudo={pseudo} onEndGame={onEndGame} />
+					type === ModalGameType.INVITED && pseudo && author && difficulty
+					&& <InvitedMenu pseudo={pseudo} author={author} difficulty={difficulty}
+					onInvited={onInvited} />
 				}
 			</div>
 		</div>

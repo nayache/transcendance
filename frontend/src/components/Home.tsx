@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
-import { API_PSEUDO_ROUTE, GAMEPAGE_EP, GAMEPAGE_ROUTE, GOPLAY_EP, MESSAGES_ROUTE, MYFRIENDS_EP, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
+import { API_GAME_ACCEPT, API_PSEUDO_ROUTE, GAMEPAGE_EP, GAMEPAGE_ROUTE, GOPLAY_EP, MESSAGES_ROUTE, MYFRIENDS_EP, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
 import ClientApi from "./ClientApi.class";
 import '../styles/Home.css'
 import Navbar from "./Navbar";
@@ -16,6 +16,9 @@ import { IMessageEvRecv } from "../interface/IMessage";
 import { IFriendEv } from "../interface/IFriend";
 import { useNewFriendReqListener } from "../hooks/useNewFriendReqListener";
 import { useNewFriendAccListener } from "../hooks/useFriendAccUpdater";
+import { useInviteGame } from "../hooks/useInviteGame";
+import ModalGameMenu, { ModalGameType } from "./ModalGameMenu";
+import { IGameInviteEv } from "../interface/IGame";
 
 
 const Home = () => {
@@ -26,6 +29,8 @@ const Home = () => {
 	const [isOkay, setIsOkay] = useState<boolean | undefined>();
 	const infos = useRef<IMessageEvRecv | IFriendEv | undefined>(undefined);
 	const [notificationType, setNotificationType] = useState<NotificationType | null>(null)
+	const [modalGameType, setModalGameType] = useState<ModalGameType | null>(null)
+	const inviteInfos = useRef<IGameInviteEv | null>(null)
 	useDMListener(socket, {pseudo, avatar}, undefined, undefined, undefined, (payload) => {
 		infos.current = payload
 		console.log("infos.current = ", infos.current)
@@ -40,6 +45,16 @@ const Home = () => {
 		infos.current = payload
 		console.log("infos.current = ", infos.current)
 		setNotificationType(NotificationType.ACCEPTEDFRIEND)
+	})
+	useInviteGame(socket, (data: IGameInviteEv) => {
+		inviteInfos.current = {
+			author: data.author,
+			invited: data.invited,
+			difficulty: data.difficulty
+		}
+		console.log("inviteInfos.current = ", inviteInfos.current)
+		console.log("data = ", data)
+		setModalGameType(ModalGameType.INVITED)
 	})
 
 
@@ -67,6 +82,25 @@ const Home = () => {
 						infos.current = undefined
 						setNotificationType(null)
 					}} />
+				}
+				{ modalGameType !== null && inviteInfos.current &&
+					<ModalGameMenu active={modalGameType !== null} type={modalGameType}
+					pseudo={pseudo} author={inviteInfos.current.author} difficulty={inviteInfos.current.difficulty}
+					callback={async () => {
+						try {
+							if (inviteInfos.current) {
+								ClientApi.redirect = new URL(GAMEPAGE_ROUTE + '/' + inviteInfos.current.difficulty + '/fromAccept/' + inviteInfos.current.author)
+							}
+						}
+						catch (err) {
+							console.log("err = ", err)
+						}
+						setModalGameType(null)
+					}}
+					callbackFail={() => {
+						setModalGameType(null)
+					}}
+					/>
 				}
 				<div className="home-container">
 					<div>

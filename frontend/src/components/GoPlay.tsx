@@ -10,10 +10,11 @@ import { BASE_URL } from "../constants/RoutesApi";
 
 interface Props {
 	gameMode?: Difficulty,
+	fromInvite?: string | undefined,
 	onClick?: (props?: any) => void,
 }
 
-const GoPlay = ({gameMode, onClick}: Props) => {	
+const GoPlay = ({gameMode, fromInvite, onClick}: Props) => {	
 
 	const [loader, setLoader] = useState<boolean>(false)
 	
@@ -25,19 +26,20 @@ const GoPlay = ({gameMode, onClick}: Props) => {
 			<div>
 			<Navbar/>
 				<div className="play-container">
-					{ !loader ?
-						<button className="goplay"
-							onClick={() => {
-								setLoader(true)
-								if (onClick)
-									onClick()
-							}}>
-							PLAY {gameMode.toUpperCase()} GAME
-						</button> :
+					{ (loader || fromInvite) ?
 						<div>
 							<img className="loaderPong-img" src={Loader}/>
-							<p>Searching player...</p>
-						</div>}
+							<p>{fromInvite ? "Waiting for opponent..." : "Searching player..."}</p>
+						</div> :
+						<button className="goplay"
+						onClick={() => {
+							setLoader(true)
+							if (onClick)
+								onClick()
+						}}>
+							PLAY {gameMode.toUpperCase()} GAME
+						</button>
+					}
 						<button className="button-24" onClick={() =>
 							ClientApi.redirect = new URL(BASE_URL)
 						}>Cancel</button>

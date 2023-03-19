@@ -1,11 +1,6 @@
-@keyframes zoom {
-	from {transform:scale(0)}
-	to {transform:scale(1)}
-}
-
 
 /* The Modal (background) */
-.modalGameMenu {
+.modalGameStatMenu {
 	display: none; /* Hidden by default */
 	position: fixed; /* Stay in place */
 	z-index: 10; /* Sit on top */
@@ -16,23 +11,23 @@
 	transition: all 0.4s;
 	overflow: auto; /* Enable scroll if needed */
 	background-color: rgb(0,0,0); /* Fallback color */
-	background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+	background-color: rgba(88, 88, 88, 0.4); /* Black w/ opacity */
 }
 
 
 /* Modal Content/Box */
-.modalGameMenu-content {
-	background-color: #eaeaea;
+.modalGameStatMenu-content {
+	background-color: rgba(88, 88, 88, 0.224);
 	margin: 15% auto; /* 15% from the top and centered */
 	padding: 20px;
 	border: 1px solid #888;
-	border-radius: 10px;
-	width: 50%; /* Could be more or less, depending on screen size */
+	border-radius: 3px;
+	width: 70%; /* Could be more or less, depending on screen size */
 }
 
 
 /* Add Animation - Zoom in the Modal */
-.modalGameMenu-content, #captionImgModal {
+.modalGameStatMenu-content, #captionImgModal {
 	animation-name: zoom;
 	animation-duration: 0.6s;
 	animation-timing-function: cubic-bezier(0.88, 0.19, 0.37, 1.11);
@@ -40,15 +35,16 @@
 
 
 /* The Close Button */
-.close-GameMenu {
-	color: #aaa;
+.close-GameStatMenu {
+	color: #ffffff;
 	float: right;
+	text-shadow: 1px 1px black;
 	font-size: 28px;
 	font-weight: bold;
 }
 
-.close-GameMenu:hover,
-.close-GameMenu:focus {
+.close-GameStatMenu:hover,
+.close-GameStatMenu:focus {
 	color: black;
 	text-decoration: none;
 	cursor: pointer;
@@ -125,7 +121,7 @@
 }
 
 @media screen and (max-width: 900px) {
-	.modalGameMenu-content {
+	.modalGameStatMenu-content {
 		position: relative;
 		left: 0 !important;
 		width: 90% !important;

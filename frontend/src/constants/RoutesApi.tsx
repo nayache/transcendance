@@ -8,8 +8,8 @@ const {
 } = process.env
 
 
-export const FTAPI_CODE_ROUTE_TO_REGISTER: string = `https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-97d5bee0e878a3f6b1f1559dbe8751b12c31facea51937a459ea2e8a22c04dc5&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fregister&response_type=code`
-export const FTAPI_CODE_ROUTE_TO_TWOFA: string = `https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-97d5bee0e878a3f6b1f1559dbe8751b12c31facea51937a459ea2e8a22c04dc5&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Ftwofa&response_type=code`
+export const FTAPI_CODE_ROUTE_TO_REGISTER: string = `https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-97d5bee0e878a3f6b1f1559dbe8751b12c31facea51937a459ea2e8a22c04dc5&redirect_uri=${REACT_APP_FRONT_PROTOCOL}%3A%2F%2F${REACT_APP_FRONT_HOSTNAME}%3A${REACT_APP_FRONT_PORT}%2Fregister&response_type=code`
+export const FTAPI_CODE_ROUTE_TO_TWOFA: string = `https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-97d5bee0e878a3f6b1f1559dbe8751b12c31facea51937a459ea2e8a22c04dc5&redirect_uri=${REACT_APP_FRONT_PROTOCOL}%3A%2F%2F${REACT_APP_FRONT_HOSTNAME}%3A${REACT_APP_FRONT_PORT}%2Ftwofa&response_type=code`
 
 
 console.log("REACT_APP_BACK_PROTOCOL = ", REACT_APP_BACK_PROTOCOL)
@@ -57,6 +57,8 @@ export const API_CHAT_CHANNEL_MUTE_ROUTE = API_BASE_CHAT + '/channel/mute'
 export const API_CHAT_CHANNEL_SETADMIN_ROUTE = API_BASE_CHAT + '/channel/setAdmin'
 
 export const API_GAME_SEARCH = API_BASE_GAME + '/search' /* + /:difficulty */
+export const API_GAME_INVITE = API_BASE_GAME + '/invite'
+export const API_GAME_ACCEPT = API_BASE_GAME + '/accept' /* + /:pseudo */
 export const API_GAME_VIEW = API_BASE_GAME + '/view' /* + /:pseudo */
 export const API_GAME_INFOS = API_BASE_GAME + '/infos' /* + /:pseudo */
 

@@ -4,13 +4,16 @@ import Baseline from "./Baseline";
 import Playground from "./Playground";
 import ClientApi from "./ClientApi.class";
 import GoPlay from "./GoPlay";
-import { API_GAME_SEARCH, BASE_URL } from "../constants/RoutesApi";
+import { API_GAME_ACCEPT, API_GAME_SEARCH, BASE_URL } from "../constants/RoutesApi";
 import { useParams } from "react-router-dom";
 import { usePseudo } from "../hooks/usePseudo";
 import { Difficulty, GameDto, PlayerDto } from "../interface/IGame";
 import { useSocket } from "../hooks/useSocket";
 import PaddleDisplayer from "./PaddleDisplayer.class";
 import PlayerDisplayer, { PlayerSide } from "./PlayerDisplayer.class";
+import ModalGameMenu, { ModalGameType } from "./ModalGameMenu";
+
+
 
 const GamePage: React.FC = () => {
 
@@ -22,9 +25,16 @@ const GamePage: React.FC = () => {
 	const [leftPlayer, setleftPlayer] = useState<PlayerDisplayer>()
 	const [rightPlayer, setrightPlayer] = useState<PlayerDisplayer>()
 	const [infos, setInfos] = useState<GameDto>()
-	
+	const [activeError, setActiveError] = useState<boolean>(false)
+	const fromInvite = useParams().fromInvite
+	const fromAccept = useParams().fromAccept
+	const author = useParams().author
+
+
+
+
 	useEffect(() => {
-		if (clicked) {
+		if (clicked || fromInvite || author) {
 			socket?.on('matchEvent', ({game: gameInfos, me}: {game: GameDto, me: PlayerDto}) => {
 				console.log("(matchEvent) gameInfos = ", gameInfos)
 				console.log("(matchEvent) me = ", me)
@@ -63,7 +73,21 @@ const GamePage: React.FC = () => {
 		return () => {
 			socket?.removeAllListeners('matchEvent')
 		}
-	}, [gameMode, clicked])
+	}, [gameMode, clicked, fromInvite, author])
+
+	useEffect(() => {
+		(async () => {
+			try {
+				if (author) {
+					await ClientApi.post(API_GAME_ACCEPT + '/' + author)
+				}
+			}
+			catch (err) {
+				console.log("err = ", err);
+				setActiveError(true)
+			}
+		})()
+	}, [author])
 
 	useEffect(() => {
 		(async () => {
@@ -74,8 +98,14 @@ const GamePage: React.FC = () => {
 			else {
 				try {
 					if (clicked) {
-						console.log("bonsoirrrrrrrrrrrrrrrrrrrrrrrrr")
-						await ClientApi.post(API_GAME_SEARCH + '/' + gameMode)
+						try {
+							console.log("bonsoirrrrrrrrrrrrrrrrrrrrrrrrr")
+							await ClientApi.post(API_GAME_SEARCH + '/' + gameMode)
+						}
+						catch (err) {
+							console.log("err = ", err);
+							setActiveError(true)
+						}
 					}
 				} catch (err) {
 					console.log("err = ", err);
@@ -89,8 +119,8 @@ const GamePage: React.FC = () => {
 
 	return (
 		<React.Fragment>
-			{ !go &&
-				<GoPlay gameMode={gameMode} onClick={() => setClicked(true)} /> ||
+			{ !go && fromAccept === undefined &&
+				<GoPlay gameMode={gameMode} fromInvite={fromInvite} onClick={() => setClicked(true)} /> ||
 
 			go && pseudo && infos !== undefined && leftPlayer && rightPlayer && (
 				<React.Fragment>
@@ -100,6 +130,15 @@ const GamePage: React.FC = () => {
 					rightPlayer={rightPlayer} />
 				</React.Fragment>
 			) }
+			{ activeError &&
+				<ModalGameMenu active={activeError} type={ModalGameType.ERRORSEARCHPLAYER}
+				callback={() => {
+					ClientApi.redirect = new URL(BASE_URL)
+				}}
+				callbackFail={() => {
+					ClientApi.redirect = new URL(BASE_URL)
+				}} />
+			}
 		</React.Fragment>
 	)
 }

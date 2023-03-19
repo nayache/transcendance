@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import '../styles/UserPreview.css'
 import { ChannelRole, Status } from "../constants/EMessage"
-import { API_CHAT_STATUS, API_GAME_VIEW, API_USER_ADD_FRIEND, API_USER_BLOCK, API_USER_DEL_FRIEND, API_USER_FRIEND_RELATION, BASE_URL, MESSAGES_EP, PROFILE_EP, VIEWERGAMEPAGE_ROUTE } from "../constants/RoutesApi"
+import { API_CHAT_STATUS, API_GAME_INVITE, API_GAME_VIEW, API_USER_ADD_FRIEND, API_USER_BLOCK, API_USER_DEL_FRIEND, API_USER_FRIEND_RELATION, BASE_URL, GAMEPAGE_EP, GAMEPAGE_ROUTE, MESSAGES_EP, PROFILE_EP, VIEWERGAMEPAGE_ROUTE } from "../constants/RoutesApi"
 import { IChannel, IChannelUser } from "../interface/IChannel"
 import ClientApi from "./ClientApi.class"
 import ModalChannelMenu, { ModalChannelType } from "./ModalChannelMenu"
@@ -165,11 +165,10 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 					},
 					{
 						content: "Invite",
-						action: () => {
+						action: async () => {
 							if (!clicked.current) {
 								clicked.current = true
-								if (callback)
-									callback(playerName)
+								setActionModal(ModalChannelType.INVITEUSER)
 							}
 						},
 						role: ChannelRole.USER,
@@ -353,17 +352,20 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 				</div>
 				<span onClick={onClose} className="close-preview">&times;</span>
 			</div>
-			{actionModal && <ModalChannelMenu active={actionModal ? true : false} type={actionModal}
-			pointedChannelName={channel.name} target={player} callback={() => {
-				setActionModal(null)
-				if (callback)
-					callback()
-			}}
-			callbackFail={() => {
-				setActionModal(null)
-				if (callbackFail)
-					callbackFail()
-			}} />
+			{ actionModal &&
+				<ModalChannelMenu active={actionModal ? true : false} type={actionModal}
+				pointedChannelName={channel.name} target={player} callback={(props) => {
+					if (actionModal === ModalChannelType.INVITEUSER)
+						ClientApi.redirect = new URL(GAMEPAGE_ROUTE + '/' + props.difficulty + '/fromInvite')
+					setActionModal(null)
+					if (callback)
+						callback()
+				}}
+				callbackFail={() => {
+					setActionModal(null)
+					if (callbackFail)
+						callbackFail()
+				}} />
 			}
 		</div>
 	)
