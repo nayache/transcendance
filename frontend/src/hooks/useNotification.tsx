@@ -28,20 +28,16 @@ export const useNotification = (
 		console.log("infos.current = ", infos.current)
 		setNotificationType(NotificationType.DM)
 	})
-	if (currpage === MYFRIENDS_EP) {
-	}
-	else {
-		useNewFriendReqListener(socket, user.pseudo, undefined, (payload) => {
-			infos.current = payload
-			console.log("infos.current = ", infos.current)
-			setNotificationType(NotificationType.NEWFRIEND)
-		})
-		useNewFriendAccListener(socket, user.pseudo, undefined, (payload) => {
-			infos.current = payload
-			console.log("infos.current = ", infos.current)
-			setNotificationType(NotificationType.ACCEPTEDFRIEND)
-		})
-	}
+	useNewFriendReqListener(socket, user.pseudo, undefined, (payload) => {
+		infos.current = payload
+		console.log("infos.current = ", infos.current)
+		setNotificationType(NotificationType.NEWFRIEND)
+	})
+	useNewFriendAccListener(socket, user.pseudo, undefined, (payload) => {
+		infos.current = payload
+		console.log("infos.current = ", infos.current)
+		setNotificationType(NotificationType.ACCEPTEDFRIEND)
+	})
 	
 	return (
 		<React.Fragment>
