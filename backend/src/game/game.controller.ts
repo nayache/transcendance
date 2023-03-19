@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, forwardRef, Get, HttpStatus, Inject, Param, Post, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 import { AppGateway, GameDto } from 'src/chat/app.gateway';
 import { ValidationFilter } from 'src/chat/filter/validation-filter';
 import { User } from 'src/decorators/user.decorator';
@@ -35,6 +35,16 @@ export class inviteGameDto {
     difficulty: Difficulty;
 }
 
+export class acceptInvitationDto{
+    @IsString()
+    @IsNotEmpty()
+    target: string;
+    
+    @IsBoolean()
+    @IsNotEmpty()
+    response: boolean;
+}
+
 
 @UsePipes(ValidationPipe)
 @UseFilters(ValidationFilter)
@@ -61,9 +71,9 @@ export class GameController {
 
     @Post('invite')
     async inviteGame(@User() userId: string, @Body() payload: inviteGameDto) {
-        console.log(payload)
-     //   if (!matchDifficulty(payload.difficulty))
-       //     throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.INVALID, 'invalid difficulty argument');
+        console.log(payload);
+        //if (!matchDifficulty(payload.difficulty))
+          //  throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.INVALID, 'invalid difficulty argument');
         if (this.gameService.isInMatchmaking(userId))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.REJECTED, 'user is already looking for a match');
         if (this.gameService.isInGame(userId))
@@ -82,11 +92,11 @@ export class GameController {
         return {}
     }
 
-    @Post('accept/:pseudo')
-    async acceptGame(@User() userId: string, @Param('pseudo') pseudo: string) {
-        if (!pseudo)        
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'empty arg');
-        const target: UserEntity = await this.userService.findByPseudo(pseudo);
+    @Post('accept')
+    async acceptGame(@User() userId: string, @Body() payload: acceptInvitationDto) {
+     //   if (!pseudo)        
+      //      throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'empty arg');
+        const target: UserEntity = await this.userService.findByPseudo(payload.target);
         if (!target)
             throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
         if (target.id === userId)
@@ -98,10 +108,13 @@ export class GameController {
         const invitation: Challenge = this.gameService.findChallenge(target.id, userId);
         if (!invitation)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.REJECTED, 'invitation does not exist or is expired');
-        const game: GameEntity = await this.gameService.startChallenge(invitation);
-        if (!game)
-            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.REJECTED, 'cant start game');
-        this.appGateway.matchEvent(game);
+        if (payload.response === true) {
+            const game: GameEntity = await this.gameService.startChallenge(invitation);
+            if (!game)
+                throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.REJECTED, 'cant start game');
+            this.appGateway.matchEvent(game);
+        } else
+            this.gameService.deleteChallenge(invitation);
         return {}
     }
 

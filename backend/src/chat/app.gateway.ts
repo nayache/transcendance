@@ -294,7 +294,10 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   endGameEvent(gameInfo: GameDto) {
+    console.log(gameInfo)
     this.server.to(gameInfo.id).emit('endGame', gameInfo);
+    console.log(gameInfo.id)
+    console.log(this.server.of('/').adapter.rooms)
   }
 
   @SubscribeMessage('paddleMove')  

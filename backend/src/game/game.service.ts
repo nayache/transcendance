@@ -368,9 +368,7 @@ export class Player {
     }
     
     public addOneGoal() {
-        console.log('nbGoal before', this._nbGoals);
         this.nbGoals++;
-        console.log('nbGoal after', this._nbGoals);
     }
 }
 
@@ -605,6 +603,7 @@ export class Referee {
 
 export class Game {
     id: string;
+    finished: boolean = false;
     w: number;
     h: number;
     y: number;
@@ -684,13 +683,11 @@ export class GameService {
         this.matchmaking.set(Difficulty.HARD, new Set<string>());
         this.games = new Map<string, Game>();
         this.matchs = new Set<[string, string]>();
-        this.speeds = new Map<string, Vector2D>();
         this.challenges = [];
     }
                     // gameID  //   viewer  DESSIN  
     //private games: Map<string, Map<string, Game> >; //concept
     private games: Map<string, Game>; //concept
-    private speeds: Map<string, Vector2D>;
     private matchmaking: Map<Difficulty, Set<string> >;
     private challenges: Challenge[];
     private matchs: Set<[string, string]>;
@@ -712,7 +709,7 @@ export class GameService {
     }
 
     async updateGame(game: Game, width: number, height: number, y: number/*, gameInfos: GameDto*/) {
-        if (game.referee.gamestate == GameState.WaitingForStart)
+        if (game && game.referee.gamestate == GameState.WaitingForStart)
         {
             this.logger.log(`WAITING FOR START`)
             try {
@@ -721,7 +718,7 @@ export class GameService {
                 console.log('ERROR: setupgame :', e);
             }
         }
-        if (game.referee.gamestate == GameState.Running) {
+        if (game && game.referee.gamestate == GameState.Running) {
             game.updateGame();
             const ball: MoveObject = new MoveObject(null, game.ball);
             const left: MoveObject = new MoveObject(game.player1.paddle, null, game.player1.userId);
@@ -729,6 +726,8 @@ export class GameService {
             this.appGateway.updateGame(game.id, left, right, ball);
         }
         try {
+            if (!game)
+                return
             const oldScore: [number, number] = [game.player1.nbGoals, game.player2.nbGoals];
             game.referee.referee();
             const newScore: [number, number] = [game.player1.nbGoals, game.player2.nbGoals];
@@ -741,19 +740,20 @@ export class GameService {
         } catch (e) {
             console.log('ERROR: ', e);
         }
-        if (game.referee.gamestate === GameState.PermanentStop) {
+        if (game && game.referee.gamestate === GameState.PermanentStop) {
             this.logger.log(`PERMANENT STOP`)
-            await this.endGame(game.id);
+            this.endGame(game.id);
         }
-       // game.reqAnim = requestAnimationFrame(() => this.gameLoop(game, width, height, y))
+        return (game) ? game.referee.gamestate : null
     }
 
-    run(game: Game) {
+    async run(game: Game) {
         //-------------------> CONDITION ADRRET
         this.matchs.add([game.user1.id, game.user2.id]);
         const intervalId: NodeJS.Timer = setInterval(async () => {
-            await this.updateGame(game, game.w, game.h, game.y)
-            if (game.referee.gamestate === GameState.PermanentStop) {
+            const state: GameState = await this.updateGame(game, game.w, game.h, game.y) 
+            if (state === null || state === GameState.PermanentStop) {
+                console.log('clear interv')
                 clearInterval(intervalId);
             }
         }, 16);
@@ -767,7 +767,6 @@ export class GameService {
     }
 
     async setReadyGame(gameInfos: GameDto, viewer: string, width: number, height: number, y: number) {
-        // a verif !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         let game: Game = this.games.get(gameInfos.id);
         if (game) {
             this.setReady(game, viewer);
@@ -813,19 +812,20 @@ export class GameService {
     }
 
     async endGame(gameId: string, forfeit: string = null) {
+        console.log('ICIIIIIIIIIIIIIIIIIIIIIIIIIII endgame')
         const game = this.games.get(gameId);
+       // if (!game || game.finished)
+        //    return
+        game.finished = true;
+        console.log('endgame WORKED')
         if (forfeit)
             game.referee.gamestate = GameState.PermanentStop;
         const gameData: GameEntity = await this.updateEndingGame(gameId, forfeit);
         const gameInfo: GameDto = await this.gameToDto(gameData);
-        if (game)
-            console.log('endgames, game');
-        else {
-            console.log('endgames nogames!!!!!!! ');
-            return
-        }
-        this.removeMatch(gameInfo.player1.id);
+        await this.games.delete(gameId); // DELETE objet game du service
+        await this.removeMatch(gameInfo.player1.id);
         this.appGateway.endGameEvent(gameInfo); // socket event avertir fin game
+        console.log('endgame EVENT launched')
     }
 
     createChallenge(author: string, invited: string, difficulty: Difficulty) {
@@ -882,14 +882,14 @@ export class GameService {
     }
 
     async removeMatch(userId: string) {
-        console.log('matchs:', this.matchs);
+        console.log('remove match => matchs:', this.matchs);
         for (const players of this.matchs.values()) {
             if (players[0] === userId || players[1] === userId) {
                 const p1: string = await this.userService.getPseudoById(players[0])
                 const p2: string = await this.userService.getPseudoById(players[1])
-                this.logger.log(`match has been ending beetwen (${p1} vs ${p2})`);
                 this.matchs.delete(players);
                 console.log('matchs after delete:', this.matchs);
+                this.logger.log(`match has been ending beetwen (${p1} vs ${p2})`);
                 return
             }
         }
@@ -957,7 +957,7 @@ export class GameService {
             this.addPlayer(userId, difficulty);
         else {
             const game: GameEntity = await this.createGame(userId, opponentId, difficulty);
-            console.log(this.matchmaking) ////log a SUPP
+            console.log('queues ->', this.matchmaking) ////log a SUPP
             return game;
         }
         return null;
@@ -979,9 +979,7 @@ export class GameService {
         console.log(difficulty, scoredGoal, concededGoal)
         const finishGameXp: number = 50;
         const difficultyBonus: number = (difficulty === Difficulty.HARD) ? 50 : ((difficulty === Difficulty.MEDIUM) ? 30 : 10);
-        console.log('dbonus:', scoredGoal, difficultyBonus);
         const goalAverage: number = (scoredGoal * difficultyBonus) - (concededGoal * 5);
-        console.log('GA:', goalAverage);
         const totalXp: number = (finishGameXp + goalAverage);
         return (winner) ? (totalXp * 2) : totalXp;
     }
