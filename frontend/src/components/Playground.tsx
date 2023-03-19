@@ -41,7 +41,7 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 
 	const dimensions = useRef<CanvasDimensions>();
 	const [startBtn, setStartBtn] = useState<BtnStatus>("idle")
-	const [newInfos, setNewInfos] = useState<GameDto>();
+	const newInfos = useRef<GameDto>();
 
 	const ball: BallDisplayer = new BallDisplayer(
 		socket,
@@ -75,7 +75,7 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 	const score = useUpdateScoreListener(socket)
 
 	const isFinished = useEndGameListener(socket, (gameInfos) => {
-		setNewInfos(gameInfos);
+		newInfos.current = gameInfos;
 	})
 
 
@@ -155,9 +155,10 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 							<div className="pulseBtn-wrap" />
 						}
 						{
-							isFinished && pseudo && newInfos &&
+							(() => {console.log("newInfos.current = ", newInfos.current, " isFinished = ", isFinished, " pseudo = ", pseudo); return true})() &&
+							isFinished && pseudo && newInfos.current !== undefined &&
 							<ModalGameStatMenu active={isFinished} type={ModalGameStatType.ENDGAME}
-							gameInfos={newInfos} pseudo={pseudo}
+							gameInfos={newInfos.current} pseudo={pseudo}
 							callback={() => {
 								ClientApi.redirect = new URL(BASE_URL)
 							}}

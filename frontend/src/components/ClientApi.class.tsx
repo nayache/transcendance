@@ -232,15 +232,17 @@ class ClientApi {
 		return (data);
 	}
 	
-	public static async delete(url: string): Promise<any> {
+	public static async delete(url: string, body?: BodyInit | null, contentType?: string): Promise<any> {
 		
 		const method: string = 'DELETE'
 		let headers: HeadersInit = {};
 		
 		if (ClientApi.token)
 			headers['Authorization'] = `Bearer ${ClientApi.token}`
+		if (contentType)
+			headers["Content-Type"] = contentType
 		let init: RequestInit | undefined = {
-			method, headers
+			method, headers, body
 		};
 		const data: any = await ClientApi.fetchEndpoint(url, init)
 		return (data);

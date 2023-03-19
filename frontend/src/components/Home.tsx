@@ -91,7 +91,7 @@ const Home = () => {
 							if (inviteInfos.current && response === false) {
 								ClientApi.post(API_GAME_ACCEPT, JSON.stringify({
 									target: inviteInfos.current.author,
-									accept: false
+									response: false
 								}), 'application/json')
 							}
 							else if (inviteInfos.current && response === true) {
@@ -103,7 +103,18 @@ const Home = () => {
 						}
 						setModalGameType(null)
 					}}
-					callbackFail={() => {
+					callbackFail={({author}) => {
+						try {
+							if (author) {
+								ClientApi.post(API_GAME_ACCEPT, JSON.stringify({
+									target: author,
+									response: false
+								}), 'application/json')
+							}
+						}
+						catch (err) {
+							console.log("err = ", err)
+						}
 						setModalGameType(null)
 					}}
 					/>

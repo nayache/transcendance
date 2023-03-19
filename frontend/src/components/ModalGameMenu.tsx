@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Difficulty, GameDto, PlayerDto } from '../interface/IGame';
 import '../styles/ModalGameMenu.css'
+import DeclineInviteMenu from './DeclineInviteMenu';
 import ErrorSearchPlayerMenu from './ErrorSearchPlayerMenu';
 import InvitedMenu from './InvitedMenu';
 
 export enum ModalGameType {
 	INVITED,
 	ERRORSEARCHPLAYER,
+	DECLINEINVIT,
 }
 
 interface Props {
@@ -24,10 +26,8 @@ const ModalGameMenu = ({ active, type, pseudo, author, difficulty, callback, cal
 	const modalRef = useRef<HTMLDivElement>(null);
 
 
-	const handleClick = (callback?: (props?: any) => any | undefined, e?: React.MouseEvent) => {
-		if (callback)
-			callback();
-	}
+
+
 	
 	const onEndGame = (props?: any) => {
 		if (callback)
@@ -39,6 +39,9 @@ const ModalGameMenu = ({ active, type, pseudo, author, difficulty, callback, cal
 			callback(props);
 	}
 
+
+
+
 	useEffect(() => {
 		console.log("type (dans modal) = ", type)
 		console.log("active (dans modal) = ", active)
@@ -47,11 +50,19 @@ const ModalGameMenu = ({ active, type, pseudo, author, difficulty, callback, cal
 		}
 	}, [active])
 
+
+
+
+
+	
 	return (
 		<div id="myModal-gameMenu"
 		ref={modalRef} className="modalGameMenu">
 			<div className="modalGameMenu-content">
-				<span onClick={(e) => handleClick(callbackFail)}
+				<span onClick={(e) => {
+					if (callbackFail)
+						callbackFail({author})
+				}}
 				className="close-GameMenu">&times;</span>
 				{
 					type === ModalGameType.ERRORSEARCHPLAYER
@@ -59,7 +70,10 @@ const ModalGameMenu = ({ active, type, pseudo, author, difficulty, callback, cal
 
 					type === ModalGameType.INVITED && pseudo && author && difficulty
 					&& <InvitedMenu pseudo={pseudo} author={author} difficulty={difficulty}
-					onInvited={onInvited} />
+					onInvited={onInvited} /> ||
+
+					type === ModalGameType.DECLINEINVIT
+					&& <DeclineInviteMenu />
 				}
 			</div>
 		</div>

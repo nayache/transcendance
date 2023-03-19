@@ -4,7 +4,7 @@ import Navbar from "./Navbar";
 import styled from "styled-components";
 import ChannelPart from "./ChannelPart";
 import ClientApi from "./ClientApi.class";
-import { API_CHAT_USER_CHANNELS_ROUTE, GAMEPAGE_ROUTE, MESSAGES_ROUTE, MYFRIENDS_EP } from "../constants/RoutesApi";
+import { API_CHAT_USER_CHANNELS_ROUTE, API_GAME_ACCEPT, GAMEPAGE_ROUTE, MESSAGES_ROUTE, MYFRIENDS_EP } from "../constants/RoutesApi";
 import { useSocket } from "../hooks/useSocket";
 import ChannelPlayers from "./ChannelPlayers";
 import { IChannel, IChannelUser } from "../interface/IChannel";
@@ -337,7 +337,18 @@ const ChatPage = () => {
 						}
 						setModalGameType(null)
 					}}
-					callbackFail={() => {
+					callbackFail={({author}) => {
+						try {
+							if (author) {
+								ClientApi.post(API_GAME_ACCEPT, JSON.stringify({
+									target: author,
+									response: false
+								}), 'application/json')
+							}
+						}
+						catch (err) {
+							console.log("err = ", err)
+						}
 						setModalGameType(null)
 					}}
 					/>

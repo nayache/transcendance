@@ -356,7 +356,7 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 				<ModalChannelMenu active={actionModal ? true : false} type={actionModal}
 				pointedChannelName={channel.name} target={player} callback={(props) => {
 					if (actionModal === ModalChannelType.INVITEUSER)
-						ClientApi.redirect = new URL(GAMEPAGE_ROUTE + '/' + props.difficulty + '/fromInvite')
+						ClientApi.redirect = new URL(GAMEPAGE_ROUTE + '/' + props.difficulty + '/fromInvite/' + playerName)
 					setActionModal(null)
 					if (callback)
 						callback()

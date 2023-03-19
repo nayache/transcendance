@@ -50,11 +50,11 @@ const router = createBrowserRouter([
 		element: <GamePage />
 	},
 	{
-		path: GAMEPAGE_EP + '/:mode/:fromInvite/:invited',
+		path: GAMEPAGE_EP + '/:mode/fromInvite/:invited',
 		element: <GamePage />
 	},
 	{
-		path: GAMEPAGE_EP + '/:mode/:fromAccept/:author',
+		path: GAMEPAGE_EP + '/:mode/fromAccept/:author',
 		element: <GamePage />
 	},
 	{

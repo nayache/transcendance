@@ -6,7 +6,7 @@ import DefaultImg from "../img/avatar2.jpeg"
 import { Relation } from "../interface/IUser"
 import { Status } from "../constants/EMessage"
 import ClientApi from "./ClientApi.class"
-import { API_USER_ADD_FRIEND, API_USER_BLOCK, API_USER_DEL_FRIEND, API_USER_FRIENDS_LIST, GAMEPAGE_ROUTE, MESSAGES_ROUTE, PROFILE_EP, PROFILE_ROUTE } from "../constants/RoutesApi"
+import { API_GAME_ACCEPT, API_USER_ADD_FRIEND, API_USER_BLOCK, API_USER_DEL_FRIEND, API_USER_FRIENDS_LIST, GAMEPAGE_ROUTE, MESSAGES_ROUTE, PROFILE_EP, PROFILE_ROUTE } from "../constants/RoutesApi"
 import { BsCheck2 } from "react-icons/bs"
 import { RxCross1 } from "react-icons/rx"
 import { ImCross } from "react-icons/im"
@@ -208,7 +208,18 @@ const Friends = () => {
 					}
 					setModalGameType(null)
 				}}
-				callbackFail={() => {
+				callbackFail={({author}) => {
+					try {
+						if (author) {
+							ClientApi.post(API_GAME_ACCEPT, JSON.stringify({
+								target: author,
+								response: false
+							}), 'application/json')
+						}
+					}
+					catch (err) {
+						console.log("err = ", err)
+					}
 					setModalGameType(null)
 				}}
 				/>

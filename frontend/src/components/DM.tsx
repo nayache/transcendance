@@ -10,7 +10,7 @@ import DMContent from "./DMContent";
 import DMList from "./DMList";
 import UserProfileChat from "./DMUserProfile";
 import Navbar from "./Navbar";
-import { API_AVATAR_ROUTE, API_CHAT_DISCUSSIONS_RELATION, API_CHAT_DM, API_CHAT_MARK_READ, API_USER_BLOCK, GAMEPAGE_ROUTE, MESSAGES_ROUTE } from "../constants/RoutesApi";
+import { API_AVATAR_ROUTE, API_CHAT_DISCUSSIONS_RELATION, API_CHAT_DM, API_CHAT_MARK_READ, API_GAME_ACCEPT, API_USER_BLOCK, GAMEPAGE_ROUTE, MESSAGES_ROUTE } from "../constants/RoutesApi";
 import { useSocket } from "../hooks/useSocket";
 import { useDMListener } from "../hooks/useDMListener";
 import { useParams } from "react-router-dom";
@@ -314,7 +314,18 @@ const DM = () => {
 					}
 					setModalGameType(null)
 				}}
-				callbackFail={() => {
+				callbackFail={({author}) => {
+					try {
+						if (author) {
+							ClientApi.post(API_GAME_ACCEPT, JSON.stringify({
+								target: author,
+								response: false
+							}), 'application/json')
+						}
+					}
+					catch (err) {
+						console.log("err = ", err)
+					}
 					setModalGameType(null)
 				}}
 				/>

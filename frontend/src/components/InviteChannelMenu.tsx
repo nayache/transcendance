@@ -36,17 +36,8 @@ export const InviteChannelMenu = ({ target, onInvite, onInviteFail }: Props) => 
 
 
 	const handleClick = async (difficulty: Difficulty) => {
-		try {
-			await ClientApi.post(API_GAME_INVITE, JSON.stringify({
-				target,
-				difficulty: (difficulty as string)
-			}), 'application/json')
-			if (onInvite)
-				onInvite({difficulty})
-		}
-		catch (err) {
-			console.log("err = ", err)
-		}
+		if (onInvite)
+			onInvite({difficulty})
 	}
 
 
