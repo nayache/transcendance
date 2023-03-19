@@ -121,10 +121,31 @@ export class GameController {
             if (!game)
                 throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.REJECTED, 'cant start game');
             this.appGateway.matchEvent(game);
-        } else
+        } else {
             this.gameService.deleteChallenge(invitation);
+            this.appGateway.declineGame(target.id);
+        }
         return {}
     }
+
+    @Delete('invite')
+    async deleteChallenge(@User() userId: string, @Body() payload: inviteGameDto) {
+        const difficulty: Difficulty = matchDifficulty(payload.difficulty);
+        if (!difficulty)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.INVALID, 'invalid difficulty argument');
+        const target: UserEntity = await this.userService.findByPseudo(payload.target);
+        if (!target)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
+        if (target.id === userId)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID);
+        const invitation: Challenge = this.gameService.findChallenge(userId, target.id);
+        if (!invitation)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.REJECTED, 'invitation does not exist or is expired');
+        this.gameService.deleteChallenge(invitation);
+        return {}
+    }
+
+
 
     @Post('view/:pseudo')
     async viewGame(@User() userId: string, @Param('pseudo') pseudo: string) {

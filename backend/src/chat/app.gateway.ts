@@ -241,6 +241,14 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     });
   }
 
+  async declineGame(userId: string) {
+    if (!this.users.get(userId))
+      return
+    this.users.get(userId).forEach((socket) => {
+      this.server.to(socket.id).emit('declineGame');
+    });
+  }
+
   async matchEvent(payload: GameEntity) {
       console.log(payload.created_at.toLocaleString('fr-FR'))
     if (!this.users.get(payload.player1Id) || !this.users.get(payload.player2Id)) {
