@@ -4,7 +4,7 @@ import Navbar from "./Navbar";
 import styled from "styled-components";
 import ChannelPart from "./ChannelPart";
 import ClientApi from "./ClientApi.class";
-import { API_CHAT_USER_CHANNELS_ROUTE, MESSAGES_ROUTE, MYFRIENDS_EP } from "../constants/RoutesApi";
+import { API_CHAT_USER_CHANNELS_ROUTE, GAMEPAGE_ROUTE, MESSAGES_ROUTE, MYFRIENDS_EP } from "../constants/RoutesApi";
 import { useSocket } from "../hooks/useSocket";
 import ChannelPlayers from "./ChannelPlayers";
 import { IChannel, IChannelUser } from "../interface/IChannel";
@@ -21,6 +21,9 @@ import { useDMListener } from "../hooks/useDMListener";
 import { useNewFriendReqListener } from "../hooks/useNewFriendReqListener";
 import { useNewFriendAccListener } from "../hooks/useFriendAccUpdater";
 import { useAvatar } from "../hooks/useAvatar";
+import { useInviteGame } from "../hooks/useInviteGame";
+import { IGameInviteEv } from "../interface/IGame";
+import ModalGameMenu, { ModalGameType } from "./ModalGameMenu";
 
 
 const ChatContainer = styled.div`
@@ -50,6 +53,8 @@ const ChatPage = () => {
 	const socket = useSocket()
 	const infos = useRef<IMessageEvRecv | IFriendEv | undefined>(undefined);
 	const [notificationType, setNotificationType] = useState<NotificationType | null>(null)
+	const [modalGameType, setModalGameType] = useState<ModalGameType | null>(null)
+	const inviteInfos = useRef<IGameInviteEv | null>(null)
 	useDMListener(socket, {pseudo, avatar}, undefined, undefined, undefined, (payload) => {
 		infos.current = payload
 		console.log("infos.current = ", infos.current)
@@ -65,7 +70,17 @@ const ChatPage = () => {
 		console.log("infos.current = ", infos.current)
 		setNotificationType(NotificationType.ACCEPTEDFRIEND)
 	})
-	
+	useInviteGame(socket, (data: IGameInviteEv) => {
+		inviteInfos.current = {
+			author: data.author,
+			invited: data.invited,
+			difficulty: data.difficulty
+		}
+		console.log("inviteInfos.current = ", inviteInfos.current)
+		console.log("data = ", data)
+		setModalGameType(ModalGameType.INVITED)
+	})
+
 
 
 
@@ -307,6 +322,25 @@ const ChatPage = () => {
 						infos.current = undefined
 						setNotificationType(null)
 					}} />
+				}
+				{ modalGameType !== null && inviteInfos.current &&
+					<ModalGameMenu active={modalGameType !== null} type={modalGameType}
+					pseudo={pseudo} author={inviteInfos.current.author} difficulty={inviteInfos.current.difficulty}
+					callback={async () => {
+						try {
+							if (inviteInfos.current) {
+								ClientApi.redirect = new URL(GAMEPAGE_ROUTE + '/' + inviteInfos.current.difficulty + '/fromAccept/' + inviteInfos.current.author)
+							}
+						}
+						catch (err) {
+							console.log("err = ", err)
+						}
+						setModalGameType(null)
+					}}
+					callbackFail={() => {
+						setModalGameType(null)
+					}}
+					/>
 				}
 				<ChatContainer>
 					<ChannelPart socket={socket}

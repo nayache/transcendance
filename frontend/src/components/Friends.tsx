@@ -6,7 +6,7 @@ import DefaultImg from "../img/avatar2.jpeg"
 import { Relation } from "../interface/IUser"
 import { Status } from "../constants/EMessage"
 import ClientApi from "./ClientApi.class"
-import { API_USER_ADD_FRIEND, API_USER_BLOCK, API_USER_DEL_FRIEND, API_USER_FRIENDS_LIST, MESSAGES_ROUTE, PROFILE_EP, PROFILE_ROUTE } from "../constants/RoutesApi"
+import { API_USER_ADD_FRIEND, API_USER_BLOCK, API_USER_DEL_FRIEND, API_USER_FRIENDS_LIST, GAMEPAGE_ROUTE, MESSAGES_ROUTE, PROFILE_EP, PROFILE_ROUTE } from "../constants/RoutesApi"
 import { BsCheck2 } from "react-icons/bs"
 import { RxCross1 } from "react-icons/rx"
 import { ImCross } from "react-icons/im"
@@ -19,6 +19,9 @@ import { IMessageEvRecv } from "../interface/IMessage"
 import { IFriendEv } from "../interface/IFriend"
 import Notification, { NotificationType } from "./Notification"
 import { useAvatar } from "../hooks/useAvatar"
+import { useInviteGame } from "../hooks/useInviteGame"
+import { IGameInviteEv } from "../interface/IGame"
+import ModalGameMenu, { ModalGameType } from "./ModalGameMenu"
 
 export interface Friend {
     pseudo: string,
@@ -42,6 +45,8 @@ const Friends = () => {
 	const[isOpen, setIsOpen] = useState(true);
 	const infos = useRef<IMessageEvRecv | IFriendEv | undefined>(undefined);
 	const [notificationType, setNotificationType] = useState<NotificationType | null>(null)
+	const [modalGameType, setModalGameType] = useState<ModalGameType | null>(null)
+	const inviteInfos = useRef<IGameInviteEv | null>(null)
 	useDMListener(socket, {pseudo, avatar}, undefined, undefined, undefined, (payload) => {
 		infos.current = payload
 		console.log("infos.current = ", infos.current)
@@ -53,6 +58,17 @@ const Friends = () => {
 		])
 	})
 	useNewFriendAccListener(socket, pseudo, (friends: Friend[]) => setFriends(friends))
+	useInviteGame(socket, (data: IGameInviteEv) => {
+		inviteInfos.current = {
+			author: data.author,
+			invited: data.invited,
+			difficulty: data.difficulty
+		}
+		console.log("inviteInfos.current = ", inviteInfos.current)
+		console.log("data = ", data)
+		setModalGameType(ModalGameType.INVITED)
+	})
+
 
 
 
@@ -177,6 +193,25 @@ const Friends = () => {
 					infos.current = undefined
 					setNotificationType(null)
 				}} />
+			}
+			{ modalGameType !== null && inviteInfos.current &&
+				<ModalGameMenu active={modalGameType !== null} type={modalGameType}
+				pseudo={pseudo} author={inviteInfos.current.author} difficulty={inviteInfos.current.difficulty}
+				callback={async () => {
+					try {
+						if (inviteInfos.current) {
+							ClientApi.redirect = new URL(GAMEPAGE_ROUTE + '/' + inviteInfos.current.difficulty + '/fromAccept/' + inviteInfos.current.author)
+						}
+					}
+					catch (err) {
+						console.log("err = ", err)
+					}
+					setModalGameType(null)
+				}}
+				callbackFail={() => {
+					setModalGameType(null)
+				}}
+				/>
 			}
 			<div className="friends">
 				<h1>Friends</h1>

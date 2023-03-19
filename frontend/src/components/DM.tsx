@@ -10,11 +10,14 @@ import DMContent from "./DMContent";
 import DMList from "./DMList";
 import UserProfileChat from "./DMUserProfile";
 import Navbar from "./Navbar";
-import { API_AVATAR_ROUTE, API_CHAT_DISCUSSIONS_RELATION, API_CHAT_DM, API_CHAT_MARK_READ, API_USER_BLOCK, MESSAGES_ROUTE } from "../constants/RoutesApi";
+import { API_AVATAR_ROUTE, API_CHAT_DISCUSSIONS_RELATION, API_CHAT_DM, API_CHAT_MARK_READ, API_USER_BLOCK, GAMEPAGE_ROUTE, MESSAGES_ROUTE } from "../constants/RoutesApi";
 import { useSocket } from "../hooks/useSocket";
 import { useDMListener } from "../hooks/useDMListener";
 import { useParams } from "react-router-dom";
 import { AboutErr, IError } from "../constants/EError";
+import { IGameInviteEv } from "../interface/IGame";
+import { useInviteGame } from "../hooks/useInviteGame";
+import ModalGameMenu, { ModalGameType } from "./ModalGameMenu";
 
 
 
@@ -46,7 +49,8 @@ const DM = () => {
 	const oldReceiver = useRef<IUser>()
 	const [discussions, setDiscussions] = useState<Discussion[]>([])
 	const [avatar, setAvatar] = useState<string | undefined>(undefined)
-
+	const [modalGameType, setModalGameType] = useState<ModalGameType | null>(null)
+	const inviteInfos = useRef<IGameInviteEv | null>(null)
 	
 
 
@@ -278,6 +282,17 @@ const DM = () => {
 
 	useDMListener(socket, user, receiver, updateDiscussions, addChatItem)
 
+	useInviteGame(socket, (data: IGameInviteEv) => {
+		inviteInfos.current = {
+			author: data.author,
+			invited: data.invited,
+			difficulty: data.difficulty
+		}
+		console.log("inviteInfos.current = ", inviteInfos.current)
+		console.log("data = ", data)
+		setModalGameType(ModalGameType.INVITED)
+	})
+
 
 
 
@@ -285,6 +300,25 @@ const DM = () => {
 	return (
 		<React.Fragment>
 			<Navbar />
+			{ modalGameType !== null && inviteInfos.current &&
+				<ModalGameMenu active={modalGameType !== null} type={modalGameType}
+				pseudo={pseudo} author={inviteInfos.current.author} difficulty={inviteInfos.current.difficulty}
+				callback={async () => {
+					try {
+						if (inviteInfos.current) {
+							ClientApi.redirect = new URL(GAMEPAGE_ROUTE + '/' + inviteInfos.current.difficulty + '/fromAccept/' + inviteInfos.current.author)
+						}
+					}
+					catch (err) {
+						console.log("err = ", err)
+					}
+					setModalGameType(null)
+				}}
+				callbackFail={() => {
+					setModalGameType(null)
+				}}
+				/>
+			}
 			<div className="DM-container">
 				<div className="DM-container-bg" />
 				<DMList user={user} updateReceiver={updateReceiver} updateDiscussions={updateDiscussions}
