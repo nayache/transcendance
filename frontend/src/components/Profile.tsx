@@ -16,6 +16,9 @@ import { AboutErr, IError, TypeErr } from "../constants/EError"
 import { API_BASE_USER } from "../constants/RoutesApi"
 import { useParams, useSearchParams } from "react-router-dom"
 import { useProfile } from "../hooks/useProfile"
+import { Status } from "../constants/EMessage"
+import { GameDto } from "../interface/IGame"
+import ServerDownPage from "./ServerDownPage"
 
 enum Stat {
 	WINS,
@@ -43,117 +46,40 @@ interface Match {
 
 
 const Profile = () => {
-	const [isOkay, setIsOkay] = useState<boolean | undefined>()
-	const [user, setUser] = useState<IUser>()
-	const [pseudo, setPseudo] = useState(useParams().pseudo)
+
+	const pseudoParam = useParams().pseudo
 	const [nbFriends, setNbFriends] = useState<number>(3);
 	const [nbWins, setNbWins] = useState<number>(3);
 	const [nbLoses, setLoses] = useState<number>(2);
 	const [rank, setRank] = useState<number>(12);
 	const [level, setLevel] = useState<number>(6);
 	const [status, setStatus] = useState<string>("En ligne");
-	const matches: Match[] = [ // certains trucs comme match history doivent etre visible seulement si on est log
-		{
-			userStat: {
-				user: { pseudo },
-				win: true,
-				score: 20,
-			},
-			opponentStat: {
-				user: { pseudo: "Guillaumedu77" },
-				win: false,
-				score: 0,
-			},
-			gameMode: GameMode.MEDIUM,
-		},
-		{
-			userStat: {
-				user: { pseudo },
-				win: true,
-				score: 2,
-			},
-			opponentStat: {
-				user: { pseudo: "Leodu69" },
-				win: false, // il a deco
-				score: 7,
-			},
-			gameMode: GameMode.HARD,
-		},
-		{
-			userStat: {
-				user: { pseudo },
-				win: false,
-				score: 10,
-			},
-			opponentStat: {
-				user: { pseudo: "Manondu62" },
-				win: true,
-				score: 20,
-			},
-			gameMode: GameMode.CLASSIC,
-		},
-		{
-			userStat: {
-				user: { pseudo },
-				win: false,
-				score: 15,
-			},
-			opponentStat: {
-				user: { pseudo: "AlanTiaCaptéesrgvsregvvbdfvbdfgbsretgrsgbsrgbsfgbfgsbsfbgb" },
-				win: true,
-				score: 0,
-			},
-			gameMode: GameMode.MEDIUM,
-		},
-	]
-	const profile = useProfile()
+	const profile = useProfile(pseudoParam)
 
 
-
-	useEffect(() => {
-		(async () => {
-			try {
-				console.log("ytrfygjvhbk")
-				console.log("pseudo = ", pseudo);
-				const url: string = API_BASE_USER + '/' + pseudo
-				const data = await ClientApi.get(url)
-				
-				setUser(data.user)
-				// if (!user)
-				// 	throw {
-				// 		about: AboutErr.USER,
-				// 		type: TypeErr.EMPTY,
-				// 	} as IError
-				setIsOkay(true)
-			} catch (err) {
-				setIsOkay(false)
-				console.log("err = ", err)
-			}
-		})()
-	}, [])
 
 
 	const getProfilImagesAndPseudo = () => (
 		<div className="avatar-back-container">
 			<img className="backprofil" src={Paysage}/>
 			<div className="pseudo-avatar-container">
-				<img className="avatarprofil" src={Avatar} alt="avatar"/>
+				<img className="avatarprofil" src={profile?.avatar} alt="avatar"/>
 				{ getPseudoAndCo() }
 			</div>
 		</div>
 	)
 
 	const getPseudoAndCo = () => {
-		const mapStatus = new Map<string, string>()
+		const mapStatus = new Map<Status, string>()
 
-		mapStatus.set("En ligne", "online");
-		mapStatus.set("Hors ligne", "offline");
-		mapStatus.set("En pleine partie", "ingame");
+		mapStatus.set(Status.ONLINE, "online");
+		mapStatus.set(Status.OFFLINE, "offline");
+		mapStatus.set(Status.INGAME, "ingame");
 
 		return (
 			<div className="pseudo-container">
-				<div className={"circle " + mapStatus.get(status) } />
-				<p className="pseudo">{pseudo}</p>
+				<div className={"circle " + mapStatus.get(Status.ONLINE) } />
+				<p className="pseudo">{profile?.pseudo}</p>
 			</div>
 		)
 	}
@@ -162,8 +88,8 @@ const Profile = () => {
 
 		return (
 			<div className="level-container">
-				<p className="level">Level {level}</p>
-				<ProgressBar bgcolor="blue" completed={40} />
+				<p className="level">Level {profile?.level}</p>
+				<ProgressBar bgcolor="blue" completed={profile?.percentageXp} />
 			</div>
 		)
 	}
@@ -171,7 +97,7 @@ const Profile = () => {
 	const getFriends = () => (
 		<div className="friends-container">
 			<p className="friends-title">Friends</p>
-			<p className="friends-number">{nbFriends}</p>
+			<p className="friends-number">{profile?.friends}</p>
 		</div>
 	)
 
@@ -189,8 +115,8 @@ const Profile = () => {
 		mapStatTitle.set(Stat.WINS, "Wins")
 		mapStatTitle.set(Stat.LOSES, "Loses")
 		mapStatTitle.set(Stat.RANK, "Rank")
-		mapStatNb.set(Stat.WINS, nbWins)
-		mapStatNb.set(Stat.LOSES, nbLoses)
+		mapStatNb.set(Stat.WINS, 2)
+		mapStatNb.set(Stat.LOSES, 3)
 		mapStatNb.set(Stat.RANK, rank)
 		const baseClassName = "stat-item"
 		return (
@@ -221,24 +147,24 @@ const Profile = () => {
 		mode.set(GameMode.CLASSIC, "Classic");
 		mode.set(GameMode.MEDIUM, "Medium");
 		mode.set(GameMode.HARD, "Hard");
-		const matchesJSX =  matches.map((match: Match, index: number) => {
+		const matchesJSX =  profile?.history.map((match: GameDto, index: number) => {
 			return (
 				<div key={index} className="match-mode-container">
 					<div className="match-container">
 						<div className="match-item match-user">
-							{match.userStat.win && <img className="crown" src={Crown} />}
-							<p className="match-username match-username1">{match.userStat.user.pseudo}</p>
+							{/* {match.userStat.win && <img className="crown" src={Crown} />}
+							<p className="match-username match-username1">{match.userStat.user.pseudo}</p> */}
 						</div>
-						<p className="match-item match-score match-score1">{match.userStat.score}</p>
+						{/* <p className="match-item match-score match-score1">{match.userStat.score}</p> */}
 						<p className="match-item hyphen">-</p>
-						<p className="match-item match-score match-score1">{match.opponentStat.score}</p>				
+						{/* <p className="match-item match-score match-score1">{match.opponentStat.score}</p>				 */}
 						<div className="match-item match-user">
-							<p className="match-username match-username2">{match.opponentStat.user.pseudo}</p>
-							{match.opponentStat.win && <img className="crown" src={Crown} />}
+							{/* <p className="match-username match-username2">{match.opponentStat.user.pseudo}</p> */}
+							{/* {match.opponentStat.win && <img className="crown" src={Crown} />} */}
 						</div>
 					</div>
 					<div className="match-mode">
-						<p className="mode">{mode.get(match.gameMode)}</p>
+						{/* <p className="mode">{mode.get(match.gameMode)}</p> */}
 					</div>
 				</div>
 			)
@@ -246,8 +172,8 @@ const Profile = () => {
 
 		return (
 			<React.Fragment>
-				{matchesJSX.length == 0 && <p>You haven't faced anyone yet...</p>}
-				{matchesJSX.length > 0 && matchesJSX}
+				{/* {matchesJSX.length == 0 && <p>You haven't faced anyone yet...</p>}
+				{matchesJSX.length > 0 && matchesJSX} */}
 			</React.Fragment>
 		)
 	}
@@ -278,7 +204,8 @@ const Profile = () => {
 
 	return (
 		<React.Fragment>
-			{isOkay && getPage()}
+			{profile !== undefined && getPage()}
+			{profile === undefined && <ServerDownPage />}
 		</React.Fragment>
 	);
 }

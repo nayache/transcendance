@@ -64,8 +64,11 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 		ball.display(_ball)
 		setStartBtn("good")
 	}, () => {
+		console.log("salut alors la c le start game qui est appelé")
 		leftPlayer.paddle.plugMove = true;
 		rightPlayer.paddle.plugMove = true;
+		leftPlayer.paddle.setUp(drawer.canvas, drawer.context, drawer.canvasWidth, drawer.canvasHeight)
+		rightPlayer.paddle.setUp(drawer.canvas, drawer.context, drawer.canvasWidth, drawer.canvasHeight)
 	})
 	
 	useUpdateGameListener(socket, (moveObjects: MoveObjects) => {

@@ -31,13 +31,9 @@ export const useStartGameListener = (
 
 	useEffect(() => {
 		socket?.on('startGame', () => {
-			try {
-				if (onStartGame)
-					onStartGame()
-			}
-			catch (err) {				
-				console.log("err = ", err)
-			}
+			console.log("(startGame)")
+			if (onStartGame)
+				onStartGame()
 		})
 		return () => {
 			socket?.removeAllListeners('startGame')

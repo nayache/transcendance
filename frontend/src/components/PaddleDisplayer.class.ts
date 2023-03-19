@@ -35,7 +35,7 @@ class PaddleDisplayer extends CanvasObjectDisplayer {
 			canvasHeight,
 			canvasPosY,
 		);
-		if (canvas && this.gameInfos)
+		if (canvas && gameInfos && this._plugMove)
 			canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
 	}
 
@@ -74,6 +74,7 @@ class PaddleDisplayer extends CanvasObjectDisplayer {
 		let y: number;
 
 		super.setUp(canvas, ctx, canvasWidth, canvasHeight, canvasPosY, moveObject);
+		console.log("this.plugMove = ", this.plugMove)
 		if (canvas && this.gameInfos)
 			canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
 		try {
