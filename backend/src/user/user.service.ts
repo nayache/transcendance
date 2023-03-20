@@ -338,7 +338,7 @@ export class UserService {
         const target: UserEntity = await this.findById(targetId);
         if (!target)
             throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND);
-        const avatarObject: Avatar = await this.getAvatar(userId);
+        const avatarObject: Avatar = await this.getAvatar(targetId);
         const avatar: string = (avatarObject) ? this.avatarService.toStreamableFile(avatarObject) : null// Sami rectifie ca stp
         const pseudo: string = target.pseudo;
         const level: number = target.data.level;
@@ -511,6 +511,7 @@ export class UserService {
         try {
             const unlockedAchievement: string = this.deserveOneAchievement(dataUser.achievements, dataUser.level, winning, cleansheet);
             if (unlockedAchievement) {
+                console.log('==================> ACHIEVEMENT UNLOCKED <==========================')
                 await this.dataUserRepository.update(dataUser.id, {achievements: [...dataUser.achievements, ...[unlockedAchievement]]});
             }
         } catch(e) {

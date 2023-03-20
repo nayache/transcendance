@@ -1,6 +1,6 @@
 import { forwardRef, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { GameDto } from 'src/chat/app.gateway';
+import { AppGateway, GameDto, PlayerDto } from 'src/chat/app.gateway';
 import { UserEntity } from 'src/entity/user.entity';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { ErrorException } from 'src/exceptions/error.exception';
@@ -35,20 +35,22 @@ export enum Side {
 abstract class CanvasObject {
     
     private _startingSpeed?: Vector2D;
+    private _canvasWidth: number = 1920;
+    private _canvasHeight: number = 1700.6;
+    private _canvasPosY: number = 0;
     
     constructor(
         private _dimensions?: Dimensions,
         private _pos?: Point,
-        private _color?: string,
-        private _canvasWidth?: number,
-        private _canvasHeight?: number,
-        private _canvasPosY?: number) {
-            console.log("CanvasObject creation")
-        }
+        private _color?: string
+    ) {
+        this._canvasWidth = 1920;
+        this._canvasHeight = 1700.6;
+        this._canvasPosY = 0;
+        console.log("CanvasObject creation")
+    }
 
-    protected get canvasWidth() {
-        if (!this._canvasWidth)
-            throw new Error('The canvasWidth have not been set up')
+    public get canvasWidth() {
         return this._canvasWidth;
     }
 
@@ -57,9 +59,7 @@ abstract class CanvasObject {
         this._canvasWidth = canvasWidth;
     }
     
-    protected get canvasHeight() {
-        if (!this._canvasHeight)
-            throw new Error('The canvasHeight have not been set up')
+    public get canvasHeight() {
         return this._canvasHeight
     }
     
@@ -67,9 +67,7 @@ abstract class CanvasObject {
         this._canvasHeight = canvasHeight;
     }
     
-    protected get canvasPosY() {
-        if (!this._canvasPosY)
-            throw new Error('The canvasPosY have not been set up')
+    public get canvasPosY() {
         return this._canvasPosY;
     }
     
@@ -97,7 +95,7 @@ abstract class CanvasObject {
         this._dimensions = dimensions;
     }
         
-    protected get color() {
+    public get color() {
         if (!this._color)
             throw new Error('The dimen_color have not been set up')
         return this._color;
@@ -117,11 +115,7 @@ abstract class CanvasObject {
         this._startingSpeed = startingSpeed;
     }
     
-    protected setUp(canvasWidth: number, canvasHeight: number, canvasPosY?: number): void {
-        this.canvasWidth = canvasWidth;
-        this.canvasHeight = canvasHeight;
-        if (canvasPosY)
-            this.canvasPosY = canvasPosY;
+    protected setUp(): void {
     }
     
     protected static isBetween<T>(myItem: T, limitInf: T, limitSup: T, inclusive: boolean = true): boolean {
@@ -130,11 +124,11 @@ abstract class CanvasObject {
         return (myItem >= limitInf && myItem <= limitSup)
     }
     
-    protected static randomIntFromInterval(min: number, max: number): number {
+    public static randomIntFromInterval(min: number, max: number): number {
         return Math.floor(Math.random() * (max - min + 1) + min)
     }
     
-    protected static randomIntFrom2Intervals(interval1: [number, number], interval2: [number, number]): number {
+    public static randomIntFrom2Intervals(interval1: [number, number], interval2: [number, number]): number {
         if (Math.random() > 0.5)
             return CanvasObject.randomIntFromInterval(interval1[0], interval1[1])
         else
@@ -145,8 +139,8 @@ abstract class CanvasObject {
         if (
             (this.pos.x - this.dimensions.width <= solidObject.pos.x + solidObject.dimensions.width &&
             this.pos.x + this.dimensions.width >= solidObject.pos.x) &&
-            (this.pos.y - this.dimensions.height <= solidObject.pos.y + solidObject.dimensions.height &&
-            this.pos.y + this.dimensions.height >= solidObject.pos.y)// &&
+            (this.pos.y + this.dimensions.height <= solidObject.pos.y + solidObject.dimensions.height &&
+            this.pos.y - this.dimensions.height >= solidObject.pos.y)// &&
             // (this.oldPos.y - this.dimensions.height <= solidObject.pos.y + solidObject.dimensions.height &&
             // this.oldPos.y + this.dimensions.height >= solidObject.pos.y)
         )
@@ -186,17 +180,11 @@ export class Ball extends CanvasObject {
 	constructor(
 		radius: number = 10,
 		color: string = 'grey',
-		canvasWidth?: number,
-		canvasHeight?: number,
-		canvasPosY?: number,
 	) {
 		super(
 			{ width: radius, height: radius },
 			undefined,
 			color,
-			canvasWidth,
-			canvasHeight,
-			canvasPosY,
 		);
 
 	}
@@ -225,13 +213,8 @@ export class Ball extends CanvasObject {
 		return (false);
 	}
 
-	public setUp(
-		canvasWidth: number,
-		canvasHeight: number,
-		canvasPosY?: number,
-		startingSpeed?: Vector2D
-	): void {
-		super.setUp(canvasWidth, canvasHeight, canvasPosY);
+	public setUp(startingSpeed?: Vector2D): void {
+		super.setUp();
 		if (startingSpeed)
 			this.startingSpeed = startingSpeed;
 		else
@@ -239,7 +222,7 @@ export class Ball extends CanvasObject {
 				x: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5]),
 				y: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5])
 			}
-		this.pos = { x: canvasWidth / 2, y: canvasHeight / 2 }
+		this.pos = { x: this.canvasWidth / 2, y: this.canvasHeight / 2 }
 		//set une vitesse ou un bail comme ca
 	}
 
@@ -252,19 +235,19 @@ export class Ball extends CanvasObject {
 		{
 			for (let i = 0; i < solidObjects.length; i++) {
 				const solidObject = solidObjects[i];
-				console.log("this.startingSpeed.x dans if = ", this.startingSpeed.x);
+//				console.log("this.startingSpeed.x dans if = ", this.startingSpeed.x);
 				// console.log("this.pos.x - this.radius = ", this.pos.x - this.radius)
-				console.log("solidObject.pos.x = ", solidObject.pos.x);
+//				console.log("solidObject.pos.x = ", solidObject.pos.x);
 				if (this.isInsideX(solidObject))
 				{
 					startingSpeed = { ...this.startingSpeed, x: -this.startingSpeed.x }
 					if (this.startingSpeed.x < 0)
-						this.pos.x = solidObject.pos.x + solidObject.dimensions.width + this.radius;
+						this.pos.x = solidObject.pos.x + solidObject.dimensions.width + this.radius * 2;
 					else if (this.startingSpeed.x > 0)
 					{
-						console.log("this.pos.x dans le iffffffffffffffffffffffff tu connais = ", this.pos.x)
+//						console.log("this.pos.x dans le iffffffffffffffffffffffff tu connais = ", this.pos.x)
 						this.pos.x = solidObject.pos.x - this.radius;
-						console.log("this.pos.x dans le iffffffffffffffffffffffff tu connais apres = ", this.pos.x)
+//						console.log("this.pos.x dans le iffffffffffffffffffffffff tu connais apres = ", this.pos.x)
 					}
 				}
 				/*
@@ -299,11 +282,12 @@ export class Ball extends CanvasObject {
 			}
 			this.startingSpeed = startingSpeed;
 		}
-		console.log("this.startingSpeed.x a l'exterieur du if = ", this.startingSpeed.x, " et this.pos = ", this.pos);
+//      console.log("this.startingSpeed.x a l'exterieur du if = ", this.startingSpeed.x, " et this.pos = ", this.pos);
 		if (this.pos.y - this.radius < 0 || this.pos.y + this.radius > this.canvasHeight)
 			this.startingSpeed.y = -this.startingSpeed.y;
-		else
-			console.log("nope y, this.pos = ", this.pos, " et this.canvasHeight = ", this.canvasHeight);
+		else {
+			//console.log("nope y, this.pos = ", this.pos, " et this.canvasHeight = ", this.canvasHeight);
+        }
 		this.pos = {
 			x: this.pos.x + this.startingSpeed.x,
 			y: this.pos.y + this.startingSpeed.y,
@@ -324,12 +308,12 @@ export class Player {
     constructor(
         private _playerSide: PlayerSide,
         private _paddle: Paddle,
+        private _userId: string
     ) {
         this._paddle.bindToplayer(this)
         this._nbGoals = 0;
         this._ready = false;
     }
-
 
     public get paddle(): Paddle {
         return this._paddle;
@@ -355,7 +339,16 @@ export class Player {
         this._ready = ready;
     }
 
-
+    private set userId(userId: string) {
+        this._userId = userId
+    }
+    
+    public get userId(): string {
+        if (!this._userId)
+            throw new Error('The userId have not been set up')
+        return this._userId
+    }
+    
     public addOneGoal() {
         this.nbGoals++;
     }
@@ -368,53 +361,45 @@ const PADDLE_XSPACE: number = 10;
 export class Paddle extends CanvasObject {
 
     constructor(    
-     //   private _player?: Player,
+        private _player?: Player,
         height: number = 100,
         color: string = 'black',
-        canvasWidth?: number,
-        canvasHeight?: number,
-        canvasPosY?: number,
     ) {
         super(
             { width: PADDLE_WIDTH, height },
             undefined,
             color,
-            canvasWidth,
-            canvasHeight,
-            canvasPosY,
         );
     }
 
     public bindToplayer(player: Player) {
-//        this._player = player;
+        this._player = player;
     }
     
     public get player(): Player {
-  //      if (!this._player)
+        if (!this._player)
             throw new Error('The player have not been set up');
-    //    return this._player;
+        return this._player;
     }
 
 
-    onMouseMove(e: MouseEvent): void {
+    onMouseMove(clientY: number, canvasPosY: number, canvasHeight: number): void {
         try {
-            this.pos.y = e.clientY - this.canvasPosY - this.dimensions.height / 2;
+            const littleDimensionsY = this.dimensions.height * canvasHeight / this.canvasHeight
+            const littlePosY = clientY - canvasPosY - littleDimensionsY / 2;
+            this.pos.y = littlePosY * this.canvasHeight / canvasHeight
         } catch (err) {
         }
     }
 
-    setUp(
-        canvasWidth: number,
-        canvasHeight: number,
-        canvasPosY?: number
-    ): void {
+    setUp(): void {
         let y: number;
 
-        super.setUp(canvasWidth, canvasHeight, canvasPosY);
+        super.setUp();
         try {
             y = this.pos.y;
         } catch (err) {
-            y = canvasHeight / 2 - this.dimensions.height / 2
+            y = this.canvasHeight / 2 - this.dimensions.height / 2
         }
         if (this.player.playerSide == PlayerSide.Right && this.canvasWidth)
             this.pos = { x: this.canvasWidth - this.dimensions.width - PADDLE_XSPACE, y }
@@ -515,7 +500,7 @@ export class Referee {
 		return this._ball
 	}
 
-	private set gamestate(gamestate: GameState) {
+	public set gamestate(gamestate: GameState) {
 		this._gamestate = gamestate
 	}
 	
@@ -570,41 +555,68 @@ export class Referee {
 	private stopActivator() {
 		if (this.isBallOutsideOfField() && !this.isGameFinished())
 			this.gamestate = GameState.WaitingForStart;
-		else if (this.isBallOutsideOfField() && this.isGameFinished())
+		else if (this.isGameFinished())
 			this.gamestate = GameState.PermanentStop;
 	}
 
 	public referee() {
-		if (this.gamestate == GameState.Running)
-			this.stopActivator()
-		else if (
-			this.gamestate == GameState.WaitingForStart ||
-			this.gamestate == GameState.WaitingForResume
-		)
+        if (this.gamestate !== GameState.PermanentStop) {
+		    if (this.gamestate == GameState.Running)
+			    this.stopActivator()
+		    else if (
+			    this.gamestate == GameState.WaitingForStart ||
+			    this.gamestate == GameState.WaitingForResume
+		    )
 			this.startActivator()
+        }
 	}
 
 	//dans cette classe qu'on va gerer les scores des players
 }
 
 export class Game {
-    player1ID: string;
-    player2ID: string;
+    id: string;
+    finished: boolean = false;
+    w: number;
+    h: number;
+    y: number;
+    user1: PlayerDto;
+    user2: PlayerDto;
     player1: Player
     player2: Player;
     ball: Ball
     referee: Referee;
     score: [number, number];
+    reqAnim: number;
 
-    constructor(userId1: string, userId2: string, width: number, height: number, y: number) {
-        this.player1ID = userId1;
-        this.player2ID = userId2;
-        this.player1 = new Player(PlayerSide.Left, new Paddle(110, 'blue', width, height, y));
-        this.player2 = new Player(PlayerSide.Right, new Paddle(110, 'red', width, height, y));
-        this.ball = new Ball(10, 'grey', width, height, y);
-        this.referee = new Referee([this.player1, this.player2], this.ball, 3);
+    constructor(id: string, user1: PlayerDto, user2: PlayerDto, ss: Vector2D, width: number, height: number, y: number) {
+        this.id = id
+        this.user1 = user1;
+        this.user2 = user2;
+        this.player1 = new Player(PlayerSide.Left, new Paddle(undefined, 280, 'DarkTurquoise'), user1.id);
+        this.player2 = new Player(PlayerSide.Right, new Paddle(undefined, 280, 'OrangeRed'), user2.id);
+        this.ball = new Ball(15, 'MidnightBlue');
+        this.referee = new Referee([this.player1, this.player2], this.ball, 7);
         this.score = [0, 0];
+        this.w = width;
+        this.h = height;
+        this.y = y;
+        this.setUpGame(ss);
     }
+
+    setUpGame(startingSpeed: Vector2D) {
+		this.player1.paddle.setUp();
+		this.player2.paddle.setUp();
+		this.ball.setUp(startingSpeed);
+		//on va set 2 boutons qui vont permettre de mettre respectivement les 2 joueurs prets a jouer,
+		// quand les 2 joueurs sont prets, ca demarre
+		// if (player1.isReadyToPlay && player2.isReadyToPlay || true)
+	}
+    
+    updateGame() {
+        this.ball.updatePos([this.player1.paddle, this.player2.paddle]);
+    }
+
 }
 
 export class Challenge {
@@ -619,33 +631,143 @@ export class Challenge {
     }
 }
 
+export class MoveObject {
+    userId: string = null;
+    pos: Point;
+    dimensions: Dimensions;
+    color: string;
+    canvasWidth: number;
+    canvasHeight: number;
+    canvasPosY: number;
+    constructor(paddle: Paddle = null, ball: Ball = null, id: string = null) {
+        if (id)
+            this.userId = id;
+        this.pos = (paddle) ? paddle.pos : ball.pos;
+        this.dimensions = (paddle) ? paddle.dimensions : ball.dimensions;
+        this.color = (paddle) ? paddle.color : ball.color;
+        this.canvasWidth = (paddle) ? paddle.canvasWidth : ball.canvasWidth;
+        this.canvasHeight = (paddle) ? paddle.canvasHeight : ball.canvasHeight;
+        this.canvasPosY = (paddle) ? paddle.canvasPosY : ball.canvasPosY;
+    }
+}
+
 @Injectable()
 export class GameService {
     constructor(@InjectRepository(GameEntity) private gameRepository: Repository<GameEntity>,
-        @Inject(forwardRef(() => UserService)) private userService: UserService) {
+        @Inject(forwardRef(() => UserService)) private userService: UserService,
+        @Inject(forwardRef(() => AppGateway)) private readonly appGateway: AppGateway) {
         this.matchmaking = new Map<Difficulty, Set<string>>();
         this.matchmaking.set(Difficulty.EASY, new Set<string>());
         this.matchmaking.set(Difficulty.MEDIUM, new Set<string>());
         this.matchmaking.set(Difficulty.HARD, new Set<string>());
-        this.games = new Map<[string, string], Map<string, Game>>();
+        this.games = new Map<string, Game>();
         this.matchs = new Set<[string, string]>();
         this.challenges = [];
     }
-
-    private games: Map<[string, string], Map<string, Game> >; //concept
+                    // gameID  //   viewer  DESSIN  
+    //private games: Map<string, Map<string, Game> >; //concept
+    private games: Map<string, Game>; //concept
     private matchmaking: Map<Difficulty, Set<string> >;
     private challenges: Challenge[];
     private matchs: Set<[string, string]>;
     private logger: Logger = new Logger("GAME");
 
-    async buildGame(userId1: string, userId2: string, viewer: string, width: number, height: number, y: number) {
-        const game: Game = new Game(userId1, userId2, width, height, y);
-        if (!this.games.has([userId1, userId2]))
-            this.games.set([userId1, userId2], new Map<string, Game>().set(viewer, game));
-        else
-            this.games.get([userId1, userId2]).set(viewer, game);
+    generateStartingSpeed(): Vector2D {
+            const startingSpeed = {
+                x: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5]),
+                y: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5])
+            }
+        return startingSpeed;
     }
 
+    async buildGame(payload: GameDto, width: number, height: number, y: number): Promise<Game> {
+        const game: Game = new Game(payload.id, payload.player1, payload.player2, this.generateStartingSpeed(), width, height, y);
+        if (!this.games.has(payload.id))
+            this.games.set(payload.id, game);
+        return game;
+    }
+
+    async updateGame(game: Game, width: number, height: number, y: number/*, gameInfos: GameDto*/) {
+        if (game && game.referee.gamestate == GameState.WaitingForStart)
+        {
+            this.logger.log(`WAITING FOR START`)
+            try {
+                game.setUpGame(this.generateStartingSpeed())
+            } catch (e) {
+                console.log('ERROR: setupgame :', e);
+            }
+        }
+        if (game && game.referee.gamestate == GameState.Running) {
+            game.updateGame();
+            const ball: MoveObject = new MoveObject(null, game.ball);
+            const left: MoveObject = new MoveObject(game.player1.paddle, null, game.player1.userId);
+            const right: MoveObject = new MoveObject(game.player2.paddle, null, game.player2.userId);
+            this.appGateway.updateGame(game.id, left, right, ball);
+        }
+        try {
+            if (!game)
+                return
+            const oldScore: [number, number] = [game.player1.nbGoals, game.player2.nbGoals];
+            game.referee.referee();
+            const newScore: [number, number] = [game.player1.nbGoals, game.player2.nbGoals];
+            if (oldScore[0] != newScore[0] || oldScore[1] != newScore[1]) {
+                const user: PlayerDto = (oldScore[0] != newScore[0]) ? game.user1 : game.user2;
+                this.logger.log(`SCORE !! by (${user.pseudo})  score now: ${newScore}`)
+                this.appGateway.updateScore(game.id, newScore);
+                await this.scoreGoal(game.id, user.id);
+            }
+        } catch (e) {
+            console.log('ERROR: ', e);
+        }
+        if (game && game.referee.gamestate === GameState.PermanentStop) {
+            this.logger.log(`PERMANENT STOP`)
+            this.endGame(game.id);
+        }
+        return (game) ? game.referee.gamestate : null
+    }
+
+    async run(game: Game) {
+        //-------------------> CONDITION ADRRET
+        this.matchs.add([game.user1.id, game.user2.id]);
+        const intervalId: NodeJS.Timer = setInterval(async () => {
+            const state: GameState = await this.updateGame(game, game.w, game.h, game.y) 
+            if (state === null || state === GameState.PermanentStop) {
+                console.log('clear interv')
+                clearInterval(intervalId);
+            }
+        }, 16);
+    }
+
+    setReady(game: Game, userId: string) {
+        if (userId === game.player1.userId)
+            game.player1.ready = true;
+        else
+           game.player2.ready = true;
+    }
+
+    async setReadyGame(gameInfos: GameDto, viewer: string, width: number, height: number, y: number) {
+        let game: Game = this.games.get(gameInfos.id);
+        if (game) {
+            this.setReady(game, viewer);
+            const ball: MoveObject = new MoveObject(null, game.ball);
+            const left: MoveObject = new MoveObject(game.player1.paddle, null, game.player1.userId);
+            const right: MoveObject = new MoveObject(game.player2.paddle, null, game.player2.userId);
+            this.appGateway.preStartGameEvent(gameInfos.player1.id, gameInfos.player2.id, left, right, ball);
+            this.run(game);
+        } else {
+            game = await this.buildGame(gameInfos, width, height, y);
+            this.setReady(game, viewer);
+        }
+    }
+
+    async paddleMove(author: string, gameId: string, clientY: number, canvasPosY: number, canvasHeight: number) {
+        const game: Game = this.games.get(gameId);
+        if (!game)
+            return this.logger.error('game not found')
+        const emitter: Player = (game.user1.id === author) ? game.player1 : game.player2;
+        emitter.paddle.onMouseMove(clientY, canvasPosY, canvasHeight);
+    }
+    
     async createGame(user1: string, user2: string, difficulty: Difficulty, ranked: boolean = true): Promise<GameEntity> {
         const player1: UserEntity = await this.userService.findById(user1);
         const player2: UserEntity = await this.userService.findById(user2);
@@ -653,11 +775,45 @@ export class GameService {
             throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND);
         try {
             const game: GameEntity = await this.gameRepository.save(new GameEntity(player1, player2, difficulty, ranked));
-            this.matchs.add([user1, user2]);
             return game;
         } catch (e) {
             throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
         }
+    }
+    
+    async updateEndingGame(gameId: string, forfeit: string = null) {
+        if (forfeit) {
+            await this.setForfeit(gameId);
+            await this.updateForfeitScore(gameId, forfeit);
+        }
+        await this.updateResults(gameId, forfeit);
+        return this.findGameById(gameId);
+    }
+
+    async endGame(gameId: string, forfeit: string = null) {
+        console.log('ICIIIIIIIIIIIIIIIIIIIIIIIIIII endgame')
+        const game = this.games.get(gameId);
+      //  if (!game || game.finished)
+        //    return
+        game.finished = true;
+        console.log('endgame WORKED')
+        if (forfeit)
+            game.referee.gamestate = GameState.PermanentStop;
+        const gameData: GameEntity = await this.updateEndingGame(gameId, forfeit);
+        const gameInfo: GameDto = await this.gameToDto(gameData);
+        await this.games.delete(gameId); // DELETE objet game du service
+        await this.removeMatch(gameInfo.player1.id);
+        this.appGateway.endGameEvent(gameInfo); // socket event avertir fin game
+        console.log('endgame EVENT launched')
+    }
+
+    findChallengeByUser(author: string): boolean {
+        for (let challenge of this.challenges.values()) {
+            if (challenge.author === author && challenge.invited === author)
+                return true;
+        }
+        return null;
+
     }
 
     createChallenge(author: string, invited: string, difficulty: Difficulty) {
@@ -714,25 +870,30 @@ export class GameService {
     }
 
     async removeMatch(userId: string) {
-        console.log('matchs:', this.matchs);
+        console.log('remove match => matchs:', this.matchs);
         for (const players of this.matchs.values()) {
             if (players[0] === userId || players[1] === userId) {
                 const p1: string = await this.userService.getPseudoById(players[0])
                 const p2: string = await this.userService.getPseudoById(players[1])
-                this.logger.log(`match has been ending beetwen (${p1} vs ${p2})`);
                 this.matchs.delete(players);
                 console.log('matchs after delete:', this.matchs);
+                this.logger.log(`match has been ending beetwen (${p1} vs ${p2})`);
                 return
             }
         }
     }
 
-    gameToDto(game: GameEntity): GameDto {
+    async getPlayerDto(userId: string): Promise<PlayerDto> {
+        const pseudo: string = await this.userService.getPseudoById(userId);
+        return {id: userId, pseudo};
+    }
+
+    async gameToDto(game: GameEntity): Promise<GameDto> {
         const id: string = game.id;
         const ranked: boolean = game.ranked;
         const difficulty: Difficulty = game.Difficulty;
-        const player1: string = game.player1.pseudo;
-        const player2: string = game.player2.pseudo;
+        const player1: PlayerDto = await this.getPlayerDto(game.player1Id);
+        const player2: PlayerDto = await this.getPlayerDto(game.player2Id);
         const score1: number = game.score1;
         const score2: number = game.score2;
         const forfeit: boolean = game.forfeit;
@@ -784,7 +945,7 @@ export class GameService {
             this.addPlayer(userId, difficulty);
         else {
             const game: GameEntity = await this.createGame(userId, opponentId, difficulty);
-            console.log(this.matchmaking) ////log a SUPP
+            console.log('queues ->', this.matchmaking) ////log a SUPP
             return game;
         }
         return null;
@@ -806,9 +967,7 @@ export class GameService {
         console.log(difficulty, scoredGoal, concededGoal)
         const finishGameXp: number = 50;
         const difficultyBonus: number = (difficulty === Difficulty.HARD) ? 50 : ((difficulty === Difficulty.MEDIUM) ? 30 : 10);
-        console.log('dbonus:', scoredGoal, difficultyBonus);
         const goalAverage: number = (scoredGoal * difficultyBonus) - (concededGoal * 5);
-        console.log('GA:', goalAverage);
         const totalXp: number = (finishGameXp + goalAverage);
         return (winner) ? (totalXp * 2) : totalXp;
     }
@@ -845,6 +1004,21 @@ export class GameService {
         return this.gameRepository.findOneBy({id: id});
     }
 
+    async deleteGame(game: GameEntity) {
+        try {
+            await this.gameRepository.remove(game);
+        } catch (e) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+        }
+    }
+
+    async getGameInfos(id: string): Promise<GameDto> {
+        const game: GameEntity = await this.findGameById(id);
+        if (!game)
+            return null;
+        return this.gameToDto(game);
+    }
+
     async updateGameXp(game: GameEntity, winner: string, winnerXp: number, looserXp: number) {
         try {
             if (game.player1Id === winner) {
@@ -859,8 +1033,9 @@ export class GameService {
         }
     }
 
-    async updateForfeitScore(game: GameEntity, disconnected: string) {
+    async updateForfeitScore(gameId: string, disconnected: string) {
         try {
+            const game: GameEntity = await this.findGameById(gameId);
             if (game.player1Id === disconnected) {
                 await this.gameRepository.update(game.id, { score1: 0 });
                 await this.gameRepository.update(game.id, { score2: 42 });
@@ -888,9 +1063,9 @@ export class GameService {
         }
     }
 
-    async setForfeit(game: GameEntity) {
+    async setForfeit(gameId: string) {
         try {
-            await this.gameRepository.update(game.id, { forfeit: true });
+            await this.gameRepository.update(gameId, { forfeit: true });
         } catch (e) {
             throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
         }
@@ -901,7 +1076,7 @@ export class GameService {
             const games: GameEntity[] = await this.gameRepository.find({where: [
                 {player1Id: userId}, {player2Id: userId}
             ]});
-            return games.map((game) => this.gameToDto(game));
+            return await Promise.all(games.map(async (game) => await this.gameToDto(game)));
         } catch(e) {
             return null;
         }

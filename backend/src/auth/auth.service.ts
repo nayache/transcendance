@@ -99,7 +99,7 @@ export class AuthService {
     }
 
     refreshJwt(payload: JwtDecodedDto, refresh: string) : string {
-        if (!this.decodeJwt(refresh, true))
+        if (!this.decodeJwt(refresh))
             return null;
         else 
             return this.generateJwt(this.decodedToDto(payload));
@@ -129,6 +129,7 @@ export class AuthService {
     }
 
     authorizationHeader(keyword: string, data: string) : boolean {
+        console.log(data, keyword)
         if (data && data.split(' ')[0] === keyword && data.split(' ')[1])
             return true;
         else

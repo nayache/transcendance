@@ -16,6 +16,7 @@ import { isOwner } from './guards/is-owner.guard';
 import { Mute } from './entity/mute.entity';
 import { Error } from 'src/exceptions/error.interface';
 import { PrivateMessageEntity } from './entity/privateMessage.entity';
+import { Member } from './entity/member.entity';
 
 export class ChannelMessageDto {
     author: string;
@@ -133,6 +134,19 @@ export class ChatController {
         return {channel: (await this.chatService.getChannelDto([channel]))[0]};
     }
 
+    @Get('members/:name')
+    async getMembers(@Param('name') channelName: string) {
+       if (!channelName || !await this.chatService.channelExistt(channelName))
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.CHANNEL, TypeErr.NOT_FOUND, 'channel not exist');
+        const channel: ChannelEntity = await this.chatService.getChannelByName(channelName);
+        if (!channel)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.CHANNEL, TypeErr.NOT_FOUND, 'channel not found');
+        const members: Member[] = await this.chatService.getMembersByChannel(channel.id);
+        if (!members)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.CHANNEL, TypeErr.NOT_FOUND, 'members not found');
+        return {members: await this.chatService.membersToDto(members)};
+    }
+
     @Get('channels/all')
     async allChannel() {
         const channels: ChannelEntity[] = await this.chatService.getChannels();
@@ -169,14 +183,14 @@ export class ChatController {
         return {channel: (await this.chatService.getChannelDto([chann]))[0]};
     }
 
-    @UseGuards(isOwner)
+   /* @UseGuards(isOwner)
     @Delete('channel')
     async  deleteChannel(@Body('name') channelName: string) {
         const channel: ChannelEntity = await this.chatService.getChannelByName(channelName);
         await this.chatService.deleteChannel(channel);
         await this.appGateway.deleteRoomEvent(channelName);
         return { deleted: channelName }
-    }
+    }*/
 
     @Patch('channel/join')
     async joinChannel(@User() userId: string, @Body('name') channelName: string, @Body('password') password?: string) {
@@ -377,5 +391,17 @@ export class ChatController {
         const color: string = await this.chatService.messageToChannel(userId, payload.target, payload.msg);
         await this.appGateway.sendMessageToChannel(userId, payload.target, payload.msg, color);
         return {}
+    }
+
+    @Get('status/:pseudo')
+    async getStatus(@User() userId: string, @Param('pseudo') pseudo: string) {
+        if (!pseudo)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'argument empty');
+        const target: UserEntity = await this.userService.findByPseudo(pseudo);
+        if (!target)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
+        if (target.id === userId)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'target must different than user');
+        return {status: this.appGateway.getStatus(target.id)};
     }
 }
