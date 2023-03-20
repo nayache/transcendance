@@ -139,8 +139,8 @@ abstract class CanvasObject {
         if (
             (this.pos.x - this.dimensions.width <= solidObject.pos.x + solidObject.dimensions.width &&
             this.pos.x + this.dimensions.width >= solidObject.pos.x) &&
-            (this.pos.y - this.dimensions.height <= solidObject.pos.y + solidObject.dimensions.height &&
-            this.pos.y + this.dimensions.height >= solidObject.pos.y)// &&
+            (this.pos.y + this.dimensions.height <= solidObject.pos.y + solidObject.dimensions.height &&
+            this.pos.y - this.dimensions.height >= solidObject.pos.y)// &&
             // (this.oldPos.y - this.dimensions.height <= solidObject.pos.y + solidObject.dimensions.height &&
             // this.oldPos.y + this.dimensions.height >= solidObject.pos.y)
         )
