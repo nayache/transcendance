@@ -8,7 +8,7 @@ import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [UserModule, ConfigModule.forRoot(), PassportModule.register({ defaultStrategy: 'jwt'}),
-  JwtModule.register({ secret: process.env.JWT_SECRET, signOptions: { expiresIn: '60000s' } })],
+  JwtModule.register({ secret: process.env.JWT_SECRET, signOptions: { expiresIn: '30s' } })],
   providers: [AuthService],
   controllers: [AuthController],
   exports: [AuthService, JwtModule]

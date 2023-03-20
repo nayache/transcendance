@@ -36,7 +36,7 @@ abstract class CanvasObject {
     
     private _startingSpeed?: Vector2D;
     private _canvasWidth: number = 1920;
-    private _canvasHeight: number = 1700.6;
+    private _canvasHeight: number = 1016;
     private _canvasPosY: number = 0;
     
     constructor(
@@ -45,7 +45,7 @@ abstract class CanvasObject {
         private _color?: string
     ) {
         this._canvasWidth = 1920;
-        this._canvasHeight = 1700.6;
+        this._canvasHeight = 1016;
         this._canvasPosY = 0;
         console.log("CanvasObject creation")
     }
