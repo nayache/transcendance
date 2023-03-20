@@ -309,13 +309,13 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   @SubscribeMessage('paddleMove')  
-  async paddleMoveEvent(@MessageBody() data: {gameId: string, clientY: number, canvasPosY: number}, @ConnectedSocket() socket: Socket) {
+  async paddleMoveEvent(@MessageBody() data: {gameId: string, clientY: number, canvasPosY: number, canvasHeight: number}, @ConnectedSocket() socket: Socket) {
     const author: string = this.getIdBySocket(socket);
     if (!author) {
       this.logger.error('Not recognize socket emitter');
       return;
     }
-    await this.gameService.paddleMove(author, data.gameId, data.clientY, data.canvasPosY);
+    await this.gameService.paddleMove(author, data.gameId, data.clientY, data.canvasPosY, data.canvasHeight);
   }
 
   async handleDisconnect(socket: Socket) {

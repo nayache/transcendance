@@ -95,7 +95,7 @@ export class GameController {
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'cant invite himself');
         if (this.gameService.isInGame(target.id))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.REJECTED, 'target is already ingame');
-        if (this.gameService.isInMatchmaking(target.id))
+        if (this.gameService.isInMatchmaking(target.id) || this.gameService.findChallengeByUser(target.id))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.REJECTED, 'target is already looking for a match');
         this.gameService.createChallenge(userId, target.id, difficulty);
         await this.appGateway.inviteGame(userId, target.id, target.pseudo, difficulty);
@@ -175,15 +175,14 @@ export class GameController {
         return { infos: game };
     }
 
-    @Delete('view')
-
-    @Post('create')
-    async createGame(@User() userId: string, @Body() infos: startInfosDto) {
-       //this.gameService.createGame(userId, infos);
-    }
-
-    @Post('infos')
-    async saveInfos(@User() userId: string) {
-
+    @Delete('/:id')
+    async saveInfos(@Param('id') id: string) {
+        if (!id)
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.EMPTY, 'empty arg');
+        const game: GameEntity = await this.gameService.findGameById(id);
+        if (!game)
+            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.GAME, TypeErr.NOT_FOUND, 'game not found');
+        await this.gameService.deleteGame(game);
+        return {}
     }
 }

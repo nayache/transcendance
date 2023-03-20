@@ -129,6 +129,7 @@ export class AuthService {
     }
 
     authorizationHeader(keyword: string, data: string) : boolean {
+        console.log(data, keyword)
         if (data && data.split(' ')[0] === keyword && data.split(' ')[1])
             return true;
         else

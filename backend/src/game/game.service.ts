@@ -1,6 +1,5 @@
 import { forwardRef, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { timeInterval } from 'rxjs';
 import { AppGateway, GameDto, PlayerDto } from 'src/chat/app.gateway';
 import { UserEntity } from 'src/entity/user.entity';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
@@ -36,20 +35,22 @@ export enum Side {
 abstract class CanvasObject {
     
     private _startingSpeed?: Vector2D;
+    private _canvasWidth: number = 1920;
+    private _canvasHeight: number = 1700.6;
+    private _canvasPosY: number = 0;
     
     constructor(
         private _dimensions?: Dimensions,
         private _pos?: Point,
-        private _color?: string,
-        private _canvasWidth?: number,
-        private _canvasHeight?: number,
-        private _canvasPosY?: number) {
-            console.log("CanvasObject creation")
-        }
+        private _color?: string
+    ) {
+        this._canvasWidth = 1920;
+        this._canvasHeight = 1700.6;
+        this._canvasPosY = 0;
+        console.log("CanvasObject creation")
+    }
 
-    protected get canvasWidth() {
-        if (!this._canvasWidth)
-            throw new Error('The canvasWidth have not been set up')
+    public get canvasWidth() {
         return this._canvasWidth;
     }
 
@@ -58,9 +59,7 @@ abstract class CanvasObject {
         this._canvasWidth = canvasWidth;
     }
     
-    protected get canvasHeight() {
-        if (!this._canvasHeight)
-            throw new Error('The canvasHeight have not been set up')
+    public get canvasHeight() {
         return this._canvasHeight
     }
     
@@ -68,9 +67,7 @@ abstract class CanvasObject {
         this._canvasHeight = canvasHeight;
     }
     
-    protected get canvasPosY() {
-        if (!this._canvasPosY)
-            throw new Error('The canvasPosY have not been set up')
+    public get canvasPosY() {
         return this._canvasPosY;
     }
     
@@ -118,11 +115,7 @@ abstract class CanvasObject {
         this._startingSpeed = startingSpeed;
     }
     
-    protected setUp(canvasWidth: number, canvasHeight: number, canvasPosY?: number): void {
-        this.canvasWidth = canvasWidth;
-        this.canvasHeight = canvasHeight;
-        if (canvasPosY)
-            this.canvasPosY = canvasPosY;
+    protected setUp(): void {
     }
     
     protected static isBetween<T>(myItem: T, limitInf: T, limitSup: T, inclusive: boolean = true): boolean {
@@ -187,17 +180,11 @@ export class Ball extends CanvasObject {
 	constructor(
 		radius: number = 10,
 		color: string = 'grey',
-		canvasWidth?: number,
-		canvasHeight?: number,
-		canvasPosY?: number,
 	) {
 		super(
 			{ width: radius, height: radius },
 			undefined,
 			color,
-			canvasWidth,
-			canvasHeight,
-			canvasPosY,
 		);
 
 	}
@@ -226,13 +213,8 @@ export class Ball extends CanvasObject {
 		return (false);
 	}
 
-	public setUp(
-		canvasWidth: number,
-		canvasHeight: number,
-		canvasPosY?: number,
-		startingSpeed?: Vector2D
-	): void {
-		super.setUp(canvasWidth, canvasHeight, canvasPosY);
+	public setUp(startingSpeed?: Vector2D): void {
+		super.setUp();
 		if (startingSpeed)
 			this.startingSpeed = startingSpeed;
 		else
@@ -240,7 +222,7 @@ export class Ball extends CanvasObject {
 				x: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5]),
 				y: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5])
 			}
-		this.pos = { x: canvasWidth / 2, y: canvasHeight / 2 }
+		this.pos = { x: this.canvasWidth / 2, y: this.canvasHeight / 2 }
 		//set une vitesse ou un bail comme ca
 	}
 
@@ -382,17 +364,11 @@ export class Paddle extends CanvasObject {
         private _player?: Player,
         height: number = 100,
         color: string = 'black',
-        canvasWidth?: number,
-        canvasHeight?: number,
-        canvasPosY?: number,
     ) {
         super(
             { width: PADDLE_WIDTH, height },
             undefined,
             color,
-            canvasWidth,
-            canvasHeight,
-            canvasPosY,
         );
     }
 
@@ -407,26 +383,23 @@ export class Paddle extends CanvasObject {
     }
 
 
-    onMouseMove(clientY: number, canvasPosY: number): void {
+    onMouseMove(clientY: number, canvasPosY: number, canvasHeight: number): void {
         try {
-            this.canvasPosY = canvasPosY
-            this.pos.y = clientY - canvasPosY - this.dimensions.height / 2;
+            const littleDimensionsY = this.dimensions.height * canvasHeight / this.canvasHeight
+            const littlePosY = clientY - canvasPosY - littleDimensionsY / 2;
+            this.pos.y = littlePosY * this.canvasHeight / canvasHeight
         } catch (err) {
         }
     }
 
-    setUp(
-        canvasWidth: number,
-        canvasHeight: number,
-        canvasPosY?: number
-    ): void {
+    setUp(): void {
         let y: number;
 
-        super.setUp(canvasWidth, canvasHeight, canvasPosY);
+        super.setUp();
         try {
             y = this.pos.y;
         } catch (err) {
-            y = canvasHeight / 2 - this.dimensions.height / 2
+            y = this.canvasHeight / 2 - this.dimensions.height / 2
         }
         if (this.player.playerSide == PlayerSide.Right && this.canvasWidth)
             this.pos = { x: this.canvasWidth - this.dimensions.width - PADDLE_XSPACE, y }
@@ -620,21 +593,21 @@ export class Game {
         this.id = id
         this.user1 = user1;
         this.user2 = user2;
-        this.player1 = new Player(PlayerSide.Left, new Paddle(undefined, 110, 'DarkTurquoise', width / 6, height, y), user1.id);
-        this.player2 = new Player(PlayerSide.Right, new Paddle(undefined, 110, 'OrangeRed', width / 6, height, y), user2.id);
-        this.ball = new Ball(15, 'MidnightBlue', width, height, y);
+        this.player1 = new Player(PlayerSide.Left, new Paddle(undefined, 280, 'DarkTurquoise'), user1.id);
+        this.player2 = new Player(PlayerSide.Right, new Paddle(undefined, 280, 'OrangeRed'), user2.id);
+        this.ball = new Ball(15, 'MidnightBlue');
         this.referee = new Referee([this.player1, this.player2], this.ball, 7);
         this.score = [0, 0];
         this.w = width;
         this.h = height;
         this.y = y;
-        this.setUpGame(ss, width, height, y);
+        this.setUpGame(ss);
     }
 
-    setUpGame(startingSpeed: Vector2D, canvasWidth: number, canvasHeight: number, canvasPosY: number) {
-		this.player1.paddle.setUp(canvasWidth, canvasHeight, canvasPosY);
-		this.player2.paddle.setUp(canvasWidth, canvasHeight, canvasPosY);
-		this.ball.setUp(canvasWidth, canvasHeight, canvasPosY, startingSpeed);
+    setUpGame(startingSpeed: Vector2D) {
+		this.player1.paddle.setUp();
+		this.player2.paddle.setUp();
+		this.ball.setUp(startingSpeed);
 		//on va set 2 boutons qui vont permettre de mettre respectivement les 2 joueurs prets a jouer,
 		// quand les 2 joueurs sont prets, ca demarre
 		// if (player1.isReadyToPlay && player2.isReadyToPlay || true)
@@ -663,12 +636,18 @@ export class MoveObject {
     pos: Point;
     dimensions: Dimensions;
     color: string;
+    canvasWidth: number;
+    canvasHeight: number;
+    canvasPosY: number;
     constructor(paddle: Paddle = null, ball: Ball = null, id: string = null) {
         if (id)
             this.userId = id;
         this.pos = (paddle) ? paddle.pos : ball.pos;
         this.dimensions = (paddle) ? paddle.dimensions : ball.dimensions;
         this.color = (paddle) ? paddle.color : ball.color;
+        this.canvasWidth = (paddle) ? paddle.canvasWidth : ball.canvasWidth;
+        this.canvasHeight = (paddle) ? paddle.canvasHeight : ball.canvasHeight;
+        this.canvasPosY = (paddle) ? paddle.canvasPosY : ball.canvasPosY;
     }
 }
 
@@ -713,7 +692,7 @@ export class GameService {
         {
             this.logger.log(`WAITING FOR START`)
             try {
-                game.setUpGame(this.generateStartingSpeed(), width, height, y)
+                game.setUpGame(this.generateStartingSpeed())
             } catch (e) {
                 console.log('ERROR: setupgame :', e);
             }
@@ -781,12 +760,12 @@ export class GameService {
         }
     }
 
-    async paddleMove(author: string, gameId: string, clientY: number, canvasPosY: number) {
+    async paddleMove(author: string, gameId: string, clientY: number, canvasPosY: number, canvasHeight: number) {
         const game: Game = this.games.get(gameId);
         if (!game)
             return this.logger.error('game not found')
         const emitter: Player = (game.user1.id === author) ? game.player1 : game.player2;
-        emitter.paddle.onMouseMove(clientY, canvasPosY);
+        emitter.paddle.onMouseMove(clientY, canvasPosY, canvasHeight);
     }
     
     async createGame(user1: string, user2: string, difficulty: Difficulty, ranked: boolean = true): Promise<GameEntity> {
@@ -826,6 +805,15 @@ export class GameService {
         await this.removeMatch(gameInfo.player1.id);
         this.appGateway.endGameEvent(gameInfo); // socket event avertir fin game
         console.log('endgame EVENT launched')
+    }
+
+    findChallengeByUser(author: string): boolean {
+        for (let challenge of this.challenges.values()) {
+            if (challenge.author === author && challenge.invited === author)
+                return true;
+        }
+        return null;
+
     }
 
     createChallenge(author: string, invited: string, difficulty: Difficulty) {
@@ -1014,6 +1002,14 @@ export class GameService {
 
     async findGameById(id: string): Promise<GameEntity> {
         return this.gameRepository.findOneBy({id: id});
+    }
+
+    async deleteGame(game: GameEntity) {
+        try {
+            await this.gameRepository.remove(game);
+        } catch (e) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+        }
     }
 
     async getGameInfos(id: string): Promise<GameDto> {

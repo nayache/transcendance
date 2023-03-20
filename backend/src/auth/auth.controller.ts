@@ -71,6 +71,7 @@ constructor(private readonly authService: AuthService,
 
     @Get('token')
     async refresh(@Headers('authorization') data: string) {
+        console.log(data)
         if (!this.authService.authorizationHeader('Refresh', data))
             throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.HEADER, TypeErr.INVALID, 'authorization header (refresh) incorrect')
         
