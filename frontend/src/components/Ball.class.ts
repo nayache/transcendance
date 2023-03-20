@@ -6,7 +6,6 @@ class Ball extends CanvasObject {
 	constructor(
 		radius: number = 10,
 		color: string = 'grey',
-		context?: CanvasRenderingContext2D,
 		canvasWidth?: number,
 		canvasHeight?: number,
 		canvasPosY?: number,
@@ -15,7 +14,6 @@ class Ball extends CanvasObject {
 			{ width: radius, height: radius },
 			undefined,
 			color,
-			context,
 			canvasWidth,
 			canvasHeight,
 			canvasPosY,
@@ -48,13 +46,12 @@ class Ball extends CanvasObject {
 	}
 
 	public setUp(
-		ctx: CanvasRenderingContext2D,
 		canvasWidth: number,
 		canvasHeight: number,
 		canvasPosY?: number,
 		startingSpeed?: Vector2D
 	): void {
-		super.setUp(ctx, canvasWidth, canvasHeight, canvasPosY);
+		super.setUp(canvasWidth, canvasHeight, canvasPosY);
 		if (startingSpeed)
 			this.startingSpeed = startingSpeed;
 		else
@@ -131,18 +128,6 @@ class Ball extends CanvasObject {
 			x: this.pos.x + this.startingSpeed.x,
 			y: this.pos.y + this.startingSpeed.y,
 		}
-	}
-
-	display(): void {
-		super.display();
-		this.context.arc(
-			this.pos.x,
-			this.pos.y,
-			this.radius,
-			0,
-			2 * Math.PI
-		)
-		this.context.fill();
 	}
 }
 

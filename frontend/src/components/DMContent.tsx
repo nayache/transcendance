@@ -12,7 +12,7 @@ import { IUser } from "../interface/IUser";
 import { IoPaperPlaneOutline } from "react-icons/io5"
 import { IError } from "../constants/EError";
 import ClientApi from "./ClientApi.class";
-import { API_CHAT_DM, PROFILE_EP, PROFILE_ROUTE } from "../constants/RoutesApi";
+import { API_CHAT_DM, API_USER_BLOCK, PROFILE_EP, PROFILE_ROUTE } from "../constants/RoutesApi";
 import { useDMListener } from "../hooks/useDMListener";
 import { Socket } from "socket.io-client";
 
@@ -23,17 +23,20 @@ interface Props {
 	chatItems: ChatItem[],
 	addChatItem: (newChatItem: ChatItem) => void,
 	updateChatItem: (id: number, updateChatItem: ChatItem) => void,
+	updateDiscussions: (pseudo: string, position: number, unread: number, avatar?: string) => void
 }
 
 
-const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatItem }: Props) => {
+const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatItem, updateDiscussions }: Props) => {
 
 	const messagesContainerRef = useRef<HTMLDivElement>(null)
 	const inputRef = useRef<HTMLInputElement>(null);
 	const msgWritten = useRef<string | null>(null);
 	const noMessages = useRef<number>(0)
 	const currMsgId = useRef<number>(0)
-	
+	const [isReceiverBlocked, setIsReceiverBlocked] = useState<boolean>(false)
+	const [printMiniModal, setPrintMiniModal] = useState<boolean>(false)
+
 
 
 	const addLocalMsg = (id: number, msg: string) => {
@@ -84,17 +87,24 @@ const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatI
 			inputRef.current.value = ""
 		if (msgWritten.current) {
 			try {
-				console.log("receiver?.pseudo ? receiver?.pseudo : null = ", receiver?.pseudo ? receiver?.pseudo : null)
-				await ClientApi.post(API_CHAT_DM, JSON.stringify({
-					target: receiver?.pseudo ? receiver?.pseudo : null,
-					msg: msgWritten.current,
-				}), 'application/json')
-				addChatItem({
-					avatar: user?.avatar,
-					type: "me",
-					status: MessageStatus.SENT,
-					msg: msgWritten.current
-				})
+				console.log("receiver?.pseudo ? receiver?.pseudo : null = ", receiver?.pseudo ? receiver?.pseudo : null)				
+				const data: { blockeds: string[] } = await ClientApi.get(API_USER_BLOCK)
+				const isRecBlocked: boolean = data.blockeds.some(blocked => 
+					blocked === receiver?.pseudo )
+				if (!isRecBlocked) {
+					await ClientApi.post(API_CHAT_DM, JSON.stringify({
+						target: receiver?.pseudo ? receiver?.pseudo : null,
+						msg: msgWritten.current,
+					}), 'application/json')
+					addChatItem({
+						avatar: user?.avatar,
+						type: "me",
+						status: MessageStatus.SENT,
+						msg: msgWritten.current
+					})
+					if (receiver?.pseudo)
+						updateDiscussions(receiver.pseudo, 0, 0, receiver.avatar)
+				}
 			} catch (err) {
 				const _error: IError = err as IError
 	
@@ -112,6 +122,23 @@ const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatI
 	
 
 
+	useEffect(() => {
+		(async () => {
+			try {
+				if (receiver?.pseudo) {
+					const data: { blockeds: string[] } = await ClientApi.get(API_USER_BLOCK)
+					setIsReceiverBlocked(data.blockeds.some(blocked => 
+						blocked === receiver.pseudo ))
+				}
+			} catch (err) {
+				console.log("err = ", err)
+			}
+		})()
+	}, [receiver])
+
+	useEffect(() => {
+		setPrintMiniModal(isReceiverBlocked)
+	}, [isReceiverBlocked])
 	
 	/* fait un scroll down max au bon moment */
 	useEffect(() => {
@@ -187,18 +214,40 @@ const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatI
 					);
 				})}
 			</div>
-			<div className="content__footer">
+			<div className="content__footer"> 
+					{ printMiniModal &&
+						<div className="unblock__footer">
+							<div className="unblock__footer-content">
+								<p>Do you wanna unblock {receiver?.pseudo} ?</p>
+							</div>
+							<div className="blocked-btns">
+								<button onClick={() => {
+									ClientApi.delete(API_USER_BLOCK + '/' + receiver?.pseudo)
+									setIsReceiverBlocked(false)
+								}}
+								className="button_without_style unblock_dm_btn">Unblock</button>
+								<button onClick={() => {
+									setPrintMiniModal(false)
+								}}
+								className="button_without_style unblock_dm_btn">Keep blocked</button>
+							</div>
+						</div>
+					}
 				<div className="sendNewMessage">
-				<input
-					type="text"
-					ref={inputRef}
-					placeholder="Type a message here..."
-					onKeyDown={(e) => e.key === "Enter" && handleEnter()}
-					onChange={(e) => msgWritten.current = e.target.value}
-				/>
-				<button className="btnSendMsg" id="sendMsgBtn" onClick={handleEnter}>
-					<IoPaperPlaneOutline className="paper-svg" />
-				</button>
+					<input
+						type="text"
+						ref={inputRef}
+						disabled={isReceiverBlocked}
+						placeholder="Type a message here..."
+						onKeyDown={(e) => e.key === "Enter" && handleEnter()}
+						onChange={(e) => msgWritten.current = e.target.value}
+					/>
+					{
+						!isReceiverBlocked &&
+						<button className="btnSendMsg" id="sendMsgBtn" onClick={handleEnter}>
+							<IoPaperPlaneOutline className="paper-svg" />
+						</button>
+					}
 				</div>
 			</div>
 		</div>

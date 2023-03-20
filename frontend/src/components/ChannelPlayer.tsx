@@ -12,11 +12,13 @@ interface Props {
 	player: IChannelUser,
 	channel: IChannel,
 	doDisplayPreview: boolean,
-	onClick: (e?: React.MouseEvent<HTMLButtonElement>) => void,
-	onClosePreview: () => void,
+	callbackPreview?: (props?: any) => void,
+	callbackFailPreview?: (props?: any) => void,
+	onClick?: (e?: React.MouseEvent<HTMLButtonElement>) => void,
+	onClosePreview?: () => void,
 }
 
-const ChannelPlayer = ({ chanUser, player, channel, doDisplayPreview, onClick, onClosePreview }: Props) => {
+const ChannelPlayer = ({ chanUser, player, channel, doDisplayPreview, onClick, onClosePreview, callbackPreview, callbackFailPreview }: Props) => {
 
 
 	const { pseudo: playerName, role, status } = player
@@ -33,7 +35,7 @@ const ChannelPlayer = ({ chanUser, player, channel, doDisplayPreview, onClick, o
 			<div className="channelPlayer-container-container">
 				{ doDisplayPreview &&
 				<UserPreview chanUser={chanUser} player={player} channel={channel}
-				onClose={onClosePreview} /> }
+				onClose={onClosePreview} callback={callbackPreview} callbackFail={callbackFailPreview} /> }
 				<button onClick={onClick} className="playerName button_without_style">
 					{
 						role === ChannelRole.OWNER && <img className='logo-role' src={OwnerLogo} /> ||

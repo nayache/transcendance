@@ -25,7 +25,7 @@ export const usePseudo = () => {
 					ClientApi.redirect = new URL(SIGNIN_ROUTE)
 			}
 		})()
-    }, [pseudo])
+    }, [])
 
 
 

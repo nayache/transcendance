@@ -13,6 +13,7 @@ class Player {
 	constructor(
 		private _playerSide: PlayerSide,
 		private _paddle: Paddle,
+		private _userId: string
 	) {
 		this._paddle.bindToplayer(this)
 		this._nbGoals = 0;
@@ -42,6 +43,16 @@ class Player {
 	
 	public set ready(ready: boolean) {
 		this._ready = ready;
+	}
+
+	private set userId(userId: string) {
+		this._userId = userId
+	}
+	
+	public get userId(): string {
+		if (!this._userId)
+			throw new Error('The userId have not been set up')
+		return this._userId
 	}
 
 

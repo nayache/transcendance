@@ -57,6 +57,7 @@ const Signin = () => {
 			ClientApi.redirect = new URL(BASE_URL)
 		} catch (err) {
 			const _error: IError = err as IError
+			const _err = err as {statusCode: number | string};
 			console.log("_error.about = ", _error.about)
 			console.log("_error = ", _error);
 			if (err == "Not Found")
@@ -66,7 +67,7 @@ const Signin = () => {
 					if (_error.type == TypeErr.EMPTY)
 						setPseudoErrorText("Don't leave an empty pseudo")
 					else if (_error.type == TypeErr.INVALID)
-						setPseudoErrorText("Please choose a valid pseudo. Size: 3 - 25 characters")
+						setPseudoErrorText("Please choose a valid pseudo. Size: 3 - 20 characters")
 					else if (_error.type == TypeErr.DUPLICATED)
 					setPseudoErrorText("The pseudo already exists. Please provide another pseudo")
 				}
@@ -75,6 +76,10 @@ const Signin = () => {
 						setAvatarErrorText("Please choose a image file (.png, .jpg)")
 					else if (_error.type == TypeErr.DUPLICATED)
 						setAvatarErrorText("Please provide a unique avatar filename among all avatar filenames already provided")
+				}
+				else {
+					if (_err.statusCode == 413)
+						setAvatarErrorText("Please choose a lighter image file")
 				}
 			}
 		}

@@ -2,7 +2,7 @@ import React from "react";
 
 interface Props {
 	bgcolor: string,
-	completed: number
+	completed?: number
 }
 
 const ProgressBar = ({ bgcolor, completed }: Props) => {
@@ -33,7 +33,7 @@ const ProgressBar = ({ bgcolor, completed }: Props) => {
 	return (
 		<div style={containerStyles}>
 			<div style={fillerStyles}>
-			<span style={labelStyles}>{`${completed}%`}</span>
+			<span style={labelStyles}>{`${completed ? completed : 0}%`}</span>
 			</div>
 		</div>
 	);

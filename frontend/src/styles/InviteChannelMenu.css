@@ -1,0 +1,17 @@
+
+.invite-text {
+	font-style: italic;
+	font-weight: 900;
+	font-size: 2em;
+	width: fit-content;
+	margin: auto;
+	text-shadow: 1px 1px 0px black;
+}
+
+.buttonsInvite-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: center;
+	min-height: 700px
+}

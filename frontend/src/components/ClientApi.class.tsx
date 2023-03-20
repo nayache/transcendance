@@ -1,5 +1,4 @@
 import FileResizer from 'react-image-file-resizer'
-import { io, Socket } from 'socket.io-client';
 import { AboutErr, IError, TypeErr } from "../constants/EError";
 import { BASE_URL, API_BASE_AUTH, REGISTER_ROUTE, SIGNIN_ROUTE, API_VERIFY_TOKEN_ROUTE, API_TOKEN_ROUTE, API_SOCKET_URL } from "../constants/RoutesApi";
 
@@ -220,6 +219,22 @@ class ClientApi {
 	public static async post(url: string, body?: BodyInit | null, contentType?: string): Promise<any> {
 		
 		const method: string = 'POST'
+		let headers: HeadersInit = {};
+		
+		if (ClientApi.token)
+			headers['Authorization'] = `Bearer ${ClientApi.token}`
+		if (contentType)
+			headers["Content-Type"] = contentType
+		let init: RequestInit | undefined = {
+			method, headers, body
+		};
+		const data: any = await ClientApi.fetchEndpoint(url, init)
+		return (data);
+	}
+	
+	public static async delete(url: string, body?: BodyInit | null, contentType?: string): Promise<any> {
+		
+		const method: string = 'DELETE'
 		let headers: HeadersInit = {};
 		
 		if (ClientApi.token)

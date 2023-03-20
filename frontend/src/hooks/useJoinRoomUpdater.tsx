@@ -17,8 +17,11 @@ export const useJoinRoomUpdater = (
 				console.log("(join) currentChannelId = ", currentChannelId)
 				if (payload.user.pseudo !== chanUser.pseudo && !(currentChannelId <= -1 || currentChannelId >= channels.length)
 				&& channels[currentChannelId].name === payload.channel) {
-					const users: IChannelUser[] = channels[currentChannelId].users.map(user => user)
-					if (users.every(user => user.pseudo !== payload.user.pseudo)) // contre les bugs graphiques
+					const users: IChannelUser[] = [...channels[currentChannelId].users]
+					console.log("(join) payload.user = ", payload.user)
+					const ind = users.findIndex(user => user.pseudo === payload.user.pseudo)
+					console.log("ind = ", ind, " et users = ", users)
+					if (ind === -1) // contre les bugs graphiques
 						users.push(payload.user)
 					const channel: IChannel = {
 						name: channels[currentChannelId].name,

@@ -1,42 +1,42 @@
-import Ball from "./Ball.class";
-import Player from "./Player.class";
-import Paddle from "./Paddle.class";
-import Referee, { GameState } from "./Referee.class";
+import BallDisplayer from "./BallDisplayer.class";
+import PlayerDisplayer from "./PlayerDisplayer.class";
+import PaddleDisplayer from "./PaddleDisplayer.class";
+import RefereeDisplayer, { GameState } from "./RefereeDisplayer.class";
 
 
-class Drawer {
+class DrawerDisplayer {
 
 	private _reqAnim?: number;
 
 	constructor(
-		private _ref: Referee,
+		private _ref: RefereeDisplayer,
 	) {
 		console.log("avant print (dans constructor drawer)")
 		console.log("this._ref = ", this._ref)
 		console.log("apres print (dans constructor drawer)")
 	}
 	
-	public get player_left(): Player {
+	public get player_left(): PlayerDisplayer {
 		return this.ref.player_left
 	}
 	
-	public get player_right(): Player {
+	public get player_right(): PlayerDisplayer {
 		return this.ref.player_right
 	}
 	
-	public get paddle_left(): Paddle {
+	public get paddle_left(): PaddleDisplayer {
 		return this.player_left.paddle
 	}
 	
-	public get paddle_right(): Paddle {
+	public get paddle_right(): PaddleDisplayer {
 		return this.player_right.paddle
 	}
 	
-	public get ball(): Ball {
+	public get ball(): BallDisplayer {
 		return this.ref.ball
 	}
 	
-	public get ref(): Referee {
+	public get ref(): RefereeDisplayer {
 		if (!this._ref)
 			throw new Error('The ref have not been set up')
 		return this._ref
@@ -65,22 +65,22 @@ class Drawer {
 		context.clearRect(0, 0, canvasWidth, canvasHeight);
 	}
 	
-	private setUpGame(
-		context: CanvasRenderingContext2D,
-		canvasWidth: number,
-		canvasHeight: number,
-		canvas: HTMLCanvasElement
-	) {
-		this.drawBgnd(context, canvasWidth, canvasHeight)
-		this.paddle_left.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
-		this.paddle_right.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
-		this.ball.setUp(context, canvasWidth, canvasHeight, undefined);
-		//on va set 2 boutons qui vont permettre de mettre respectivement les 2 joueurs prets a jouer,
-		// quand les 2 joueurs sont prets, ca demarre
-		this.player_left.ready = true
-		this.player_right.ready = true
-		// if (player1.isReadyToPlay && player2.isReadyToPlay || true)
-	}
+	// private setUpGame(
+	// 	context: CanvasRenderingContext2D,
+	// 	canvasWidth: number,
+	// 	canvasHeight: number,
+	// 	canvas: HTMLCanvasElement
+	// ) {
+	// 	this.drawBgnd(context, canvasWidth, canvasHeight)
+	// 	this.paddle_left.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
+	// 	this.paddle_right.setUp(context, canvasWidth, canvasHeight, canvas.getBoundingClientRect().top);
+	// 	this.ball.setUp(context, canvasWidth, canvasHeight, undefined);
+	// 	//on va set 2 boutons qui vont permettre de mettre respectivement les 2 joueurs prets a jouer,
+	// 	// quand les 2 joueurs sont prets, ca demarre
+	// 	this.player_left.ready = true
+	// 	this.player_right.ready = true
+	// 	// if (player1.isReadyToPlay && player2.isReadyToPlay || true)
+	// }
 
 	private drawMiddleLine(
 		context: CanvasRenderingContext2D,
@@ -118,10 +118,10 @@ class Drawer {
 		
 		this.clearBgnd(context, canvasWidth, canvasHeight);
 		this.drawBgnd(context, canvasWidth, canvasHeight);
-		paddle_left.display(canvas.getBoundingClientRect().top);
-		paddle_right.display(canvas.getBoundingClientRect().top);
-		ball.display();
-		ball.updatePos([paddle_left, paddle_right]);
+		// paddle_left.display(canvas.getBoundingClientRect().top);
+		// paddle_right.display(canvas.getBoundingClientRect().top);
+		// ball.display();
+		// ball.updatePos([paddle_left, paddle_right]);
 	}
 
 	public gameLoop(
@@ -136,7 +136,7 @@ class Drawer {
 		if (this.gamestate == GameState.WaitingForStart)
 		{
 			try {
-				this.setUpGame(context, canvasWidth, canvasHeight, canvas)
+				// this.setUpGame(context, canvasWidth, canvasHeight, canvas)
 			} catch (e) {}
 		}
 		if (this.gamestate == GameState.Running)
@@ -149,4 +149,4 @@ class Drawer {
 	}
 }
 
-export default Drawer;
+export default DrawerDisplayer;

@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { IChannel, IChannelUser } from '../interface/IChannel';
+import { Difficulty } from '../interface/IGame';
 import '../styles/ModalChannelMenu.css'
 import BanChannelMenu from './BanChannelMenu';
 import CreateChannelMenu from './CreateChannelMenu';
 import EditChannelMenu from './EditChannelMenu';
+import InviteChannelMenu from './InviteChannelMenu';
 import JoinChannelMenu from './JoinChannelMenu';
 import JoinOrCreateChannelMenu from './JoinOrCreateChannelMenu';
 import KickChannelMenu from './KickChannelMenu';
@@ -19,6 +21,7 @@ export enum ModalChannelType {
 	MUTEUSER,
 	KICKUSER,
 	BANUSER,
+	INVITEUSER,
 }
 
 interface Props {
@@ -54,8 +57,10 @@ const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
 			callback();
 	}
 	
-	const onLeave = () => {
-		handleClick(callback)
+	const onLeave = (props?: any) => {
+		setUpdate("")
+		if (callback)
+			callback(props);
 	}
 
 	const onJoin = () => {
@@ -96,6 +101,12 @@ const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
 
 	const onSetAdmin = () => {
 		handleClick(callback)
+	}
+
+	const onInvite = (props?: any) => {
+		setUpdate("")
+		if (callback)
+			callback(props);
 	}
 
 	useEffect(() => {
@@ -162,7 +173,11 @@ const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
 					type === ModalChannelType.SETADMIN
 					&& pointedChannelName !== undefined && target !== undefined
 					&& <SetAdminChannelMenu channelName={pointedChannelName} target={target}
-					onSetAdmin={() => onSetAdmin()} />
+					onSetAdmin={() => onSetAdmin()} /> ||
+					
+					type === ModalChannelType.INVITEUSER
+					&& target !== undefined
+					&& <InviteChannelMenu target={target.pseudo} onInvite={(props) => onInvite(props)} />
 				}
 			</div>
 		</div>

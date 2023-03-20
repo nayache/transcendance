@@ -12,3 +12,52 @@
 	box-sizing: border-box;
 	outline: none;
 }
+
+.img-container-settings {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-around;
+	flex-direction: column;
+	height: calc(fit-content + 100px);
+}
+
+.img-btn-container {
+	display: flex;
+	flex-direction: column;
+	margin-top: 1em;
+}
+
+.img-container-settings img {
+	width: 7em;
+	border-radius: 3px;
+	box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px, rgb(51, 51, 51) 0px 0px 0px 3px;
+	transition: all 0.3s;
+}
+
+.img-container-settings img:hover {
+	opacity: 80%;
+}
+
+.delete-btn {
+	margin-top: 3px;
+}
+
+.btnSave-settings {
+	margin-top: 2em;
+	background-color: white;
+	padding: 5px;
+	width: 20%;
+	min-width: 4em;
+	border-radius: 3px;
+	transition: all 0.2s;
+	box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+}
+
+.btnSave-settings:hover {
+	background-color: rgb(242, 242, 242);
+}
+
+.btnSave-settings:active {
+	background-color: rgb(255, 255, 255);
+	box-shadow: none;
+}
