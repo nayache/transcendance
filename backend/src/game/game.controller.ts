@@ -104,8 +104,8 @@ export class GameController {
 
     @Post('accept')
     async acceptGame(@User() userId: string, @Body() payload: acceptInvitationDto) {
-     //   if (!pseudo)        
-      //      throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'empty arg');
+        if (!payload.target)        
+            throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'empty arg');
         const target: UserEntity = await this.userService.findByPseudo(payload.target);
         if (!target)
             throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');

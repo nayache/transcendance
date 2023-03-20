@@ -33,7 +33,7 @@ export class UserService {
 	private readonly avatarService: AvatarService) {}
     
     private requiredXp: number[] = [420, 1050, 2625, 6587, 16468, 41000, 102927, 257300, 500000, 999999];
-    private achievements: string[] = ["FirstWin", "CleanSheet", "PONG-MASTER"];
+    private achievements: string[] = ["First Win", "Clean Sheet", "PONG MASTER"];
     
     async saveUser(login: string) {
         try {
