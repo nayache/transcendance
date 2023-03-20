@@ -3,9 +3,11 @@
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
-	align-items: center;
+	align-items: flex-start;
 	margin-bottom: 30px;
-    justify-content: space-evenly;
+	margin-left: 30px;
+	margin-right: 30px;
+    justify-content: space-between;
 }
 
 
@@ -43,8 +45,14 @@
 	padding: 10px 25px;
 	border-radius: 5px;
 	background-color: rgba(0, 0, 0, 0.05);
-	box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+	box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+	cursor: pointer;
 	width: fit-content;
+}
+
+
+.friends-container:active {
+	box-shadow: none;
 }
 
 .friends-title {

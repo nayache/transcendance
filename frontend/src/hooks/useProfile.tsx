@@ -5,8 +5,9 @@ import { API_PROFILE_ROUTE, API_PSEUDO_ROUTE, SIGNIN_ROUTE } from "../constants/
 import { IProfile } from "../interface/IUser";
 import DefaultImg from "../img/avatar2.jpeg"
 
-export const useProfile = (pseudoParam?: string) => {
-	const [profile, setProfile] = useState<IProfile | undefined>()
+export const useProfile = (pseudoParam?: string): [IProfile | null | undefined, unknown | undefined | null] => {
+	const [profile, setProfile] = useState<IProfile | undefined | null>(null)
+	const [error, setError] = useState<unknown | undefined | null>(null)
 
 	
 	useEffect(() => {
@@ -22,10 +23,13 @@ export const useProfile = (pseudoParam?: string) => {
 				data.profile.avatar = data.profile.avatar ? data.profile.avatar : DefaultImg
 				console.log("data.profile (apres remaniage) = ", data.profile)
 				setProfile(data.profile)
+				setError(undefined)
 				console.log("profile = ", profile)
 			} catch (err) {
 				const _typeError: TypeError = err as TypeError;
 				const _error: IError = err as IError;
+
+				setError(err)
 				if (_typeError.name == "TypeError")
 					setProfile(undefined)
 				else if (
@@ -37,5 +41,5 @@ export const useProfile = (pseudoParam?: string) => {
     }, [pseudoParam])
 
 
-	return profile;
+	return [profile, error];
 }

@@ -11,23 +11,18 @@ export interface IUser {
 	avatar?: string
 }
 
-export enum Achievement {
-	FIRSTWIN = "FirstWin",
-	PERFECTWIN = "PerfectWin",
-	MASTERMIND = "MasterMind",
-}
-
-
 export interface IProfile {
-	pseudo: string,
-	avatar: string,
-	friends: number,
-	level: number,
-	xp: number,
-	requiredXp: number,
-	percentageXp: number,
-	achievements: Achievement[],
-	wins: number,
-	loses: number,
-	history: GameDto[],
+    avatar: string;
+    pseudo: string;
+    friends?: number;
+    level: number;
+    xp: number;
+    requiredXp: number;
+    percentageXp: number;
+    achievements: string[];
+    wins: number;
+    looses: number;
+    history: GameDto[];
+    relation?: Relation;
+    blocked?: boolean;
 }

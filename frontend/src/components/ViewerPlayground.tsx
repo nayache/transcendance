@@ -94,12 +94,12 @@ const Playground = ({ socket, pseudo, infos }: Props) => {
 		}
 	}, [gameFrameRef])
 
-	
+
 	return (
 		<div className="playground-container">
 
 			<div className="game-container">
-				<p className="mode-game">Game</p>
+				<p className="mode-game">View {infos.difficulty} game</p>
 				<div className="all-game"> 
 					<div className="login-score">
 						<div className="login-container">
