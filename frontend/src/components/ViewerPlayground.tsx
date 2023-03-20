@@ -94,11 +94,12 @@ const Playground = ({ socket, pseudo, infos }: Props) => {
 		}
 	}, [gameFrameRef])
 
+	
 	return (
 		<div className="playground-container">
 
 			<div className="game-container">
-				<p className="mode-game"> Game</p>
+				<p className="mode-game">Game</p>
 				<div className="all-game"> 
 					<div className="login-score">
 						<div className="login-container">
@@ -119,35 +120,35 @@ const Playground = ({ socket, pseudo, infos }: Props) => {
 						<FontAwesomeIcon className="heartred" icon={faHeartBroken} /> */}
 						<p className="scorered">SCORE: {score[1]}</p>
 					</div>
-					<div className="game-frame">
+					<div ref={gameFrameRef} className="game-frame">
 						<Container>
 							{/* {isCanvasReady([playgroundWidth, playgroundHeight]) &&
 							<Canvas display={gameLoop} id="playground"
 							width={playgroundWidth} height={playgroundHeight} />} */}
-							<Canvas
-								$onResize={(canvas) => {
-									if (canvas) {
-										canvas.width = canvas.offsetWidth; // quand on size le canvas avec ces variables, le canvas gere bien les pixels
-										canvas.height = canvas.offsetHeight; // il suffit d'enlever pour voir comment ca rend
-										const canvasWidth = canvas?.getBoundingClientRect().width
-										const canvasHeight = canvas?.getBoundingClientRect().height
-										const canvasPosY = canvas?.getBoundingClientRect().top
-										drawer.clearBgnd();
-										drawer.drawBgnd();
-										leftPlayer.paddle.handleResize(canvas, canvasWidth, canvasHeight, canvasPosY)
-										rightPlayer.paddle.handleResize(canvas, canvasWidth, canvasHeight, canvasPosY)
-										ball.handleResize(canvas, canvasWidth, canvasHeight, canvasPosY)
-									}
-								}}
-								onInit={(context, canvasWidth, canvasHeight, canvas) => 
-									drawer.setUpGame(context, canvasWidth, canvasHeight, canvas)
+							<Canvas $onResize={(canvas) => {
+								if (canvas) {
+									canvas.width = canvas.offsetWidth; // quand on size le canvas avec ces variables, le canvas gere bien les pixels
+									canvas.height = canvas.offsetHeight; // il suffit d'enlever pour voir comment ca rend
+									const canvasWidth = canvas?.getBoundingClientRect().width
+									const canvasHeight = canvas?.getBoundingClientRect().height
+									const canvasPosY = canvas?.getBoundingClientRect().top
+									drawer.clearBgnd();
+									drawer.drawBgnd();
+									leftPlayer.paddle.handleResize(canvas, canvasWidth, canvasHeight, canvasPosY)
+									rightPlayer.paddle.handleResize(canvas, canvasWidth, canvasHeight, canvasPosY)
+									ball.handleResize(canvas, canvasWidth, canvasHeight, canvasPosY)
 								}
-								id="playground" />
+							}}
+							onInit={(context, canvasWidth, canvasHeight, canvas) => 
+								drawer.setUpGame(context, canvasWidth, canvasHeight, canvas)
+							}
+							id="playground" />
 						</Container>
 					</div>
 					{
-						isFinished && pseudo && newInfos &&
-						<ModalGameStatMenu active={isFinished} type={ModalGameStatType.OTHERENDGAME}
+						(() => {console.log("newInfos = ", newInfos, " isFinished = ", isFinished, " pseudo = ", pseudo); return true})() &&
+						isFinished && pseudo && newInfos !== undefined &&
+						<ModalGameStatMenu active={isFinished} type={ModalGameStatType.ENDGAME}
 						gameInfos={newInfos} pseudo={pseudo}
 						callback={() => {
 							ClientApi.redirect = new URL(BASE_URL)
