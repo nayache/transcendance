@@ -24,7 +24,7 @@ const MyProfileSettings = () => {
 	const [newAvatar, setNewAvatar] = useState<string | undefined>(undefined)
 	const [pseudoErrorText, setPseudoErrorText] = useState<string>("")
 	const [avatarErrorText, setAvatarErrorText] = useState<string>("")
-	const [avatarFile, setAvatarFile] = useState<File>()
+	const [avatarFile, setAvatarFile] = useState<File | undefined>(undefined)
 	const [servorErrorText, setServorErrorText] = useState<string>("");
 	const [isOkay, setIsOkay] = useState<boolean | undefined>();
 	const [btnPseudoStatus, setBtnPseudoStatus] = useState<BtnStatus>("idle")
@@ -84,6 +84,11 @@ const MyProfileSettings = () => {
 				setBtnAvatarStatus("loading")
 				formData.append("file", avatarFile, avatarFile.name)
 				const data = await ClientApi.patch(API_AVATAR_ROUTE, formData)
+				setBtnAvatarStatus("good")
+			}
+			else {
+				setBtnAvatarStatus("loading")
+				const data = await ClientApi.delete(API_AVATAR_ROUTE)
 				setBtnAvatarStatus("good")
 			}
 		} catch (err) {
@@ -168,12 +173,17 @@ const MyProfileSettings = () => {
 				<br />
 				<div className={"two-factor-content img-container-settings unrolled"}>
 					<label>New avatar :</label>
-					<label htmlFor="fileChange">
-						<input type="file" accept="image/png, image/jpeg" id="fileChange" hidden 
-						onChange={(e) => handleChangeAvatar(e)}/>
-						<img src={newAvatar} alt="Avatar"/>
-					</label>
-					<button>Delete</button>
+					<div className="img-btn-container">
+						<label htmlFor="fileChange">
+							<input type="file" accept="image/png, image/jpeg" id="fileChange" hidden 
+							onChange={(e) => handleChangeAvatar(e)}/>
+							<img src={newAvatar} alt="Avatar"/>
+						</label>
+						<button className="button-24 delete-btn" onClick={() => {
+							setNewAvatar(DefaultImg);
+							setAvatarFile(undefined)
+						}}>Delete</button>
+					</div>
 				</div>
 				{ printButton({
 					status: btnAvatarStatus,
