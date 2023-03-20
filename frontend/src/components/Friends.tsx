@@ -53,12 +53,6 @@ const Friends = () => {
 		console.log("infos.current = ", infos.current)
 		setNotificationType(NotificationType.DM)
 	})
-	useNewFriendReqListener(socket, pseudo, (pending: Pending) => {
-		setPendings(pendings => [...pendings,
-			pending
-		])
-	})
-	useNewFriendAccListener(socket, pseudo, (friends: Friend[]) => setFriends(friends))
 	const inviteNotification = useInviteNotification(socket, pseudo)
 
 

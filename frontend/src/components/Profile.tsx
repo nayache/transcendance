@@ -13,7 +13,7 @@ import { IUser } from "../interface/IUser"
 import Crown from '../img/crown.png'
 import ClientApi from "./ClientApi.class"
 import { AboutErr, IError, TypeErr } from "../constants/EError"
-import { API_BASE_USER } from "../constants/RoutesApi"
+import { API_BASE_USER, API_USER_ADD_FRIEND, API_USER_DEL_FRIEND } from "../constants/RoutesApi"
 import { useParams, useSearchParams } from "react-router-dom"
 import { useProfile } from "../hooks/useProfile"
 import { Status } from "../constants/EMessage"
@@ -28,6 +28,9 @@ import { DisplayAchievements, IDisplayAchievement } from "../constants/Achieveme
 import FirstBanner from "../img/first_banner.png"
 import MiddleBanner from "../img/middle_banner.png"
 import LastBanner from "../img/last_banner.png"
+import { AiOutlinePlusSquare } from "react-icons/ai"
+import { Relation } from "../interface/IUser"
+import { AiOutlineMinusSquare } from "react-icons/ai"
 
 enum Stat {
 	WINS,
@@ -51,8 +54,13 @@ const Profile = () => {
 	const [profile, error] = useProfile(pseudoParam !== pseudo ? pseudoParam : undefined)
 	const notification = useNotification(socket, {pseudo, avatar})
 	const inviteNotification = useInviteNotification(socket, pseudo)
+	const [btnFriends, setBtnFriends] = useState<Relation | undefined>(profile?.relation)
 
 
+
+	useEffect(() => {
+		setBtnFriends(profile?.relation)
+	}, [profile])
 
 	const getProfilImagesAndPseudo = () => {
 		let srcImg: string | undefined;
@@ -78,6 +86,36 @@ const Profile = () => {
 		return (
 			<div className="pseudo-container">
 				<p className="pseudo">{profile?.pseudo}</p>
+				{
+					profile?.relation !== undefined && (
+						
+						btnFriends === Relation.UNKNOWN &&
+						<div className="addToFriends-container">
+							<AiOutlinePlusSquare className="addToFriends-svg"
+							onClick={async () => {
+								await ClientApi.post(API_USER_ADD_FRIEND + '/' + profile.pseudo)
+								setBtnFriends(Relation.PENDING)
+							}}/>
+						</div>
+						||
+
+						btnFriends === Relation.PENDING &&
+						<div className="addToFriends-container">
+							<p>Pending...</p>
+						</div>
+						||
+
+						btnFriends === Relation.FRIEND &&
+						<div className="addToFriends-container">
+							<AiOutlineMinusSquare className="addToFriends-svg" 
+							onClick={async () => {
+								await ClientApi.delete(API_USER_DEL_FRIEND + '/' + profile.pseudo)
+								setBtnFriends(Relation.UNKNOWN)
+							}}/>
+						</div>
+					)
+
+				}
 			</div>
 		)
 	}
@@ -186,7 +224,10 @@ const Profile = () => {
 					</div>
 				</div>
 			)
-		})
+		});
+
+
+
 
 		return (
 			<React.Fragment>

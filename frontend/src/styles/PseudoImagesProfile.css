@@ -22,11 +22,22 @@
 	flex-direction: column;
 }
 
+.addToFriends-container {
+	font-size: 0.78em;
+	margin-left: 10px;
+	cursor: pointer;
+}
+
 .pseudo-container {
 	position: relative;
 	display: flex;
 	align-items: center;
 	justify-content: space-evenly;
+}
+
+.addToFriends-svg {
+	width: 1.5em;
+	height: auto;
 }
 
 .pseudo {
