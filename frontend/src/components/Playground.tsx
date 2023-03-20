@@ -132,6 +132,8 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 							width={playgroundWidth} height={playgroundHeight} />} */}
 							<Canvas $onResize={(canvas) => {
 								if (canvas) {
+									canvas.width = canvas.offsetWidth; // quand on size le canvas avec ces variables, le canvas gere bien les pixels
+									canvas.height = canvas.offsetHeight; // il suffit d'enlever pour voir comment ca rend
 									const canvasWidth = canvas?.getBoundingClientRect().width
 									const canvasHeight = canvas?.getBoundingClientRect().height
 									const canvasPosY = canvas?.getBoundingClientRect().top

@@ -116,6 +116,20 @@ const Playground = ({ socket, pseudo, infos }: Props) => {
 								<Canvas display={gameLoop} id="playground"
 								width={playgroundWidth} height={playgroundHeight} />} */}
 								<Canvas
+									$onResize={(canvas) => {
+										if (canvas) {
+											canvas.width = canvas.offsetWidth; // quand on size le canvas avec ces variables, le canvas gere bien les pixels
+											canvas.height = canvas.offsetHeight; // il suffit d'enlever pour voir comment ca rend
+											const canvasWidth = canvas?.getBoundingClientRect().width
+											const canvasHeight = canvas?.getBoundingClientRect().height
+											const canvasPosY = canvas?.getBoundingClientRect().top
+											drawer.clearBgnd();
+											drawer.drawBgnd();
+											leftPlayer.paddle.handleResize(canvas, canvasWidth, canvasHeight, canvasPosY)
+											rightPlayer.paddle.handleResize(canvas, canvasWidth, canvasHeight, canvasPosY)
+											ball.handleResize(canvas, canvasWidth, canvasHeight, canvasPosY)
+										}
+									}}
 									onInit={(context, canvasWidth, canvasHeight, canvas) => 
 										drawer.setUpGame(context, canvasWidth, canvasHeight, canvas)
 									}

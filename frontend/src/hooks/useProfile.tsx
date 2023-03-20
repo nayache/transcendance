@@ -15,6 +15,10 @@ export const useProfile = (pseudoParam?: string) => {
 				const route: string = pseudoParam ? API_PROFILE_ROUTE + '/' + pseudoParam : API_PROFILE_ROUTE
 				const data: { profile: IProfile } = await ClientApi.get(route)
 				console.log("data.profile (avant remaniage) = ", data.profile)
+				data.profile.level = Math.round(data.profile.level)
+				data.profile.percentageXp = Math.round(data.profile.percentageXp)
+				data.profile.requiredXp = Math.round(data.profile.requiredXp)
+				data.profile.xp = Math.round(data.profile.xp)
 				data.profile.avatar = data.profile.avatar ? data.profile.avatar : DefaultImg
 				console.log("data.profile (apres remaniage) = ", data.profile)
 				setProfile(data.profile)
