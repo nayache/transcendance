@@ -183,15 +183,6 @@ export class ChatController {
         return {channel: (await this.chatService.getChannelDto([chann]))[0]};
     }
 
-   /* @UseGuards(isOwner)
-    @Delete('channel')
-    async  deleteChannel(@Body('name') channelName: string) {
-        const channel: ChannelEntity = await this.chatService.getChannelByName(channelName);
-        await this.chatService.deleteChannel(channel);
-        await this.appGateway.deleteRoomEvent(channelName);
-        return { deleted: channelName }
-    }*/
-
     @Patch('channel/join')
     async joinChannel(@User() userId: string, @Body('name') channelName: string, @Body('password') password?: string) {
         if (!channelName || !this.chatService.isValidChannelName(channelName))
