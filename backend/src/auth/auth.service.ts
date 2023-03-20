@@ -79,10 +79,10 @@ export class AuthService {
     }
 
     jwtDataToDto(userId: string, payload: TokenFtEntity, refreshJwt: string) : JwtDataDto {
-       // const expire = this.getExpire(payload.expires_in);
-        const expire = Date.now() + 1000;
-        return {JwtRefresh: refreshJwt, userId: userId, accessToken: null, refreshToken: null, expire: expire};
-        //return {JwtRefresh: refreshJwt, userId: userId, accessToken: payload.access_token, refreshToken: payload.refresh_token, expire: expire};
+        const expire = this.getExpire(payload.expires_in);
+        //const expire = Date.now() + 1000;
+        //return {JwtRefresh: refreshJwt, userId: userId, accessToken: null, refreshToken: null, expire: expire};
+        return {JwtRefresh: refreshJwt, userId: userId, accessToken: payload.access_token, refreshToken: payload.refresh_token, expire: expire};
     }
 
     decodedToDto(decoded: JwtDecodedDto): JwtDataDto {
@@ -129,7 +129,6 @@ export class AuthService {
     }
 
     authorizationHeader(keyword: string, data: string) : boolean {
-        console.log(data, keyword)
         if (data && data.split(' ')[0] === keyword && data.split(' ')[1])
             return true;
         else
@@ -144,10 +143,10 @@ export class AuthService {
         if (!decoded) {
             throw new InvalidTokenException(TypeErr.EXPIRED);
         }
-     /*   if (this.tokenFtIsExpire(decoded.expire)) {
+        if (this.tokenFtIsExpire(decoded.expire)) {
             console.log('token ft is expire')
             throw new InvalidTokenException(TypeErr.EXPIRED);
-        }*/
+        }
         const user = await this.userService.findById(decoded.userId);
         if (!user)
             throw new ErrorException(HttpStatus.FORBIDDEN, AboutErr.USER, TypeErr.NOT_FOUND, 'token not associated with an user');
