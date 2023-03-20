@@ -19,7 +19,7 @@
 
 .game-frame {
 	--baseWidth: 1920px;
-	--baseHeight: 960;
+	--baseHeight: 1016px;
 	--percentageWidth: 70%;
 	--calculatedPercentageheight: 62%;
 	border: 5px solid white;
