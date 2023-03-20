@@ -60,7 +60,12 @@ class PaddleDisplayer extends CanvasObjectDisplayer {
 
 	onMouseMove(e: MouseEvent): void {
 		if (this.gameInfos)
-			this.socket.emit('paddleMove', {gameId: this.gameInfos.id, clientY: e.clientY, canvasPosY: this.canvas.getBoundingClientRect().top})
+			this.socket.emit('paddleMove', {
+				gameId: this.gameInfos.id,
+				clientY: e.clientY,
+				canvasPosY: this.canvas.getBoundingClientRect().top,
+				canvasHeight: this.canvas.getBoundingClientRect().height
+			})
 	}
 
 	setUp(
