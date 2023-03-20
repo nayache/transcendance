@@ -90,7 +90,8 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 
 	useEffect(() => {
 		timer.current = setTimeout(() => {
-			setActiveError(ModalGameType.ERRORSEARCHPLAYER)
+			if (startBtn !== "good")
+				setActiveError(ModalGameType.ERRORSEARCHPLAYER)
 		}, 20 * 1000)
 	}, [])
 

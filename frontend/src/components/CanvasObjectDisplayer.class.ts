@@ -161,9 +161,14 @@ abstract class CanvasObjectDisplayer {
 	}
 
 	display(moveObject?: MoveObject): void {
-		if (moveObject) {
-			this.pos = moveObject.pos
-			this.dimensions = moveObject.dimensions
+		if (moveObject && this.canvas) {
+			const canvasWidth = this.canvas.getBoundingClientRect().width
+			const canvasHeight = this.canvas.getBoundingClientRect().height
+			const canvasPosY = this.canvas.getBoundingClientRect().top
+			this.pos.x = moveObject.pos.x * canvasWidth / moveObject.canvasWidth
+			this.pos.y = moveObject.pos.y * canvasHeight / moveObject.canvasHeight
+			this.dimensions.width = moveObject.dimensions.width * canvasWidth / moveObject.canvasWidth
+			this.dimensions.height = moveObject.dimensions.height * canvasHeight / moveObject.canvasHeight
 			this.color = moveObject.color
 		}
 		this.context.beginPath();

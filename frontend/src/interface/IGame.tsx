@@ -10,7 +10,10 @@ export interface MoveObject {
 	userId: string
 	pos: Point
 	dimensions: Dimensions,
-	color: string
+	color: string,
+	canvasWidth: number,
+	canvasHeight: number,
+	canvasPosY: number,
 }
 
 export interface PlayerDto {
