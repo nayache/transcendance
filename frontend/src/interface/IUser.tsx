@@ -11,13 +11,6 @@ export interface IUser {
 	avatar?: string
 }
 
-export enum Achievement {
-	FIRSTWIN = "FirstWin",
-	PERFECTWIN = "PerfectWin",
-	MASTERMIND = "MasterMind",
-}
-
-
 export interface IProfile {
     avatar: string;
     pseudo: string;

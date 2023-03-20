@@ -6,7 +6,7 @@ import { IProfile } from "../interface/IUser";
 import DefaultImg from "../img/avatar2.jpeg"
 
 export const useProfile = (pseudoParam?: string) => {
-	const [profile, setProfile] = useState<IProfile | undefined>()
+	const [profile, setProfile] = useState<IProfile | undefined | null>(null)
 
 	
 	useEffect(() => {

@@ -1,11 +1,13 @@
 
 .stats-title-container {
+	display: flex;
+	flex-wrap: wrap;
 	margin: 60px 5px;
-	max-width: 50%;
-	width: fit-content;
 	padding: 10px;
 	border-radius: 10px;
+	justify-content: space-around;
 }
+
 
 .stats-container {
 	position: relative;
@@ -14,7 +16,7 @@
     justify-content: flex-start;
 	border:  solid;
 	padding: 3px;
-	margin: 0 10px;
+	margin: 0 10px 0;
 	align-items: center;
 }
 
@@ -22,7 +24,7 @@
 	position: relative;
 	width: fit-content;
 	margin-bottom: 20px;
-	margin-left: 40px;
+	margin-left: 10px;
 	font-size: 2rem;
 }
 
@@ -52,4 +54,19 @@
 	width: fit-content;
 	font-size: 1.3rem;
 	margin: 0;
+}
+
+.achievement-container {
+	display: flex;
+	align-items: center;
+	background-color: aliceblue;
+	border-radius: 3px;
+	min-width: 250px;
+	margin-top: 10px;
+}
+
+.achievement-img {
+	width: 2em;
+	margin-right: 5px;
+	height: fit-content;
 }

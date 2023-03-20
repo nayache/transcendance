@@ -24,6 +24,7 @@ import { useInviteNotification } from "../hooks/useInviteNotification"
 import { useSocket } from "../hooks/useSocket"
 import { useAvatar } from "../hooks/useAvatar"
 import { usePseudo } from "../hooks/usePseudo"
+import { DisplayAchievements, IDisplayAchievement } from "../constants/Achievements"
 
 enum Stat {
 	WINS,
@@ -62,15 +63,8 @@ const Profile = () => {
 	)
 
 	const getPseudoAndCo = () => {
-		const mapStatus = new Map<Status, string>()
-
-		mapStatus.set(Status.ONLINE, "online");
-		mapStatus.set(Status.OFFLINE, "offline");
-		mapStatus.set(Status.INGAME, "ingame");
-
 		return (
 			<div className="pseudo-container">
-				<div className={"circle " + mapStatus.get(Status.ONLINE) } />
 				<p className="pseudo">{profile?.pseudo}</p>
 			</div>
 		)
@@ -96,7 +90,6 @@ const Profile = () => {
 	const getFriendsAndLevel = () => (
 		<div className="level_friends-container">
 			{ getLevel() }
-			{ getFriends() }
 		</div>
 	)
 
@@ -117,6 +110,20 @@ const Profile = () => {
 		)
 	}
 
+	const getSomeAchievement = (achievement?: IDisplayAchievement) => {
+		return (
+			<React.Fragment>
+				{
+					achievement &&
+					<div className="achievement-container">
+						<img className="achievement-img" src={achievement.img} />
+						<p className="achievement-name">{achievement.name}</p>
+					</div>
+				}
+			</React.Fragment>
+		)
+	}
+
 	const getStat = () => {
 
 		return (
@@ -129,9 +136,16 @@ const Profile = () => {
 					</div>
 				</div>
 				<div>
-					<h3 className="stats-title">Stats</h3>
+					<h3 className="stats-title">Achievements</h3>
 					<div className="achievements-container">
-
+						{
+							profile?.achievements && profile.achievements.map(achievement => (
+								<React.Fragment>
+									{ getSomeAchievement(DisplayAchievements
+										.find(displayAchievement => displayAchievement.name === achievement)) }
+								</React.Fragment>
+							))
+						}
 					</div>
 				</div>
 			</div>
@@ -204,10 +218,16 @@ const Profile = () => {
 	return (
 		<React.Fragment>
 			<Navbar />
-			{ notification }
-			{ inviteNotification }
-			{ profile !== undefined && getPage() }
-			{ profile === undefined && <ServerDownPage /> }
+			{
+				(
+					notification &&
+					inviteNotification && (
+						profile !== undefined && getPage() ||
+						profile === undefined && <ServerDownPage />
+					)
+				)
+
+			}
 		</React.Fragment>
 	);
 }

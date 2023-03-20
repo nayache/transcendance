@@ -58,15 +58,8 @@ const MyProfile = () => {
 	)
 
 	const getPseudoAndCo = () => {
-		const mapStatus = new Map<Status, string>()
-
-		mapStatus.set(Status.ONLINE, "online");
-		mapStatus.set(Status.OFFLINE, "offline");
-		mapStatus.set(Status.INGAME, "ingame");
-
 		return (
 			<div className="pseudo-container">
-				<div className={"circle " + mapStatus.get(Status.ONLINE) } />
 				<p className="pseudo">{profile?.pseudo}</p>
 			</div>
 		)
@@ -192,10 +185,16 @@ const MyProfile = () => {
 	return (
 		<React.Fragment>
 			<Navbar />
-			{ notification }
-			{ inviteNotification }
-			{ profile !== undefined && getPage() }
-			{ profile === undefined && <ServerDownPage /> }
+			{
+				(
+					notification &&
+					inviteNotification && (
+						profile !== undefined && getPage() ||
+						profile === undefined && <ServerDownPage />
+					)
+				)
+
+			}
 		</React.Fragment>
 	);
 }
