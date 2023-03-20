@@ -101,6 +101,7 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 
 	useEffect(() => {
 		if (gameFrameRef.current) {
+			gameFrameRef.current.style.width = '70%';
 			gameFrameRef.current.style.height = 'auto'
 		}
 	}, [gameFrameRef])
