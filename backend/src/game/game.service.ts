@@ -753,6 +753,7 @@ export class GameService {
             const left: MoveObject = new MoveObject(game.player1.paddle, null, game.player1.userId);
             const right: MoveObject = new MoveObject(game.player2.paddle, null, game.player2.userId);
             this.appGateway.preStartGameEvent(gameInfos.player1.id, gameInfos.player2.id, left, right, ball);
+            await this.setGameStart(game.id);
             this.run(game);
         } else {
             game = await this.buildGame(gameInfos, width, height, y);
@@ -1019,6 +1020,14 @@ export class GameService {
         return this.gameToDto(game);
     }
 
+    async setGameStart(gameId: string) {
+        try {
+            await this.gameRepository.update(gameId, {started: true});
+        } catch (e) {
+            throw new ErrorException(HttpStatus.EXPECTATION_FAILED, AboutErr.DATABASE, TypeErr.TIMEOUT);
+        }
+    }
+
     async updateGameXp(game: GameEntity, winner: string, winnerXp: number, looserXp: number) {
         try {
             if (game.player1Id === winner) {
@@ -1074,7 +1083,7 @@ export class GameService {
     async getHistory(userId: string): Promise<GameDto[]> {
         try {
             const games: GameEntity[] = await this.gameRepository.find({where: [
-                {player1Id: userId}, {player2Id: userId}
+                {player1Id: userId, started: true}, {player2Id: userId, started: true}
             ]});
             return await Promise.all(games.map(async (game) => await this.gameToDto(game)));
         } catch(e) {
