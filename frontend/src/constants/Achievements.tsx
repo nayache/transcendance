@@ -2,7 +2,7 @@ import FirstWin from '../img/firstwin.png'
 import CleanSheet from '../img/cleansheet.jpg'
 import PongMaster from '../img/pongmaster.png'
 
-type TAchievement = "FirstWin" | "CleanSheet" | "PONG-MASTER";
+type TAchievement = "First Win" | "Clean Sheet" | "PONG MASTER";
 
 export interface IDisplayAchievement {
 	img: string,
@@ -12,15 +12,15 @@ export interface IDisplayAchievement {
 
 export const DisplayAchievements: IDisplayAchievement[] = [
 	{
-		name: "FirstWin",
+		name: "First Win",
 		img: FirstWin
 	},
 	{
-		name: "CleanSheet",
+		name: "Clean Sheet",
 		img: CleanSheet
 	},
 	{
-		name: "PONG-MASTER",
+		name: "PONG MASTER",
 		img: PongMaster
 	},
 ]

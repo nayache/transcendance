@@ -11,7 +11,7 @@ import { IUser } from "../interface/IUser"
 import Crown from '../img/crown.png'
 import ClientApi from "./ClientApi.class"
 import { AboutErr, IError, TypeErr } from "../constants/EError"
-import { API_BASE_USER } from "../constants/RoutesApi"
+import { API_BASE_USER, MYFRIENDS_EP, MYFRIENDS_ROUTE } from "../constants/RoutesApi"
 import { useParams, useSearchParams } from "react-router-dom"
 import { useProfile } from "../hooks/useProfile"
 import { Status } from "../constants/EMessage"
@@ -77,7 +77,7 @@ const MyProfile = () => {
 	}
 
 	const getFriends = () => (
-		<div className="friends-container">
+		<div className="friends-container" onClick={() => ClientApi.redirect = new URL(MYFRIENDS_ROUTE)}>
 			<p className="friends-title">Friends</p>
 			<p className="friends-number">{profile?.friends}</p>
 		</div>
@@ -107,9 +107,9 @@ const MyProfile = () => {
 		)
 	}
 
-	const getSomeAchievement = (achievement?: IDisplayAchievement) => {
+	const getSomeAchievement = (key: number, achievement?: IDisplayAchievement) => {
 		return (
-			<React.Fragment>
+			<React.Fragment key={key}>
 				{
 					achievement &&
 					<div className="achievement-container">
@@ -136,9 +136,9 @@ const MyProfile = () => {
 					<h3 className="stats-title">Achievements</h3>
 					<div className="achievements-container">
 						{
-							profile?.achievements && profile.achievements.map(achievement => (
+							profile?.achievements && profile.achievements.map((achievement, key) => (
 								<React.Fragment>
-									{ getSomeAchievement(DisplayAchievements
+									{ getSomeAchievement(key, DisplayAchievements
 										.find(displayAchievement => displayAchievement.name === achievement)) }
 								</React.Fragment>
 							))
@@ -177,7 +177,7 @@ const MyProfile = () => {
 			<React.Fragment>
 				{
 					profile?.history && (
-						profile.history.length == 0 && <p>This user haven't faced anyone yet...</p> ||
+						profile.history.length == 0 && <p>You haven't faced anyone yet...</p> ||
 						profile.history.length > 0 && matchesJSX
 					)
 				}

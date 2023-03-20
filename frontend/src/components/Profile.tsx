@@ -110,9 +110,9 @@ const Profile = () => {
 		)
 	}
 
-	const getSomeAchievement = (achievement?: IDisplayAchievement) => {
+	const getSomeAchievement = (key: number, achievement?: IDisplayAchievement) => {
 		return (
-			<React.Fragment>
+			<React.Fragment key={key}>
 				{
 					achievement &&
 					<div className="achievement-container">
@@ -139,9 +139,9 @@ const Profile = () => {
 					<h3 className="stats-title">Achievements</h3>
 					<div className="achievements-container">
 						{
-							profile?.achievements && profile.achievements.map(achievement => (
+							profile?.achievements && profile.achievements.map((achievement, key) => (
 								<React.Fragment>
-									{ getSomeAchievement(DisplayAchievements
+									{ getSomeAchievement(key, DisplayAchievements
 										.find(displayAchievement => displayAchievement.name === achievement)) }
 								</React.Fragment>
 							))
