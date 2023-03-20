@@ -576,6 +576,7 @@ export class Referee {
 
 export class Game {
     id: string;
+	difficulty: Difficulty;
     finished: boolean = false;
     w: number;
     h: number;
@@ -589,8 +590,9 @@ export class Game {
     score: [number, number];
     reqAnim: number;
 
-    constructor(id: string, user1: PlayerDto, user2: PlayerDto, ss: Vector2D, width: number, height: number, y: number) {
+    constructor(id: string, difficulty: Difficulty, user1: PlayerDto, user2: PlayerDto, ss: Vector2D, width: number, height: number, y: number) {
         this.id = id
+		this.difficulty = difficulty;
         this.user1 = user1;
         this.user2 = user2;
         this.player1 = new Player(PlayerSide.Left, new Paddle(undefined, 280, 'DarkTurquoise'), user1.id);
@@ -681,7 +683,7 @@ export class GameService {
     }
 
     async buildGame(payload: GameDto, width: number, height: number, y: number): Promise<Game> {
-        const game: Game = new Game(payload.id, payload.player1, payload.player2, this.generateStartingSpeed(), width, height, y);
+        const game: Game = new Game(payload.id, payload.difficulty, payload.player1, payload.player2, this.generateStartingSpeed(), width, height, y);
         if (!this.games.has(payload.id))
             this.games.set(payload.id, game);
         return game;
@@ -803,6 +805,7 @@ export class GameService {
         const gameData: GameEntity = await this.updateEndingGame(gameId, forfeit);
 		if (gameData.started === true)
 		{
+			this.logger.log('JE RENTRE DANS IF STARTED TRUE')
         	const gameInfo: GameDto = await this.gameToDto(gameData);
         	await this.games.delete(gameId); // DELETE objet game du service
         	await this.removeMatch(gameInfo.player1.id);
