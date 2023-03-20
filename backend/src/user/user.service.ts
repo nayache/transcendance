@@ -497,7 +497,7 @@ export class UserService {
             return null;
         if (winning && !collection.find((achievement) => achievement === this.achievements[0]))
             return this.achievements[0];
-        else if (cleansheet && !collection.find((achievement) => achievement === this.achievements[1]))
+        else if (winning && cleansheet && !collection.find((achievement) => achievement === this.achievements[1]))
             return this.achievements[1];
         else if (lvl === 10)
             return this.achievements[2];

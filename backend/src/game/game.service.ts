@@ -801,10 +801,13 @@ export class GameService {
         if (forfeit)
             game.referee.gamestate = GameState.PermanentStop;
         const gameData: GameEntity = await this.updateEndingGame(gameId, forfeit);
-        const gameInfo: GameDto = await this.gameToDto(gameData);
-        await this.games.delete(gameId); // DELETE objet game du service
-        await this.removeMatch(gameInfo.player1.id);
-        this.appGateway.endGameEvent(gameInfo); // socket event avertir fin game
+		if (gameData.started === true)
+		{
+        	const gameInfo: GameDto = await this.gameToDto(gameData);
+        	await this.games.delete(gameId); // DELETE objet game du service
+        	await this.removeMatch(gameInfo.player1.id);
+        	this.appGateway.endGameEvent(gameInfo); // socket event avertir fin game
+		}
         console.log('endgame EVENT launched')
     }
 
