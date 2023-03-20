@@ -6,17 +6,27 @@
 .game-container {
 	--game-width: 70%;
 	position: relative;
+	width: 100%;
+	height: 100%;
 	margin: 40px auto 10px;
 }
 
 .all-game {
 	position: relative;
     margin: auto;
+	height: 100%;
 }
 
 .game-frame {
+	--baseWidth: 1920px;
+	--baseHeight: 1700.6px;
+	--percentageWidth: 70%;
+	--calculatedPercentageheight: 62%;
 	border: 5px solid white;
 	/* min-height: fit-content; */
+	width: var(--percentageWidth);
+	height: var(--calculatedPercentageheight);
+	margin: auto;
 	position: relative;
 }
 

@@ -25,15 +25,16 @@ export const OtherEndGameMenu = ({ gameInfos, pseudo, onEndGame }: Props) => {
 		<React.Fragment>
 			<div className="endGame-container">
 				<div className="endGame-child">
-					<p>
+					<p className={gameInfos.score1 > gameInfos.score2 ?
+						"endGame-win-title" : "endGame-lose-title"}>
 						{gameInfos.player1.pseudo} {gameInfos.score1 > gameInfos.score2 ?
 							"won" : "lost"
 						}
 					</p>
 			</div>
 			<div className="endGame-child">
-				<p>{
-					gameInfos.player2.pseudo} {gameInfos.score2 > gameInfos.score1 ?
+				<p className={gameInfos.score2 > gameInfos.score1 ? "endGame-win-title" : "endGame-lose-title"}>
+					{gameInfos.player2.pseudo} {gameInfos.score2 > gameInfos.score1 ?
 						"won" : "lost"
 					}
 				</p>

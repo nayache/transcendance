@@ -14,7 +14,7 @@
 
 .match-history {
 	position: relative;
-	max-height: 300px;
+	max-height: 600px;
 	overflow-y: auto;
 	display: flex;
 	flex-direction: column;
