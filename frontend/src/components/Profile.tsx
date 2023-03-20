@@ -25,6 +25,9 @@ import { useSocket } from "../hooks/useSocket"
 import { useAvatar } from "../hooks/useAvatar"
 import { usePseudo } from "../hooks/usePseudo"
 import { DisplayAchievements, IDisplayAchievement } from "../constants/Achievements"
+import FirstBanner from "../img/first_banner.png"
+import MiddleBanner from "../img/middle_banner.png"
+import LastBanner from "../img/last_banner.png"
 
 enum Stat {
 	WINS,
@@ -45,22 +48,31 @@ const Profile = () => {
 	const socket = useSocket()
 	const pseudo = usePseudo()
 	const avatar = useAvatar()
-	const profile = useProfile(pseudoParam !== pseudo ? pseudoParam : undefined)
+	const [profile, error] = useProfile(pseudoParam !== pseudo ? pseudoParam : undefined)
 	const notification = useNotification(socket, {pseudo, avatar})
 	const inviteNotification = useInviteNotification(socket, pseudo)
 
 
 
+	const getProfilImagesAndPseudo = () => {
+		let srcImg: string | undefined;
 
-	const getProfilImagesAndPseudo = () => (
-		<div className="avatar-back-container">
-			<img className="backprofil" src={Paysage}/>
-			<div className="pseudo-avatar-container">
-				<img className="avatarprofil" src={profile?.avatar} alt="avatar"/>
-				{ getPseudoAndCo() }
+		if (profile && profile?.level < 3)
+			srcImg = FirstBanner
+		else if (profile && profile?.level < 7)
+			srcImg = MiddleBanner
+		else if (profile && profile?.level < 10)
+			srcImg = LastBanner
+		return (
+			<div className="avatar-back-container">
+				<img className="backprofil" src={srcImg}/>
+				<div className="pseudo-avatar-container">
+					<img className="avatarprofil" src={profile?.avatar} alt="avatar"/>
+					{ getPseudoAndCo() }
+				</div>
 			</div>
-		</div>
-	)
+		)
+	}
 
 	const getPseudoAndCo = () => {
 		return (
@@ -219,14 +231,17 @@ const Profile = () => {
 		<React.Fragment>
 			<Navbar />
 			{
-				(
-					notification &&
-					inviteNotification && (
-						profile !== undefined && getPage() ||
-						profile === undefined && <ServerDownPage />
-					)
-				)
+				error === undefined && notification &&
+				inviteNotification && (
+					profile !== undefined && getPage() ||
+					profile === undefined && <ServerDownPage />
+				) ||
 
+				error !== undefined && error !== null &&
+				<div>
+					Sorry, the player doesn't exist
+				</div>
+				
 			}
 		</React.Fragment>
 	);
