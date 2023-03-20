@@ -22,6 +22,7 @@ import { useInviteNotification } from "../hooks/useInviteNotification"
 import { useSocket } from "../hooks/useSocket"
 import { useAvatar } from "../hooks/useAvatar"
 import { usePseudo } from "../hooks/usePseudo"
+import { DisplayAchievements, IDisplayAchievement } from "../constants/Achievements"
 
 enum Stat {
 	WINS,
@@ -106,14 +107,43 @@ const MyProfile = () => {
 		)
 	}
 
+	const getSomeAchievement = (achievement?: IDisplayAchievement) => {
+		return (
+			<React.Fragment>
+				{
+					achievement &&
+					<div className="achievement-container">
+						<img className="achievement-img" src={achievement.img} />
+						<p className="achievement-name">{achievement.name}</p>
+					</div>
+				}
+			</React.Fragment>
+		)
+	}
+
 	const getStat = () => {
 
 		return (
 			<div className="stats-title-container">
-				<h3 className="stats-title">Stats</h3>
-				<div className="stats-container">
-					{ getSomeStat(Stat.WINS) }
-					{ getSomeStat(Stat.LOSES) }
+				<div>
+					<h3 className="stats-title">Stats</h3>
+					<div className="stats-container">
+						{ getSomeStat(Stat.WINS) }
+						{ getSomeStat(Stat.LOSES) }
+					</div>
+				</div>
+				<div>
+					<h3 className="stats-title">Achievements</h3>
+					<div className="achievements-container">
+						{
+							profile?.achievements && profile.achievements.map(achievement => (
+								<React.Fragment>
+									{ getSomeAchievement(DisplayAchievements
+										.find(displayAchievement => displayAchievement.name === achievement)) }
+								</React.Fragment>
+							))
+						}
+					</div>
 				</div>
 			</div>
 		)
