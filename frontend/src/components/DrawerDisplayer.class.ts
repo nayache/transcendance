@@ -119,7 +119,7 @@ class DrawerDisplayer {
 		this.context.stroke();
 	}
 	
-	private drawBgnd(
+	public drawBgnd(
 	) {
 		this.context.fillStyle = 'white';
 		this.context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);

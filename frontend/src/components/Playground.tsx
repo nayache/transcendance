@@ -135,6 +135,8 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 									const canvasWidth = canvas?.getBoundingClientRect().width
 									const canvasHeight = canvas?.getBoundingClientRect().height
 									const canvasPosY = canvas?.getBoundingClientRect().top
+									drawer.clearBgnd();
+									drawer.drawBgnd();
 									leftPlayer.paddle.handleResize(canvas, canvasWidth, canvasHeight, canvasPosY)
 									rightPlayer.paddle.handleResize(canvas, canvasWidth, canvasHeight, canvasPosY)
 									ball.handleResize(canvas, canvasWidth, canvasHeight, canvasPosY)
