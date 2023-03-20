@@ -160,15 +160,43 @@ abstract class CanvasObjectDisplayer {
 		}
 	}
 
-	display(moveObject?: MoveObject): void {
+	handleResize(
+		canvas?: HTMLCanvasElement,
+		canvasWidth?: number,
+		canvasHeight?: number,
+		canvasPosY?: number,
+	): void {
+		if (canvas !== undefined)
+			this.canvas = canvas
+		if (canvasWidth !== undefined)
+			this.canvasWidth = canvasWidth
+		if (canvasHeight !== undefined)
+			this.canvasHeight = canvasHeight
+		if (canvasPosY !== undefined)
+			this.canvasPosY = canvasPosY
+		if (this.canvas) {
+			this.pos.x = this.pos.x * this.canvasWidth / this.canvasWidth
+			this.pos.y = this.pos.y * this.canvasHeight / this.canvasHeight
+			this.dimensions.width = this.dimensions.width * this.canvasWidth / this.canvasWidth
+			this.dimensions.height = this.dimensions.height * this.canvasHeight / this.canvasHeight
+			this.color = this.color
+		}
+		this.context.beginPath();
+		this.context.fillStyle = this.color;
+	}
+
+	display(
+		moveObject?: MoveObject,
+		canvas?: HTMLCanvasElement,
+		canvasWidth?: number,
+		canvasHeight?: number,
+		canvasPosY?: number,
+	): void {
 		if (moveObject && this.canvas) {
-			const canvasWidth = this.canvas.getBoundingClientRect().width
-			const canvasHeight = this.canvas.getBoundingClientRect().height
-			const canvasPosY = this.canvas.getBoundingClientRect().top
-			this.pos.x = moveObject.pos.x * canvasWidth / moveObject.canvasWidth
-			this.pos.y = moveObject.pos.y * canvasHeight / moveObject.canvasHeight
-			this.dimensions.width = moveObject.dimensions.width * canvasWidth / moveObject.canvasWidth
-			this.dimensions.height = moveObject.dimensions.height * canvasHeight / moveObject.canvasHeight
+			this.pos.x = moveObject.pos.x * this.canvasWidth / moveObject.canvasWidth
+			this.pos.y = moveObject.pos.y * this.canvasHeight / moveObject.canvasHeight
+			this.dimensions.width = moveObject.dimensions.width * this.canvasWidth / moveObject.canvasWidth
+			this.dimensions.height = moveObject.dimensions.height * this.canvasHeight / moveObject.canvasHeight
 			this.color = moveObject.color
 		}
 		this.context.beginPath();

@@ -63,8 +63,31 @@ class BallDisplayer extends CanvasObjectDisplayer {
 		//set une vitesse ou un bail comme ca
 	}
 
-	display(moveObject?: MoveObject): void {
-		super.display(moveObject);
+	
+	handleResize(
+		canvas?: HTMLCanvasElement,
+		canvasWidth?: number,
+		canvasHeight?: number,
+		canvasPosY?: number,
+	): void {
+		super.handleResize(canvas, canvasWidth, canvasHeight, canvasPosY);
+		this.context.arc(
+			this.pos.x,
+			this.pos.y,
+			this.radius,
+			0,
+			2 * Math.PI
+		)
+		this.context.fill();
+	}
+
+	display(moveObject?: MoveObject,	
+		canvas?: HTMLCanvasElement,
+		canvasWidth?: number,
+		canvasHeight?: number,
+		canvasPosY?: number
+	): void {
+		super.display(moveObject, canvas, canvasWidth, canvasHeight, canvasPosY);
 		this.context.arc(
 			this.pos.x,
 			this.pos.y,

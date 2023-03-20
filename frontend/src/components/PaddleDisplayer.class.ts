@@ -97,17 +97,27 @@ class PaddleDisplayer extends CanvasObjectDisplayer {
 	}
 
 
-	// display(canvasPosY?: number): void {
-	// 	console.log("this.pos dans display paddle = ", this.pos)
-	// 	if (canvasPosY)
-	// 		this.canvasPosY = canvasPosY;
-	// 	super.display()
-	// 	this.context.rect(this.pos.x, this.pos.y, this.dimensions.width, this.dimensions.height)
-	// 	this.context.fill();
-	// }
+	handleResize(
+		canvas?: HTMLCanvasElement,
+		canvasWidth?: number,
+		canvasHeight?: number,
+		canvasPosY?: number,
+	): void {
+		super.handleResize(canvas, canvasWidth, canvasHeight, canvasPosY)
+		this.context.rect(this.pos.x, this.pos.y, this.dimensions.width, this.dimensions.height)
+		this.context.fill();
+	}
 
-	display(moveObject?: MoveObject): void {
-		super.display(moveObject)
+
+
+	display(
+		moveObject?: MoveObject,
+		canvas?: HTMLCanvasElement,
+		canvasWidth?: number,
+		canvasHeight?: number,
+		canvasPosY?: number
+	): void {
+		super.display(moveObject, canvas, canvasWidth, canvasHeight, canvasPosY)
 		this.context.rect(this.pos.x, this.pos.y, this.dimensions.width, this.dimensions.height)
 		this.context.fill();
 	}

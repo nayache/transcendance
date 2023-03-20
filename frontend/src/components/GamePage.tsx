@@ -35,21 +35,21 @@ const GamePage: React.FC = () => {
 
 	useEffect(() => {
 		if (clicked || invited || author) {
-			setTimeout(async () => {
-				socket?.removeAllListeners('matchEvent')
-				try {
-					if (gameMode && invited) {
-						await ClientApi.delete(API_GAME_INVITE, JSON.stringify({
-							target: invited,
-							difficulty: gameMode as string
-						}))
-					}
-				}
-				catch (err) {
-					console.log("err = ", err)
-				}
-				setActiveError(ModalGameType.ERRORSEARCHPLAYER)
-			}, 20 * 1000)
+			// setTimeout(async () => {
+			// 	socket?.removeAllListeners('matchEvent')
+			// 	try {
+			// 		if (gameMode && invited) {
+			// 			await ClientApi.delete(API_GAME_INVITE, JSON.stringify({
+			// 				target: invited,
+			// 				difficulty: gameMode as string
+			// 			}))
+			// 		}
+			// 	}
+			// 	catch (err) {
+			// 		console.log("err = ", err)
+			// 	}
+			// 	setActiveError(ModalGameType.ERRORSEARCHPLAYER)
+			// }, 20 * 1000)
 			socket?.on('matchEvent', ({game: gameInfos, me}: {game: GameDto, me: PlayerDto}) => {
 				console.log("(matchEvent) gameInfos = ", gameInfos)
 				console.log("(matchEvent) me = ", me)

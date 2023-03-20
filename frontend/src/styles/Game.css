@@ -11,15 +11,12 @@
 
 .all-game {
 	position: relative;
-	width: fit-content;
-    min-width: fit-content;
     margin: auto;
 }
 
 .game-frame {
 	border: 5px solid white;
-	min-width: fit-content;
-	min-height: fit-content;
+	/* min-height: fit-content; */
 	position: relative;
 }
 
