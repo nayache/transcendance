@@ -1,24 +1,27 @@
 import React, { useEffect } from "react"
-import "../styles/Profile.css"
 import "../styles/PseudoImagesProfile.css"
 import "../styles/LevelFriendsProfile.css"
 import "../styles/StatsProfile.css"
 import "../styles/MatchHistoryProfile.css"
-import Avatar from "../img/avatar2.jpeg"
 import Navbar from "./Navbar"
 import Paysage from "../img/paysage3.jpg"
 import { useState } from "react"
 import ProgressBar from "./ProgressBar"
 import { IUser } from "../interface/IUser"
-import Crown from "../img/crown.png"
+import Crown from '../img/crown.png'
 import ClientApi from "./ClientApi.class"
 import { AboutErr, IError, TypeErr } from "../constants/EError"
+import { API_BASE_USER } from "../constants/RoutesApi"
+import { useParams, useSearchParams } from "react-router-dom"
 import { useProfile } from "../hooks/useProfile"
+import { Status } from "../constants/EMessage"
+import { GameDto } from "../interface/IGame"
+import ServerDownPage from "./ServerDownPage"
 import { useNotification } from "../hooks/useNotification"
-import { useSocket } from "../hooks/useSocket"
-import { usePseudo } from "../hooks/usePseudo"
-import { useAvatar } from "../hooks/useAvatar"
 import { useInviteNotification } from "../hooks/useInviteNotification"
+import { useSocket } from "../hooks/useSocket"
+import { useAvatar } from "../hooks/useAvatar"
+import { usePseudo } from "../hooks/usePseudo"
 
 enum Stat {
 	WINS,
@@ -44,18 +47,9 @@ interface Match {
 	gameMode: GameMode,
 }
 
-interface Props {
-	user?: IUser,
-}
 
-const MyProfile = (props: Props) => {
-	const [isOkay, setIsOkay] = useState<boolean | undefined>()
-	const [nbFriends, setNbFriends] = useState<number>(3);
-	const [nbWins, setNbWins] = useState<number>(3);
-	const [nbLoses, setLoses] = useState<number>(2);
-	const [rank, setRank] = useState<number>(12);
-	const [level, setLevel] = useState<number>(6);
-	const [status, setStatus] = useState<string>("En ligne");
+const MyProfile = () => {
+
 	const socket = useSocket()
 	const pseudo = usePseudo()
 	const avatar = useAvatar()
@@ -63,101 +57,30 @@ const MyProfile = (props: Props) => {
 	const notification = useNotification(socket, {pseudo, avatar})
 	const inviteNotification = useInviteNotification(socket, pseudo)
 
-	const matches: Match[] = [
-		{
-			userStat: {
-				user: { pseudo },
-				win: true,
-				score: 20,
-			},
-			opponentStat: {
-				user: { pseudo: "Guillaumedu77" },
-				win: false,
-				score: 0,
-			},
-			gameMode: GameMode.MEDIUM,
-		},
-		{
-			userStat: {
-				user: { pseudo },
-				win: true,
-				score: 2,
-			},
-			opponentStat: {
-				user: { pseudo: "Leodu69" },
-				win: false, // il a deco
-				score: 7,
-			},
-			gameMode: GameMode.HARD,
-		},
-		{
-			userStat: {
-				user: { pseudo },
-				win: false,
-				score: 10,
-			},
-			opponentStat: {
-				user: { pseudo: "Manondu62" },
-				win: true,
-				score: 20,
-			},
-			gameMode: GameMode.CLASSIC,
-		},
-		{
-			userStat: {
-				user: { pseudo },
-				win: false,
-				score: 15,
-			},
-			opponentStat: {
-				user: { pseudo: "AlanTiaCaptéesrgvsregvvbdfvbdfgbsretgrsgbsrgbsfgbfgsbsfbgb" },
-				win: true,
-				score: 0,
-			},
-			gameMode: GameMode.MEDIUM,
-		},
-	]
 
 
-
-
-	useEffect(() => {
-		(async () => {
-			try {
-				await ClientApi.verifyToken();
-				// if (!props.user)
-				// 	throw {
-				// 		about: AboutErr.USER,
-				// 		type: TypeErr.EMPTY,
-				// 	} as IError
-				setIsOkay(true)
-			} catch (err) {
-				console.log("err = ", err)
-			}
-		})()
-	}, [])
 
 	const getProfilImagesAndPseudo = () => (
 		<div className="avatar-back-container">
 			<img className="backprofil" src={Paysage}/>
 			<div className="pseudo-avatar-container">
-				<img className="avatarprofil" src={Avatar} alt="avatar"/>
+				<img className="avatarprofil" src={profile?.avatar} alt="avatar"/>
 				{ getPseudoAndCo() }
 			</div>
 		</div>
 	)
 
 	const getPseudoAndCo = () => {
-		const mapStatus = new Map<string, string>()
+		const mapStatus = new Map<Status, string>()
 
-		mapStatus.set("En ligne", "online");
-		mapStatus.set("Hors ligne", "offline");
-		mapStatus.set("En pleine partie", "ingame");
+		mapStatus.set(Status.ONLINE, "online");
+		mapStatus.set(Status.OFFLINE, "offline");
+		mapStatus.set(Status.INGAME, "ingame");
 
 		return (
 			<div className="pseudo-container">
-				<div className={"circle " + mapStatus.get(status) } />
-				<p className="pseudo">{pseudo}</p>
+				<div className={"circle " + mapStatus.get(Status.ONLINE) } />
+				<p className="pseudo">{profile?.pseudo}</p>
 			</div>
 		)
 	}
@@ -166,8 +89,8 @@ const MyProfile = (props: Props) => {
 
 		return (
 			<div className="level-container">
-				<p className="level">Level {level}</p>
-				<ProgressBar bgcolor="blue" completed={40} />
+				<p className="level">Level {profile?.level}</p>
+				<ProgressBar bgcolor="blue" completed={profile?.percentageXp} />
 			</div>
 		)
 	}
@@ -175,7 +98,7 @@ const MyProfile = (props: Props) => {
 	const getFriends = () => (
 		<div className="friends-container">
 			<p className="friends-title">Friends</p>
-			<p className="friends-number">{nbFriends}</p>
+			<p className="friends-number">{profile?.friends}</p>
 		</div>
 	)
 
@@ -188,14 +111,12 @@ const MyProfile = (props: Props) => {
 
 	const getSomeStat = (stat: Stat) => {
 		const mapStatTitle = new Map<Stat, string>();
-		const mapStatNb = new Map<Stat, number>();
+		const mapStatNb = new Map<Stat, number | undefined>();
 
 		mapStatTitle.set(Stat.WINS, "Wins")
 		mapStatTitle.set(Stat.LOSES, "Loses")
-		mapStatTitle.set(Stat.RANK, "Rank")
-		mapStatNb.set(Stat.WINS, nbWins)
-		mapStatNb.set(Stat.LOSES, nbLoses)
-		mapStatNb.set(Stat.RANK, rank)
+		mapStatNb.set(Stat.WINS, profile?.wins)
+		mapStatNb.set(Stat.LOSES, profile?.looses)
 		const baseClassName = "stat-item"
 		return (
 			<div className={baseClassName + "-container"}>
@@ -213,36 +134,30 @@ const MyProfile = (props: Props) => {
 				<div className="stats-container">
 					{ getSomeStat(Stat.WINS) }
 					{ getSomeStat(Stat.LOSES) }
-					{ getSomeStat(Stat.RANK) }
 				</div>
 			</div>
 		)
 	}
 
 	const getMatches = () => {
-		const mode = new Map<GameMode, string>()
-
-		mode.set(GameMode.CLASSIC, "Classic");
-		mode.set(GameMode.MEDIUM, "Medium");
-		mode.set(GameMode.HARD, "Hard");
-		const matchesJSX =  matches.map((match: Match, index: number) => {
+		const matchesJSX =  profile?.history.map((match: GameDto, index: number) => {
 			return (
 				<div key={index} className="match-mode-container">
 					<div className="match-container">
 						<div className="match-item match-user">
-							{match.userStat.win && <img className="crown" src={Crown} />}
-							<p className="match-username match-username1">{match.userStat.user.pseudo}</p>
+							{match.score1 > match.score2 && <img className="crown" src={Crown} />}
+							<p className="match-username match-username1">{match.player1.pseudo}</p>
 						</div>
-						<p className="match-item match-score match-score1">{match.userStat.score}</p>
+						<p className="match-item match-score match-score1">{match.score1}</p>
 						<p className="match-item hyphen">-</p>
-						<p className="match-item match-score match-score1">{match.opponentStat.score}</p>				
+						<p className="match-item match-score match-score1">{match.score2}</p>				
 						<div className="match-item match-user">
-							<p className="match-username match-username2">{match.opponentStat.user.pseudo}</p>
-							{match.opponentStat.win && <img className="crown" src={Crown} />}
+							<p className="match-username match-username2">{match.player2.pseudo}</p>
+							{match.score2 > match.score1 && <img className="crown" src={Crown} />}
 						</div>
 					</div>
 					<div className="match-mode">
-						<p className="mode">{mode.get(match.gameMode)}</p>
+						<p className="mode">{match.difficulty}</p>
 					</div>
 				</div>
 			)
@@ -250,8 +165,12 @@ const MyProfile = (props: Props) => {
 
 		return (
 			<React.Fragment>
-				{matchesJSX.length == 0 && <p>You haven't faced anyone yet...</p>}
-				{matchesJSX.length > 0 && matchesJSX}
+				{
+					profile?.history && (
+						profile.history.length == 0 && <p>This user haven't faced anyone yet...</p> ||
+						profile.history.length > 0 && matchesJSX
+					)
+				}
 			</React.Fragment>
 		)
 	}
@@ -268,6 +187,9 @@ const MyProfile = (props: Props) => {
 		)
 	}
 
+
+
+
 	const getPage = () => (
 		<div className="container">
 			{ getProfilImagesAndPseudo() }
@@ -277,12 +199,16 @@ const MyProfile = (props: Props) => {
 		</div>
 	)
 
+
+
+
 	return (
 		<React.Fragment>
 			<Navbar />
 			{ notification }
 			{ inviteNotification }
-			{isOkay && getPage()}
+			{ profile !== undefined && getPage() }
+			{ profile === undefined && <ServerDownPage /> }
 		</React.Fragment>
 	);
 }
