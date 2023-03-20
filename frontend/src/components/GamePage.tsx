@@ -172,7 +172,7 @@ const GamePage: React.FC = () => {
 				console.log("err = ", err)
 			}
 		})()
-	})
+	}, [])
 
 
 
