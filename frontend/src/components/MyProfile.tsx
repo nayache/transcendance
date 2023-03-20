@@ -29,24 +29,11 @@ enum Stat {
 	RANK,
 }
 
-enum GameMode {
-	CLASSIC,
-	MEDIUM,
-	HARD,
-}
-
 interface StatMatch {
 	user: IUser,
     win: boolean, // on specifie qui win (en cas de deco on peut win en ayant des points inf, en cas des 2 deco, personne ne win)
 	score: number,
 }
-
-interface Match {
-	userStat: StatMatch,
-	opponentStat: StatMatch,
-	gameMode: GameMode,
-}
-
 
 const MyProfile = () => {
 

@@ -31,22 +31,10 @@ enum Stat {
 	RANK,
 }
 
-enum GameMode {
-	CLASSIC,
-	MEDIUM,
-	HARD,
-}
-
 interface StatMatch {
 	user: IUser,
     win: boolean, // on specifie qui win (en cas de deco on peut win en ayant des points inf, en cas des 2 deco, personne ne win)
 	score: number,
-}
-
-interface Match {
-	userStat: StatMatch,
-	opponentStat: StatMatch,
-	gameMode: GameMode,
 }
 
 
@@ -56,7 +44,7 @@ const Profile = () => {
 	const socket = useSocket()
 	const pseudo = usePseudo()
 	const avatar = useAvatar()
-	const profile = useProfile(pseudoParam)
+	const profile = useProfile(pseudoParam !== pseudo ? pseudoParam : undefined)
 	const notification = useNotification(socket, {pseudo, avatar})
 	const inviteNotification = useInviteNotification(socket, pseudo)
 
@@ -133,11 +121,18 @@ const Profile = () => {
 
 		return (
 			<div className="stats-title-container">
-				<h3 className="stats-title">Stats</h3>
-				<div className="stats-container">
-					{ getSomeStat(Stat.WINS) }
-					{ getSomeStat(Stat.LOSES) }
-					{ getSomeStat(Stat.RANK) }
+				<div>
+					<h3 className="stats-title">Stats</h3>
+					<div className="stats-container">
+						{ getSomeStat(Stat.WINS) }
+						{ getSomeStat(Stat.LOSES) }
+					</div>
+				</div>
+				<div>
+					<h3 className="stats-title">Stats</h3>
+					<div className="achievements-container">
+
+					</div>
 				</div>
 			</div>
 		)
