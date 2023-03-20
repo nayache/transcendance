@@ -12,7 +12,7 @@ import { IUser } from "../interface/IUser";
 import { IoPaperPlaneOutline } from "react-icons/io5"
 import { IError } from "../constants/EError";
 import ClientApi from "./ClientApi.class";
-import { API_CHAT_DM, API_USER_BLOCK, PROFILE_EP, PROFILE_ROUTE } from "../constants/RoutesApi";
+import { API_CHAT_DM, API_USER_BLOCK, API_USER_DEL_FRIEND, PROFILE_EP, PROFILE_ROUTE } from "../constants/RoutesApi";
 import { useDMListener } from "../hooks/useDMListener";
 import { Socket } from "socket.io-client";
 
@@ -221,8 +221,9 @@ const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatI
 								<p>Do you wanna unblock {receiver?.pseudo} ?</p>
 							</div>
 							<div className="blocked-btns">
-								<button onClick={() => {
-									ClientApi.delete(API_USER_BLOCK + '/' + receiver?.pseudo)
+								<button onClick={async () => {
+									await ClientApi.delete(API_USER_BLOCK + '/' + receiver?.pseudo)
+									await ClientApi.delete(API_USER_DEL_FRIEND + '/' + receiver?.pseudo)
 									setIsReceiverBlocked(false)
 								}}
 								className="button_without_style unblock_dm_btn">Unblock</button>

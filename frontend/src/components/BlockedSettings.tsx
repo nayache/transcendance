@@ -4,7 +4,7 @@ import '../styles/BlockedSettings.css'
 import '../styles/Toggle.css'
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import ClientApi from "./ClientApi.class";
-import { API_AVATAR_ROUTE, API_BASE_USER, API_PSEUDO_ROUTE, API_TWOFA_ROUTE, API_USER_BLOCK, BASE_URL, PROFILE_EP, PROFILE_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
+import { API_AVATAR_ROUTE, API_BASE_USER, API_PSEUDO_ROUTE, API_TWOFA_ROUTE, API_USER_BLOCK, API_USER_DEL_FRIEND, BASE_URL, PROFILE_EP, PROFILE_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
 import { AboutErr, IError, TypeErr } from "../constants/EError";
 import { printButton, BtnStatus } from "./Button"
 import { usePseudo } from "../hooks/usePseudo";
@@ -34,6 +34,7 @@ const BlockedSettings = () => {
 				<button className="button_without_style unblock-btn-settings"
 				onClick={async () => {
 					const data: { blockeds: string[] } = await ClientApi.delete(API_USER_BLOCK + '/' + blocked)
+					await ClientApi.delete(API_USER_DEL_FRIEND + '/' + blocked)
 					setBlockeds(data.blockeds)
 				}}>Unblock</button>
 			</div>
