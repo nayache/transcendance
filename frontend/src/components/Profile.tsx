@@ -13,10 +13,10 @@ import { IUser } from "../interface/IUser"
 import Crown from '../img/crown.png'
 import ClientApi from "./ClientApi.class"
 import { AboutErr, IError, TypeErr } from "../constants/EError"
-import { API_BASE_USER } from "../constants/RoutesApi"
+import { API_BASE_USER, API_USER_ADD_FRIEND, API_USER_DEL_FRIEND, GAMEPAGE_ROUTE, MESSAGES_ROUTE } from "../constants/RoutesApi"
 import { useParams, useSearchParams } from "react-router-dom"
 import { useProfile } from "../hooks/useProfile"
-import { Status } from "../constants/EMessage"
+import { ChannelRole, Status } from "../constants/EMessage"
 import { GameDto } from "../interface/IGame"
 import ServerDownPage from "./ServerDownPage"
 import { useNotification } from "../hooks/useNotification"
@@ -28,6 +28,12 @@ import { DisplayAchievements, IDisplayAchievement } from "../constants/Achieveme
 import FirstBanner from "../img/first_banner.png"
 import MiddleBanner from "../img/middle_banner.png"
 import LastBanner from "../img/last_banner.png"
+import { AiOutlinePlusSquare } from "react-icons/ai"
+import { Relation } from "../interface/IUser"
+import { AiOutlineMinusSquare } from "react-icons/ai"
+import { FiMessageSquare } from "react-icons/fi"
+import { FaGamepad } from "react-icons/fa"
+import ModalChannelMenu, { ModalChannelType } from "./ModalChannelMenu"
 
 enum Stat {
 	WINS,
@@ -51,8 +57,14 @@ const Profile = () => {
 	const [profile, error] = useProfile(pseudoParam !== pseudo ? pseudoParam : undefined)
 	const notification = useNotification(socket, {pseudo, avatar})
 	const inviteNotification = useInviteNotification(socket, pseudo)
+	const [btnFriends, setBtnFriends] = useState<Relation | undefined>(profile?.relation)
+	const [actionModal, setActionModal] = useState<ModalChannelType | null>(null)
 
 
+
+	useEffect(() => {
+		setBtnFriends(profile?.relation)
+	}, [profile])
 
 	const getProfilImagesAndPseudo = () => {
 		let srcImg: string | undefined;
@@ -69,6 +81,25 @@ const Profile = () => {
 				<div className="pseudo-avatar-container">
 					<img className="avatarprofil" src={profile?.avatar} alt="avatar"/>
 					{ getPseudoAndCo() }
+					{
+						profile?.relation !== undefined &&
+						<div className="interaction-container">
+							<div className="sendMsg-profile"
+							onClick={() => {
+								ClientApi.redirect = new URL(MESSAGES_ROUTE + '/' + profile.pseudo)
+							}}>
+								<p>Send message</p>
+								<FiMessageSquare className="profile-sendMessage-svg" />
+							</div>
+							<div className="sendMsg-profile"
+							onClick={() => {
+								setActionModal(ModalChannelType.INVITEUSER)
+							}}>
+								<p>Invite</p>
+								<FaGamepad className="profile-sendMessage-svg" />
+							</div>
+						</div>
+					}
 				</div>
 			</div>
 		)
@@ -78,6 +109,35 @@ const Profile = () => {
 		return (
 			<div className="pseudo-container">
 				<p className="pseudo">{profile?.pseudo}</p>
+				{
+					profile?.relation !== undefined && (
+						
+						btnFriends === Relation.UNKNOWN &&
+						<div className="addToFriends-container">
+							<AiOutlinePlusSquare className="addToFriends-svg"
+							onClick={async () => {
+								await ClientApi.post(API_USER_ADD_FRIEND + '/' + profile.pseudo)
+								setBtnFriends(Relation.PENDING)
+							}}/>
+						</div>
+						||
+
+						btnFriends === Relation.PENDING &&
+						<div className="addToFriends-container">
+							<p>Pending...</p>
+						</div>
+						||
+
+						btnFriends === Relation.FRIEND &&
+						<div className="addToFriends-container">
+							<AiOutlineMinusSquare className="addToFriends-svg" 
+							onClick={async () => {
+								await ClientApi.delete(API_USER_DEL_FRIEND + '/' + profile.pseudo)
+								setBtnFriends(Relation.UNKNOWN)
+							}}/>
+						</div>
+					)
+				}
 			</div>
 		)
 	}
@@ -186,7 +246,10 @@ const Profile = () => {
 					</div>
 				</div>
 			)
-		})
+		});
+
+
+
 
 		return (
 			<React.Fragment>
@@ -242,6 +305,22 @@ const Profile = () => {
 					Sorry, the player doesn't exist
 				</div>
 				
+			}
+			{ actionModal && profile?.pseudo &&
+				<ModalChannelMenu active={actionModal ? true : false} type={actionModal}
+				target={{
+					pseudo: profile.pseudo,
+					role: ChannelRole.USER,
+					status: Status.ONLINE,
+					color: 'black',
+				}} callback={(props) => {
+					if (actionModal === ModalChannelType.INVITEUSER)
+						ClientApi.redirect = new URL(GAMEPAGE_ROUTE + '/' + props.difficulty + '/fromInvite/' + profile.pseudo)
+					setActionModal(null)
+				}}
+				callbackFail={() => {
+					setActionModal(null)
+				}} />
 			}
 		</React.Fragment>
 	);

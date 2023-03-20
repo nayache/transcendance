@@ -1,6 +1,6 @@
 .avatar-back-container {
 	position: relative;
-	margin-bottom: 7rem;
+	margin-bottom: 12rem;
 }
 
 .avatarprofil {
@@ -13,6 +13,9 @@
 	width: 100%
 }
 
+.interaction-container {
+	display: flex;
+}
 
 .pseudo-avatar-container {
 	position: absolute;
@@ -22,6 +25,12 @@
 	flex-direction: column;
 }
 
+.addToFriends-container {
+	font-size: 0.78em;
+	margin-left: 10px;
+	cursor: pointer;
+}
+
 .pseudo-container {
 	position: relative;
 	display: flex;
@@ -29,9 +38,37 @@
 	justify-content: space-evenly;
 }
 
+.addToFriends-svg {
+	width: 1.5em;
+	height: auto;
+}
+
 .pseudo {
 	position: relative;
 	width: fit-content;
 	margin-left: 10px;
 	font-weight: 700;
+}
+
+.sendMsg-profile {
+	background-color: whitesmoke;
+	cursor: pointer;
+	padding: 4px;
+	border-radius: 10px;
+	box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+}
+
+.sendMsg-profile:active {
+	box-shadow: none;
+}
+
+.sendMsg-profile p {
+	display: inline;
+	margin: 0;
+}
+
+.profile-sendMessage-svg {
+	display: inline;
+	vertical-align: middle;
+	margin-left: 7px;
 }
