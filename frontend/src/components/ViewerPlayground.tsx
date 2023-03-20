@@ -90,6 +90,7 @@ const Playground = ({ socket, pseudo, infos }: Props) => {
 
 	useEffect(() => {
 		if (gameFrameRef.current) {
+			gameFrameRef.current.style.width = '70%';
 			gameFrameRef.current.style.height = 'auto'
 		}
 	}, [gameFrameRef])
