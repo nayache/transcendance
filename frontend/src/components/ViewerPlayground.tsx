@@ -10,7 +10,7 @@ import { Socket } from 'socket.io-client'
 import { Difficulty, GameDto, MoveObjects } from '../interface/IGame'
 import '../styles/Playground.css'
 import '../styles/Game.css'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { BtnStatus } from './Button'
 import { useStartGameListener } from '../hooks/useStartGameListener'
 import { useUpdateGameListener } from '../hooks/useUpdateGameListener'
@@ -38,6 +38,8 @@ const Playground = ({ socket, pseudo, infos }: Props) => {
 
 	const dimensions = useRef<CanvasDimensions>();
 	const [newInfos, setNewInfos] = useState<GameDto>();
+	const gameFrameRef = useRef<HTMLDivElement>(null)
+	
 
 	
 	const leftPaddle: PaddleDisplayer = new PaddleDisplayer(
@@ -85,6 +87,12 @@ const Playground = ({ socket, pseudo, infos }: Props) => {
 	})
 
 
+
+	useEffect(() => {
+		if (gameFrameRef.current) {
+			gameFrameRef.current.style.height = 'auto'
+		}
+	}, [gameFrameRef])
 
 	return (
 		<div className="playground-container">
