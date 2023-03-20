@@ -229,14 +229,17 @@ const MyProfile = () => {
 		<React.Fragment>
 			<Navbar />
 			{
-				(
-					notification &&
-					inviteNotification && (
-						profile !== undefined && getPage() ||
-						profile === undefined && <ServerDownPage />
-					)
-				)
+				error === undefined && notification &&
+				inviteNotification && (
+					profile !== undefined && getPage() ||
+					profile === undefined && <ServerDownPage />
+				) ||
 
+				error !== undefined && error !== null &&
+				<div>
+					Sorry, the player doesn't exist
+				</div>
+				
 			}
 		</React.Fragment>
 	);
