@@ -79,10 +79,8 @@ const GamePage: React.FC = () => {
 	useEffect(() => {
 		socket?.on('opponentDisconnect', () => {
 			console.log("(opponentDisconnect)")
-			if (go) {
-				setContentError("The opponent disconnected")
-				setActiveError(ModalGameType.ERRORSEARCHPLAYER)
-			}
+			setContentError("The opponent disconnected")
+			setActiveError(ModalGameType.ERRORSEARCHPLAYER)
 		})
 		return () => {
 			socket?.removeAllListeners('opponentDisconnect')

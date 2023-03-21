@@ -22,7 +22,8 @@
 	--baseHeight: 1016px;
 	--percentageWidth: 70%;
 	--calculatedPercentageheight: 62%;
-	border: 5px solid white;
+	--border-color: white;
+	border: 5px solid var(--border-color);
 	/* min-height: fit-content; */
 	width: var(--baseWidth);
 	height: var(--baseHeight);
