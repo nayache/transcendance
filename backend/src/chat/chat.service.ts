@@ -41,7 +41,7 @@ export class ChatService {
     }
 
     isValidChannelName(name: string): boolean {
-        console.log('name: ',name)
+        // console.log('name: ',name)
         if (name.search(/\s/) != -1)
             return false
         return (name.length >= 3 && name.length <= 20);
@@ -184,7 +184,7 @@ export class ChatService {
     }
 
     async setUnmuteDate(muted: Mute, unmutedDate: Date) {
-        console.log(unmutedDate, " -.........")
+        // console.log(unmutedDate, " -.........")
         const member: Member = await this.getMemberByUserId(muted.userId, muted.channelId);
 		try {
         	return await this.memberRepository.update(member.id, {unmuteDate: unmutedDate});
@@ -196,7 +196,7 @@ export class ChatService {
 
     async muteUser(channelName: string, target: UserEntity, duration: number): Promise<Mute> {
         const channel: ChannelEntity = await this.getChannelByName(channelName);
-        console.log(await this.isMuted(channelName, target.id))
+        // console.log(await this.isMuted(channelName, target.id))
         let muted: Mute = await this.findMute(channel, target.id);
         try {
             if (!muted)
@@ -427,7 +427,7 @@ export class ChatService {
 
     async getDiscussions(userId: string): Promise<Discussion[]> {
         const messages: PrivateMessageEntity[] = await this.findPrivateMsg(userId);
-        //console.log(messages);
+        //// console.log(messages);
         let users: string[] = [];
         messages.map((msg) => {
             if (!users.find((name) => (name) === msg.authorId || (name) === msg.targetId))

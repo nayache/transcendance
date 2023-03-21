@@ -21,14 +21,14 @@ const ModalDMMenu = ({ active, type, user, callback, callbackFail }: Props) => {
 
 
 	const onChooseReceiver = (props?: any) => {
-		console.log("onChooseReceiver")
+		// console.log("onChooseReceiver")
 		if (callback)
 			callback(props)
 	}
 
 	useEffect(() => {
-		console.log("type (dans modal) = ", type)
-		console.log("active (dans modal) = ", active)
+		// console.log("type (dans modal) = ", type)
+		// console.log("active (dans modal) = ", active)
 		if (modalRef.current) {
 			modalRef.current.style.display = active ? "block" : "none";
 		}

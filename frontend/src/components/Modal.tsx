@@ -23,7 +23,7 @@ const Modal = ({ active, title, content, callback, callbackFail }: Props) => {
 
 	
 	{
-		console.log("active (dans modal) = ", active)
+		// console.log("active (dans modal) = ", active)
 		if (modalRef.current) {
 			modalRef.current.style.display = active ? "block" : "none";
 		}

@@ -15,8 +15,8 @@ export const useMuteUserUpdater = (
 	useEffect(() => {
 		if (chanUser?.pseudo) {
 			socket?.on('muteUser', async (payload: IChannelEvMute) => {
-				console.log("(mute) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.target)
-				console.log("(mute) currentChannelId = ", currentChannelId)
+				// console.log("(mute) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.target)
+				// console.log("(mute) currentChannelId = ", currentChannelId)
 				const daChannel: IChannel | undefined =
 				channels.find(channel => channel.name === payload.channel)
 				if (daChannel) { // impossible que daChannel soit undefined
@@ -25,7 +25,7 @@ export const useMuteUserUpdater = (
 						if (!(currentChannelId <= -1 || currentChannelId >= channels.length)
 						&& channels[currentChannelId].name === payload.channel) {
 							payload.expiration = new Date(payload.expiration)
-							console.log("test ici en mute")
+							// console.log("test ici en mute")
 							if (onMuteUserUpdate)
 								onMuteUserUpdate(payload)
 						}
@@ -33,7 +33,7 @@ export const useMuteUserUpdater = (
 					else if (chanUser.pseudo === payload.author.pseudo) {
 						if (!(currentChannelId <= -1 || currentChannelId >= channels.length)
 						&& channels[currentChannelId].name === payload.channel) {
-							console.log("test ici en mute")
+							// console.log("test ici en mute")
 							payload.expiration = new Date(payload.expiration)
 							if (onMuteUserUpdate)
 								onMuteUserUpdate(payload)

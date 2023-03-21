@@ -28,7 +28,7 @@ export const useRegister = (now: boolean = true, twofa: string | null = null)
 
 	const tryToRegister = useCallback(async function(twofa: string | null = null, code: string | null = getUrlCode()) {
 		try {
-			console.log("twofa = ", twofa, " et code = ", code);
+			// console.log("twofa = ", twofa, " et code = ", code);
 			await ClientApi.register(async () => {
 				// get /auth/2fa return true
 				setPageCase(PageCase.TOKEN_CREATED);
@@ -36,7 +36,7 @@ export const useRegister = (now: boolean = true, twofa: string | null = null)
 		} catch (err) {
 			const _error: IError = err as IError;
 			
-			console.log("err = ", err);
+			// console.log("err = ", err);
 			if (_error.about == AboutErr.TWOFA && _error.type == TypeErr.REJECTED)
 			{
 				setPageCase(PageCase.ERROR_TWOFA);

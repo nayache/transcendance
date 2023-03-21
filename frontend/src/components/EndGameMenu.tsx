@@ -32,7 +32,7 @@ export const EndGameMenu = ({ gameInfos, pseudo, onEndGame }: Props) => {
 
 	return (
 		<React.Fragment>
-			{ (() => {console.log("playerSide = ", playerSide, " didWin = ", didWin); return true})() &&
+			{
 			playerSide !== undefined && didWin !== undefined &&
 				<div className="endGame-container">
 					<div className="endGame-child">

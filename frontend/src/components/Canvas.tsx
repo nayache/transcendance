@@ -24,7 +24,7 @@ const Canvas = ({onInit, $onResize, ...rest}: Props) => {
 		let context = canvas.getContext('2d');
 		if (!context)
 			return ;
-		console.log("canvas.getBoundingClientRect().top = ", canvas.getBoundingClientRect().top, "  canvas.getBoundingClientRect().y = ", canvas.getBoundingClientRect().y)
+		// console.log("canvas.getBoundingClientRect().top = ", canvas.getBoundingClientRect().top, "  canvas.getBoundingClientRect().y = ", canvas.getBoundingClientRect().y)
 		canvas.addEventListener('resize', (ev) => {
 			if ($onResize)
 				$onResize(canvasRef.current)

@@ -147,7 +147,6 @@ const Playground = ({ socket, pseudo, infos }: Props) => {
 						</Container>
 					</div>
 					{
-						(() => {console.log("newInfos = ", newInfos, " isFinished = ", isFinished, " pseudo = ", pseudo); return true})() &&
 						isFinished && pseudo && newInfos !== undefined &&
 						<ModalGameStatMenu active={isFinished} type={ModalGameStatType.ENDGAME}
 						gameInfos={newInfos} pseudo={pseudo}

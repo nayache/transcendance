@@ -51,8 +51,8 @@ const MyProfileSettings = () => {
 			}
 		} catch (err) {
 			const _error: IError = err as IError
-			console.log("_error.about = ", _error.about)
-			console.log("_error = ", _error);
+			// console.log("_error.about = ", _error.about)
+			// console.log("_error = ", _error);
 			if (err == "Not Found")
 				setServorErrorText("Failed to fetch to the server")
 			else {
@@ -95,8 +95,8 @@ const MyProfileSettings = () => {
 			const _error: IError = err as IError
 			const _err: {statusCode: string | number} = err as {statusCode: string | number}
 
-			console.log("_error.about = ", _error.about)
-			console.log("_error = ", _error);
+			// console.log("_error.about = ", _error.about)
+			// console.log("_error = ", _error);
 			if (err == "Not Found")
 				setServorErrorText("Failed to fetch to the server")
 			else {
@@ -128,7 +128,7 @@ const MyProfileSettings = () => {
 	const handleChangeAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
 		if (event.target.files)
 		{
-			console.log("event.target.fiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiles[0] = ", event.target.files[0]);
+			// console.log("event.target.fiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiles[0] = ", event.target.files[0]);
 			setNewAvatar(URL.createObjectURL(event.target.files[0]));
 			setAvatarFile(event.target.files[0])
 			// const file = ClientApi.resizeFile(event.target.files[0]) as Promise<File>

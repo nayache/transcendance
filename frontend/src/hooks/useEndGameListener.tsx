@@ -12,7 +12,7 @@ export const useEndGameListener = (
 
 	useEffect(() => {
 		socket?.on('endGame', (gameInfos) => {
-			console.log("(endGame) gameInfos = ", gameInfos)
+			// console.log("(endGame) gameInfos = ", gameInfos)
 			setIsFinished(true)
 			if (onEndGameListener)
 				onEndGameListener(gameInfos)

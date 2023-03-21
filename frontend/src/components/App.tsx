@@ -19,7 +19,6 @@ import TwoFA from './TwoFA';
 import TwoFASettings from './TwoFASettings';
 import MyProfileSettings from './MyProfileSettings';
 import { Provider } from 'react-redux';
-import store from '../redux/store';
 import DM from './DM';
 import HelpSettings from './HelpSettings';
 import BlockedSettings from './BlockedSettings';

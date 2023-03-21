@@ -71,7 +71,7 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 		ball.display(_ball)
 		setStartBtn("good")
 	}, () => {
-		console.log("salut alors la c le start game qui est appelé")
+		// console.log("salut alors la c le start game qui est appelé")
 		leftPlayer.paddle.plugMove = true;
 		rightPlayer.paddle.plugMove = true;
 		leftPlayer.paddle.setUp(drawer.canvas, drawer.context, drawer.canvasWidth, drawer.canvasHeight)
@@ -163,8 +163,8 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 						startBtn === "idle" && 
 						<div className="pulseBtn-wrap">
 							<button className="pulseBtn-button" onClick={() => {
-								console.log("dimensions.current = ", dimensions.current)
-								console.log("drawer.isCanvasUtilsSet() = ", drawer.isCanvasUtilsSet())
+								// console.log("dimensions.current = ", dimensions.current)
+								// console.log("drawer.isCanvasUtilsSet() = ", drawer.isCanvasUtilsSet())
 								if (drawer.isCanvasUtilsSet())
 									socket.emit('setReady', {
 										game: infos,
@@ -198,7 +198,6 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 						<div className="pulseBtn-wrap" />
 					}
 					{
-						(() => {console.log("newInfos.current = ", newInfos.current, " isFinished = ", isFinished, " pseudo = ", pseudo); return true})() &&
 						isFinished && pseudo && newInfos.current !== undefined &&
 						<ModalGameStatMenu active={isFinished} type={ModalGameStatType.ENDGAME}
 						gameInfos={newInfos.current} pseudo={pseudo}

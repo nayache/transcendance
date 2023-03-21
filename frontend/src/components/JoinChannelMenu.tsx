@@ -46,12 +46,6 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 
 	const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		passwordWritten.current = e.target.value;
-		console.log("passwordWritten.current = ", passwordWritten.current)
-		if (inputRef.current &&
-			inputRef.current.value.length >= MAX_CARAC_CHANNEL_NAME)
-			console.log("max length reached")
-		else
-			console.log("okay good")
 	}
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,7 +66,7 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 		setErrorChannel("");
 		(async () => {
 			try {
-				console.log("channelSelected?.name = ", channelSelected?.name, " passwordWritten.current = ", passwordWritten.current)
+				// console.log("channelSelected?.name = ", channelSelected?.name, " passwordWritten.current = ", passwordWritten.current)
 				const { channel } = await ClientApi.patch(API_CHAT_CHANNEL_JOIN_ROUTE, JSON.stringify({
 					name: channelSelected?.name,
 					password: passwordWritten.current
@@ -87,7 +81,7 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 			} catch (err) {
 				const _error: IError = err as IError
 
-				console.log("err = ", err);
+				// console.log("err = ", err);
 				setBtnStatus("fail")
 				setTimeout(() => setBtnStatus("idle"), 2000)
 				if (_error.about === AboutErr.PASSWORD && _error.type === TypeErr.INVALID) {
@@ -194,11 +188,11 @@ export const JoinChannelMenu = ({ chanUser, channels, addChannel, setCurrentChan
 				.filter(realChannelPrvw =>
 					channels.every(channel => channel.name !== realChannelPrvw.name)
 				)
-				console.log("channelPrvws = ", channelPrvws)
+				// console.log("channelPrvws = ", channelPrvws)
 				setChannelPrvws(channelPrvws);
 				setVisibleChannelPrvws(channelPrvws);
 			} catch (err) {
-				console.log("err = ", err);
+				// console.log("err = ", err);
 			}
 		})()
 	}, [])

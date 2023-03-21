@@ -10,7 +10,7 @@ export const useInviteGame = (
 	
 	useEffect(() => {
 		socket?.on('inviteGame', (data: IGameInviteEv) => {
-			console.log("(inviteGame) data = ", data);
+			// console.log("(inviteGame) data = ", data);
 			if (onInviteGame)
 				onInviteGame(data)
 		})

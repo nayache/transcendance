@@ -25,17 +25,17 @@ export const useNotification = (
 
 	useDMListener(socket, user, undefined, undefined, undefined, (payload) => {
 		infos.current = payload
-		console.log("infos.current = ", infos.current)
+		// console.log("infos.current = ", infos.current)
 		setNotificationType(NotificationType.DM)
 	})
 	useNewFriendReqListener(socket, user.pseudo, undefined, (payload) => {
 		infos.current = payload
-		console.log("infos.current = ", infos.current)
+		// console.log("infos.current = ", infos.current)
 		setNotificationType(NotificationType.NEWFRIEND)
 	})
 	useNewFriendAccListener(socket, user.pseudo, undefined, (payload) => {
 		infos.current = payload
-		console.log("infos.current = ", infos.current)
+		// console.log("infos.current = ", infos.current)
 		setNotificationType(NotificationType.ACCEPTEDFRIEND)
 	})
 	

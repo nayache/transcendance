@@ -65,7 +65,7 @@ export class GameController {
 
     @Post('search/:difficulty')
     async searchOpponent(@User() userId: string, @Param('difficulty') difficulty: Difficulty) {
-        console.log('search game in -> ', difficulty, )
+        // console.log('search game in -> ', difficulty, )
         if (!matchDifficulty(difficulty))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.INVALID, 'invalid difficulty argument');
         if (this.gameService.isInMatchmaking(userId))
@@ -73,14 +73,16 @@ export class GameController {
         if (this.gameService.isInGame(userId))
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.REJECTED, 'user is already ingame');
         const game: GameEntity = await this.gameService.searchOpponent(userId, difficulty);
-        if (game)
+        if (game) {
+			this.gameService.addMatch(game.player1Id, game.player2Id);
             await this.appGateway.matchEvent(game);
+		}
         return {}
     }
 
     @Post('invite')
     async inviteGame(@User() userId: string, @Body() payload: inviteGameDto) {
-        console.log(payload);
+        // console.log(payload);
         const difficulty: Difficulty = matchDifficulty(payload.difficulty);
         if (!difficulty)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.INVALID, 'invalid difficulty argument');
@@ -124,6 +126,7 @@ export class GameController {
                 throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.GAME, TypeErr.REJECTED, 'cant start game');
             this.appGateway.matchEvent(game);
         } else {
+		//	this.gameService.addMatch(game.player1Id, game.player2Id);
             this.gameService.deleteChallenge(invitation);
             this.appGateway.declineGame(target.id);
         }

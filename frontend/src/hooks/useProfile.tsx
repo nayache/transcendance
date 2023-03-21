@@ -15,16 +15,16 @@ export const useProfile = (pseudoParam?: string): [IProfile | null | undefined, 
 			try {
 				const route: string = pseudoParam ? API_PROFILE_ROUTE + '/' + pseudoParam : API_PROFILE_ROUTE
 				const data: { profile: IProfile } = await ClientApi.get(route)
-				console.log("data.profile (avant remaniage) = ", data.profile)
+				// console.log("data.profile (avant remaniage) = ", data.profile)
 				data.profile.level = Math.round(data.profile.level)
 				data.profile.percentageXp = Math.round(data.profile.percentageXp)
 				data.profile.requiredXp = Math.round(data.profile.requiredXp)
 				data.profile.xp = Math.round(data.profile.xp)
 				data.profile.avatar = data.profile.avatar ? data.profile.avatar : DefaultImg
-				console.log("data.profile (apres remaniage) = ", data.profile)
+				// console.log("data.profile (apres remaniage) = ", data.profile)
 				setProfile(data.profile)
 				setError(undefined)
-				console.log("profile = ", profile)
+				// console.log("profile = ", profile)
 			} catch (err) {
 				const _typeError: TypeError = err as TypeError;
 				const _error: IError = err as IError;

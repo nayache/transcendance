@@ -33,7 +33,7 @@ abstract class CanvasObject {
 		private _canvasHeight?: number,
 		private _canvasPosY?: number,
 	) {
-		console.log("CanvasObject creation")
+		// console.log("CanvasObject creation")
 	}
 
 

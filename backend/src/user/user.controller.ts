@@ -101,7 +101,7 @@ export class UserController {
 	async getProfileAvatar(
 		@Param('pseudo') pseudo: string,
 	): Promise <{avatar: string}> {
-		console.log(pseudo)
+		// console.log(pseudo)
 		if (!pseudo)
 			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'Empty pseudo');
 		const user = await this.userService.findByPseudo(pseudo);
@@ -143,7 +143,7 @@ async postpseudoAvatar(
 			'image/jpeg',
 			'image/png'
 		];
-		console.log(file.buffer);
+		// console.log(file.buffer);
 		if (file.buffer.length == 0)
 			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID, 'File is not an image');
 		const mime = await this.avatarService.getMimeTypeFromArrayBuffer(file.buffer);
@@ -162,7 +162,7 @@ async postpseudoAvatar(
 
 	@Patch('avatar')
       @UseInterceptors(FileInterceptor('file', {fileFilter: (req: any, file: any, cb: any) => {
-        //console.log(file.mimetype.split('/')[1])
+        //// console.log(file.mimetype.split('/')[1])
 		if (file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
             // Allow storage of file
 			//if (file.mimetype.split('/')[1] != extname(file.originalname))
@@ -188,7 +188,7 @@ async postpseudoAvatar(
 					'image/jpg',
 					'image/png'
 				];
-				console.log(file.mimetype);
+				// console.log(file.mimetype);
 				if (file.buffer.length == 0)
 					throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID, 'File is not an image');
 				const mime = await this.avatarService.getMimeTypeFromArrayBuffer(file.buffer);

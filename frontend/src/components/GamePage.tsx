@@ -37,8 +37,8 @@ const GamePage: React.FC = () => {
 	useEffect(() => {
 		if (clicked || invited || author) {
 			socket?.on('matchEvent', ({game: gameInfos, me}: {game: GameDto, me: PlayerDto}) => {
-				console.log("(matchEvent) gameInfos = ", gameInfos)
-				console.log("(matchEvent) me = ", me)
+				// console.log("(matchEvent) gameInfos = ", gameInfos)
+				// console.log("(matchEvent) me = ", me)
 				if (gameInfos.player1.id === me.id) {
 					const leftPaddle: PaddleDisplayer = new PaddleDisplayer(
 						socket,
@@ -78,7 +78,7 @@ const GamePage: React.FC = () => {
 
 	useEffect(() => {
 		socket?.on('opponentDisconnect', () => {
-			console.log("(opponentDisconnect)")
+			// console.log("(opponentDisconnect)")
 			setContentError("The opponent disconnected")
 			setActiveError(ModalGameType.ERRORSEARCHPLAYER)
 		})
@@ -98,7 +98,7 @@ const GamePage: React.FC = () => {
 				}
 			}
 			catch (err) {
-				console.log("err = ", err);
+				// console.log("err = ", err);
 				setContentError("You cannot accept the invitation...")
 				setActiveError(ModalGameType.ERRORSEARCHPLAYER)
 			}
@@ -122,7 +122,7 @@ const GamePage: React.FC = () => {
 			catch (err) {
 				const _error: IError = err as IError;
 
-				console.log("err = ", err);
+				// console.log("err = ", err);
 				if (_error.about === AboutErr.TARGET && _error.type === TypeErr.REJECTED)
 					setActiveError(ModalGameType.INVITNOTRESPONDED)
 				else
@@ -133,7 +133,7 @@ const GamePage: React.FC = () => {
 
 	useEffect(() => {
 		(async () => {
-			console.log("gamemode = ", gameMode)
+			// console.log("gamemode = ", gameMode)
 			if (!(gameMode === Difficulty.EASY || gameMode === Difficulty.MEDIUM ||
 				gameMode === Difficulty.HARD))
 				ClientApi.redirect = new URL(BASE_URL)
@@ -141,16 +141,16 @@ const GamePage: React.FC = () => {
 				try {
 					if (clicked) {
 						try {
-							console.log("bonsoirrrrrrrrrrrrrrrrrrrrrrrrr")
+							// console.log("bonsoirrrrrrrrrrrrrrrrrrrrrrrrr")
 							await ClientApi.post(API_GAME_SEARCH + '/' + gameMode)
 						}
 						catch (err) {
-							console.log("err = ", err);
+							// console.log("err = ", err);
 							setActiveError(ModalGameType.ERRORSEARCHPLAYER)
 						}
 					}
 				} catch (err) {
-					console.log("err = ", err);
+					// console.log("err = ", err);
 				}
 			}
 		})()
@@ -167,7 +167,7 @@ const GamePage: React.FC = () => {
 				}
 			}
 			catch (err) {
-				console.log("err = ", err)
+				// console.log("err = ", err)
 			}
 		})()
 	}, [])

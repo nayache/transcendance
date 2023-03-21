@@ -34,8 +34,8 @@ const ModalGameStatMenu = ({ active, type, pseudo, gameInfos, callback, callback
 	}
 
 	useEffect(() => {
-		console.log("type (dans modal) = ", type)
-		console.log("active (dans modal) = ", active)
+		// console.log("type (dans modal) = ", type)
+		// console.log("active (dans modal) = ", active)
 		if (modalRef.current) {
 			modalRef.current.style.display = active ? "block" : "none";
 		}

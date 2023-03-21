@@ -64,12 +64,12 @@ const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
 	}
 
 	const onJoin = () => {
-		console.log("onJoin")
+		// console.log("onJoin")
 		handleClick(callback)
 	}
 	
 	const onCreate = () => {
-		console.log("onCreate")
+		// console.log("onCreate")
 		handleClick(callback)
 	}
 	
@@ -110,8 +110,8 @@ const ModalChannelMenu = ({ active, type, chanUser, channels, currentChannelId,
 	}
 
 	useEffect(() => {
-		console.log("type (dans modal) = ", type)
-		console.log("active (dans modal) = ", active)
+		// console.log("type (dans modal) = ", type)
+		// console.log("active (dans modal) = ", active)
 		if (modalRef.current) {
 			modalRef.current.style.display = active ? "block" : "none";
 		}

@@ -33,18 +33,12 @@ const EditChannelMenu = ({ chanUser, channelName, channelPrv, channelPassword, o
 	const [btnStatusPwd, setBtnStatusPwd] = useState<BtnStatus>("idle")
 	const [password, setPassword] = useState<boolean>(channelPassword);
 	const [prv, setPrv] = useState<boolean>(channelPrv);
-	console.log("prv (dans edit channel) = ", prv)
+	// console.log("prv (dans edit channel) = ", prv)
 
 
 
 	const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		passwordWritten.current = e.target.value;
-		console.log("passwordWritten.current = ", passwordWritten.current)
-		if (inputRef.current &&
-			inputRef.current.value.length >= MAX_CARAC_CHANNEL_NAME)
-			console.log("max length reached")
-		else
-			console.log("okay good")
 	}
 
 	const handleSavePrv = () => {
@@ -63,7 +57,7 @@ const EditChannelMenu = ({ chanUser, channelName, channelPrv, channelPassword, o
 						action: "prv"})
 				passwordWritten.current = ""
 			} catch (err) {
-				console.log("err = ", err);
+				// console.log("err = ", err);
 				setBtnStatusPrv("fail")
 				setTimeout(() => setBtnStatusPrv("idle"), 2000)
 			}
@@ -74,7 +68,7 @@ const EditChannelMenu = ({ chanUser, channelName, channelPrv, channelPassword, o
 		setErrorPassword("");
 		(async () => {
 			try {
-				console.log("passwordWritten.current = ", passwordWritten.current)
+				// console.log("passwordWritten.current = ", passwordWritten.current)
 				await ClientApi.patch(API_CHAT_CHANNEL_PWDACCESS_ROUTE, JSON.stringify({
 					name: channelName,
 					password: passwordWritten.current,
@@ -121,15 +115,15 @@ const EditChannelMenu = ({ chanUser, channelName, channelPrv, channelPassword, o
 
 
 	useEffect(() => {
-		console.log("channelPassword = ", channelPassword)
-		console.log("channelPrv = ", channelPrv)
+		// console.log("channelPassword = ", channelPassword)
+		// console.log("channelPrv = ", channelPrv)
 		setPassword(channelPassword);
 		setPrv(channelPrv);
 	}, [channelName, channelPrv, channelPassword])
 
 	useEffect(() => {
-		console.log("btnStatusPrv = ", btnStatusPrv)
-		console.log("btnStatusPwd = ", btnStatusPwd)
+		// console.log("btnStatusPrv = ", btnStatusPrv)
+		// console.log("btnStatusPwd = ", btnStatusPwd)
 	}, [btnStatusPrv, btnStatusPwd])
 
 	useEffect(() => {

@@ -130,10 +130,10 @@ export const useMessagesListeners = (
 
 			if (messages.length > noMessages.current)
 			{
-				console.log("oldChannelName.current = ", oldChannelName.current)
+				// console.log("oldChannelName.current = ", oldChannelName.current)
 				if (scrollBottom >= lowerTopPoint || chanUser?.pseudo === rpseudoSender.current
 				|| (messages.length > 0 && oldChannelName.current != channels[currentChannelId].name)) {
-					console.log("noMessages.current = ", noMessages.current)
+					// console.log("noMessages.current = ", noMessages.current)
 					messagesContainerRef.current?.scrollTo(0, lowerBottomPoint);
 				}
 				oldChannelName.current = channels[currentChannelId].name
@@ -159,7 +159,7 @@ export const useMessagesListeners = (
 					setMessages(resetMessagesBlock(channel.messages))
 				}
 			} catch (err) {
-				console.log("err = ", err)
+				// console.log("err = ", err)
 			}
 		})()
 	}, [currentChannelId])
@@ -167,17 +167,17 @@ export const useMessagesListeners = (
 	
 	/* ajoute un nouveau message */
 	useEffect(() => {
-		console.log("chanUser.pseudo dans useEffect() = ", chanUser?.pseudo)
+		// console.log("chanUser.pseudo dans useEffect() = ", chanUser?.pseudo)
 		if (chanUser?.pseudo && !(currentChannelId <= -1 || currentChannelId >= channels.length))
 		{
-			console.log("gonna bind messageRoom")
-			console.log("chanUser.pseudo avant bind = ", chanUser.pseudo)
+			// console.log("gonna bind messageRoom")
+			// console.log("chanUser.pseudo avant bind = ", chanUser.pseudo)
 			socket?.on('messageRoom', async (message: IChannelMessage) => {
 				try {
 					rpseudoSender.current = message.author;
-					console.log("psuudo       =    ", chanUser.pseudo);
-					console.log("message.channel = ", message.channel);
-					console.log("channels[currentChannelId].name = ", channels[currentChannelId].name);
+					// console.log("psuudo       =    ", chanUser.pseudo);
+					// console.log("message.channel = ", message.channel);
+					// console.log("channels[currentChannelId].name = ", channels[currentChannelId].name);
 					const { blockeds }: { blockeds: string[] } = await ClientApi
 						.get(API_USER_BLOCK)
 					if (blockeds.every(blocked => blocked !== message.author)) {
@@ -187,12 +187,12 @@ export const useMessagesListeners = (
 							])
 					}
 				} catch (err) {
-					console.log("err pouw updateMessages = ", err)
+					// console.log("err pouw updateMessages = ", err)
 				}
 			})
 		}
 		return () => {
-			console.log("before debind messageRoom")
+			// console.log("before debind messageRoom")
 			socket?.removeAllListeners("messageRoom");
 		}
 	}, [socket, chanUser, currentChannelId])

@@ -13,15 +13,15 @@ export const useStartGameListener = (
 
 	useEffect(() => {
 		socket?.on('preStartGame', ({leftPaddle, rightPaddle, ball: _ball}: MoveObjects) => {
-			console.log("(preStartGame) leftPaddle = ", leftPaddle)
-			console.log("(preStartGame) rightPaddle = ", rightPaddle)
-			console.log("(preStartGame) _ball = ", _ball)
+			// console.log("(preStartGame) leftPaddle = ", leftPaddle)
+			// console.log("(preStartGame) rightPaddle = ", rightPaddle)
+			// console.log("(preStartGame) _ball = ", _ball)
 			// try {
 				if (onPreStartGame)
 					onPreStartGame({leftPaddle, rightPaddle, ball: _ball})
 			// }
 			// catch (err) {
-			// 	console.log("err = ", err)
+			// 	// console.log("err = ", err)
 			// }
 		})
 		return () => {
@@ -31,7 +31,7 @@ export const useStartGameListener = (
 
 	useEffect(() => {
 		socket?.on('startGame', () => {
-			console.log("(startGame)")
+			// console.log("(startGame)")
 			if (onStartGame)
 				onStartGame()
 		})

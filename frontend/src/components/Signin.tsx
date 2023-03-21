@@ -58,8 +58,8 @@ const Signin = () => {
 		} catch (err) {
 			const _error: IError = err as IError
 			const _err = err as {statusCode: number | string};
-			console.log("_error.about = ", _error.about)
-			console.log("_error = ", _error);
+			// console.log("_error.about = ", _error.about)
+			// console.log("_error = ", _error);
 			if (err == "Not Found")
 				setServorErrorText("Failed to fetch to the server")
 			else {
@@ -92,7 +92,7 @@ const Signin = () => {
 	const handleChangeAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
 		if (event.target.files)
 		{
-			console.log("event.target.fiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiles[0] = ", event.target.files[0]);
+			// console.log("event.target.fiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiles[0] = ", event.target.files[0]);
 			setAvatar(URL.createObjectURL(event.target.files[0]));
 			setAvatarFile(event.target.files[0])
 			// const file = ClientApi.resizeFile(event.target.files[0]) as Promise<File>

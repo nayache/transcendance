@@ -12,9 +12,9 @@ export const useAvatar = () => {
 		(async () => {
 			try {
 				const data = await ClientApi.get(API_AVATAR_ROUTE)
-				console.log("data.avatar = ", data.avatar)
+				// console.log("data.avatar = ", data.avatar)
 				setAvatar(data.avatar ? data.avatar : DefaultImg)
-				console.log("avatar = ", avatar)
+				// console.log("avatar = ", avatar)
 			} catch (err) {
 				const _typeError: TypeError = err as TypeError;
 				const _error: IError = err as IError;

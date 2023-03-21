@@ -20,7 +20,7 @@ export class AuthService {
         }
         const uri: string = "https://api.intra.42.fr/oauth/token";
         const redirect_uri: string = 'http://localhost:3000/' + path; 
-        console.log('before fetch code:', code);
+        // console.log('before fetch code:', code);
         const response = await fetch(uri, {
             method: 'POST', headers: {
             'Content-Type': 'application/json'}, body: JSON.stringify({
@@ -29,7 +29,7 @@ export class AuthService {
             client_secret: process.env.CLIENT_SECRET,
             code: code, redirect_uri: redirect_uri
             })})
-        console.log('generate 42token response: ', response.status, response.statusText);
+        // console.log('generate 42token response: ', response.status, response.statusText);
         if (response.status != 200)
             return null
         
@@ -39,7 +39,7 @@ export class AuthService {
     async updateToken(refreshToken: string): Promise<TokenFtEntity> | null{
         const uri = "https://api.intra.42.fr/oauth/token";
           
-        console.log('before fetch')
+        // console.log('before fetch')
         const response = await fetch(uri, {
             method: 'POST', headers: {
             'Content-Type': 'application/json'}, body: JSON.stringify({
@@ -48,7 +48,7 @@ export class AuthService {
             client_id: process.env.CLIENT_ID, 
             client_secret: process.env.CLIENT_SECRET
         })})
-        console.log('updateToken() response: ', response.status, response.statusText);
+        // console.log('updateToken() response: ', response.status, response.statusText);
         
         return (response.status != 200) ? null : response.json()
     } 
@@ -111,7 +111,7 @@ export class AuthService {
             return decoded;
         } catch (err) {
             if (err.message == 'jwt expired')
-                console.log('decodeJwt(): expired');
+                console.log(''/*'decodeJwt(): expired'*/);
             else 
                 throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.TOKEN, TypeErr.INVALID, 'invalid token provides');
             return null
@@ -144,7 +144,7 @@ export class AuthService {
             throw new InvalidTokenException(TypeErr.EXPIRED);
         }
         if (this.tokenFtIsExpire(decoded.expire)) {
-            console.log('token ft is expire')
+            // console.log('token ft is expire')
             throw new InvalidTokenException(TypeErr.EXPIRED);
         }
         const user = await this.userService.findById(decoded.userId);
@@ -157,7 +157,7 @@ export class AuthService {
     
     
     /*async generateSecret(userId: string) {
-        console.log('APP_NAME =', process.env.APP_NAME);
+        // console.log('APP_NAME =', process.env.APP_NAME);
         const pseudo = await this.userService.getPseudoById(userId);
         const secret = authenticator.generateSecret();
         const otpAuthUrl = authenticator.keyuri(
@@ -174,7 +174,7 @@ export class AuthService {
     }*/
     
     async generateOtpUrl(userId: string, secret: string): Promise<string> {
-        console.log('APP_NAME =', process.env.APP_NAME);
+        // console.log('APP_NAME =', process.env.APP_NAME);
         const pseudo = await this.userService.getPseudoById(userId);
         const otpAuthUrl = authenticator.keyuri(
             pseudo,

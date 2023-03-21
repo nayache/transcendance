@@ -52,14 +52,14 @@ const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatI
 
 	const realPushMsg = async (id: number, msg: string) => {
 		try {
-			console.log("receiver?.pseudo ? receiver?.pseudo : null = ", receiver?.pseudo ? receiver?.pseudo : null)
+			// console.log("receiver?.pseudo ? receiver?.pseudo : null = ", receiver?.pseudo ? receiver?.pseudo : null)
 			const { id: _id } = await ClientApi.post(API_CHAT_DM, JSON.stringify({
 				target: receiver?.pseudo ? receiver?.pseudo : null,
 				msg: msg,
 				id
 			}), 'application/json')
 			id = _id
-			console.log("ici l'id vaut ", id)
+			// console.log("ici l'id vaut ", id)
 			updateChatItem(id, {
 				avatar: user?.avatar,
 				id: id++,
@@ -70,7 +70,7 @@ const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatI
 		} catch (err) {
 			const _error: IError = err as IError
 
-			console.log("err = ", err)
+			// console.log("err = ", err)
 			updateChatItem(id, {
 				avatar: user?.avatar,
 				id,
@@ -87,7 +87,7 @@ const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatI
 			inputRef.current.value = ""
 		if (msgWritten.current) {
 			try {
-				console.log("receiver?.pseudo ? receiver?.pseudo : null = ", receiver?.pseudo ? receiver?.pseudo : null)				
+				// console.log("receiver?.pseudo ? receiver?.pseudo : null = ", receiver?.pseudo ? receiver?.pseudo : null)				
 				const data: { blockeds: string[] } = await ClientApi.get(API_USER_BLOCK)
 				const isRecBlocked: boolean = data.blockeds.some(blocked => 
 					blocked === receiver?.pseudo )
@@ -108,7 +108,7 @@ const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatI
 			} catch (err) {
 				const _error: IError = err as IError
 	
-				console.log("err = ", err)
+				// console.log("err = ", err)
 				addChatItem({
 					avatar: user?.avatar,
 					type: "me",
@@ -131,7 +131,7 @@ const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatI
 						blocked === receiver.pseudo ))
 				}
 			} catch (err) {
-				console.log("err = ", err)
+				// console.log("err = ", err)
 			}
 		})()
 	}, [receiver])
@@ -144,11 +144,11 @@ const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatI
 	useEffect(() => {
 		const lastChild: HTMLDivElement | undefined | null = messagesContainerRef.current?.lastChild as HTMLDivElement
 
-		console.log("here 1")
-		console.log("messagesContainerRef.current = ", messagesContainerRef.current)
+		// console.log("here 1")
+		// console.log("messagesContainerRef.current = ", messagesContainerRef.current)
 		if (messagesContainerRef.current && lastChild?.previousElementSibling)
 		{
-			console.log("here 2")
+			// console.log("here 2")
 			const previousElementSibling: HTMLDivElement = lastChild.previousElementSibling as HTMLDivElement
 			const lowerBottomPoint: number = messagesContainerRef.current.scrollTop + messagesContainerRef.current.scrollHeight
 			const lowerTopPoint: number = messagesContainerRef.current?.offsetTop + previousElementSibling.offsetTop
@@ -156,8 +156,8 @@ const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatI
 			+ messagesContainerRef.current.getBoundingClientRect().height;
 
 			if (scrollBottom >= lowerTopPoint || chatItems.length > 0) {
-				console.log("here 4")
-				console.log("noMessages.current = ", noMessages.current)
+				// console.log("here 4")
+				// console.log("noMessages.current = ", noMessages.current)
 				messagesContainerRef.current?.scrollTo(0, lowerBottomPoint);
 			}
 			noMessages.current = chatItems.length;
@@ -206,7 +206,7 @@ const DMContent = ({ socket, user, receiver, chatItems, addChatItem, updateChatI
 									status: MessageStatus.LOADING,
 									msg: itm.msg
 								})
-								console.log("itm.id = ", itm.id)
+								// console.log("itm.id = ", itm.id)
 								if (itm.id)
 									realPushMsg(itm.id, itm.msg)
 							}}

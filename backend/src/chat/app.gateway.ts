@@ -50,7 +50,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   
   async afterInit() {
     if (!await this.chatService.channelExistt('General')) {
-      console.log('BUILD GENERAL')
+      // console.log('BUILD GENERAL')
       await this.chatService.createChannel('General', false);
     }
     this.logger.log('success initialized');
@@ -84,12 +84,12 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     }
     await this.joinSocketToRooms(user.id, user.socket);
     this.logger.log(`CONNECTED: ${socket.id} (${user.pseudo})`, "Gateway");
-    console.log('sockets: ',this.server.of('/').adapter.sids.size);
-    console.log('socketsgame numbers: ', this.inGamePage.size)
-    console.log('socketsgame ->: ')
-    for (let e of this.inGamePage.values())
-      console.log(e.id);
-    //console.log(this.server.of('/').adapter.rooms);
+    // console.log('sockets: ',this.server.of('/').adapter.sids.size);
+    // console.log('socketsgame numbers: ', this.inGamePage.size)
+    // console.log('socketsgame ->: ')
+    //for (let e of this.inGamePage.values())
+      // console.log(e.id);
+    //// console.log(this.server.of('/').adapter.rooms);
   }
 
   getIdBySocket(socket: Socket): string {
@@ -102,7 +102,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
 
   alreadyInGame(socket: Socket) {
     socket.emit('alreadyInGame');
-    console.log('--> ALREADY in Game')
+    // console.log('--> ALREADY in Game')
     return this.disconnect(socket);
   }
 
@@ -119,7 +119,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       joinedGeneral = true;
     }
     let channels: string[] = await this.chatService.getChannelNamesByUserId(userId);
-    console.log('=> channels rejoined', channels)
+    // console.log('=> channels rejoined', channels)
     socket.join(channels);
     if (joinedGeneral)
       await this.joinRoom(userId, 'General');
@@ -220,8 +220,11 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   async alertOpponent(userId: string) {
+	this.logger.warn('IN ALERRT OPPONENT')
     const opponentId: string = await this.gameService.getOpponent(userId);
+	this.logger.warn(opponentId)
     if (opponentId && this.inGamePage.has(opponentId)) {
+		// console.log('IN ALERT OPPONENT SENDINNNNNN')
       const socket: Socket = this.inGamePage.get(opponentId);
       this.server.to(socket.id).emit('opponentDisconnect');
     }
@@ -250,7 +253,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   async matchEvent(payload: GameEntity) {
-      console.log(payload.created_at.toLocaleString('fr-FR'))
+      // console.log(payload.created_at.toLocaleString('fr-FR'))
     if (!this.users.get(payload.player1Id) || !this.users.get(payload.player2Id)) {
       return;
     }
@@ -267,7 +270,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   @SubscribeMessage('setReady')
   async buildGame(@MessageBody() payload: {game: GameDto, w: number, h: number, y: number}, @ConnectedSocket() socket: Socket) {
     const userId: string = this.getIdBySocket(socket);
-    console.log('===========================================================setReady caller: ', userId)
+    // console.log('===========================================================setReady caller: ', userId)
     const author: string = (payload.game.player1.id === userId) ? userId : payload.game.player2.id;
     await this.gameService.setReadyGame(payload.game, author, payload.w, payload.h, payload.y);
     socket.join(payload.game.id);
@@ -295,6 +298,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     if (!this.gameService.isInGame(userId)) // si pas en partie supprimer de la liste d'attente
       await this.gameService.removePlayerFromMatchmaking(userId);
     else { // sinon informer l'adversaire de la deconnection et supprimer la partie du service
+	  this.gameService.removeMatch(userId);
       const game: GameEntity = await this.gameService.getLastGame(userId);
       if (game)
         await this.gameService.endGame(game.id, userId);
@@ -302,10 +306,10 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   endGameEvent(gameInfo: GameDto) {
-    console.log(gameInfo)
+    // console.log(gameInfo)
     this.server.to(gameInfo.id).emit('endGame', gameInfo);
-    console.log(gameInfo.id)
-    console.log(this.server.of('/').adapter.rooms)
+    // console.log(gameInfo.id)
+    // console.log(this.server.of('/').adapter.rooms)
   }
 
   @SubscribeMessage('paddleMove')  
@@ -322,8 +326,10 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     const user: userDto = await this.authentication(socket);
     if (user) {
       if (this.users.get(user.id).has(user.socket)) {
-        if (this.inGamePage.has(user.id)) {			
-		  this.alertOpponent(user.id);
+		this.logger.warn('IN HANDLE DISCO')
+        if (this.inGamePage.has(user.id)) {		
+			this.logger.warn('IN HANDLE DISCO & GAMEPAGE TRUE')	
+		  await this.alertOpponent(user.id);
           await this.cleanGame(user.id);
           this.gameService.deleteChallenges(user.id);
           this.inGamePage.delete(user.id); // supprimer le socket (gamePage)
@@ -331,7 +337,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
         this.users.get(user.id).delete(user.socket); // supprimer le socket associer
       }
     }
-    console.log(this.server.of('/').adapter.rooms);
+    // console.log(this.server.of('/').adapter.rooms);
     this.logger.log(`DISCONNECTED: ${socket.id}`, "Gateway");
     this.server.emit('DISCONNECTED', socket.id);
   }

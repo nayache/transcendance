@@ -13,7 +13,7 @@ export const useUpdateScoreListener = (
 
 	useEffect(() => {
 		socket?.on('updateScore', (score: [number, number]) => {
-			console.log("(updateScore) score = ", score)
+			// console.log("(updateScore) score = ", score)
 			setScore(score)
 			if (onUpdateScore)
 				onUpdateScore(score)

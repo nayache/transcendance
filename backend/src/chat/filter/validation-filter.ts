@@ -7,7 +7,7 @@ import { ValidationException } from 'src/exceptions/validation.exception';
 export class ValidationFilter implements ExceptionFilter {
 
   public catch(exception: ValidationException, host: ArgumentsHost) {
-    console.log('----BadResquest VALIDATION Exception Filter ----')
+    // console.log('----BadResquest VALIDATION Exception Filter ----')
     const ctx = host.switchToHttp();
     const status: number = exception.getStatus();
     const response = ctx.getResponse<Response>();

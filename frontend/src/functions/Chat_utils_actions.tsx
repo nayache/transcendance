@@ -14,11 +14,6 @@ export const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>,
 		  textAreaRef.current.style.height = "";
 		textAreaRef.current.style.height = textAreaRef.current.scrollHeight + "px"
 	}
-	if (textAreaRef.current &&
-		textAreaRef.current.value.length >= MAX_CARAC_CHAT)
-		console.log("max length reached")
-	else
-		console.log("okay good")
 }
 
 const click = async (chanUser: IChannelUser | undefined, currentChannelId: number,
@@ -26,7 +21,7 @@ const click = async (chanUser: IChannelUser | undefined, currentChannelId: numbe
 	refreshSetter?: () => void, cancelRefresh?: () => void) => {
 	if (chanUser?.pseudo)
 	{
-		console.log("msg.current = ", msg.current)
+		// console.log("msg.current = ", msg.current)
 		try {
 			if (!(currentChannelId <= -1 || currentChannelId >= channels.length)
 			&& msg.current.trimEnd().length > 0) {
@@ -42,9 +37,9 @@ const click = async (chanUser: IChannelUser | undefined, currentChannelId: numbe
 		} catch (err) {
 			const _error: IError = err as IError;
 			
-			console.log("err = ", err);
+			// console.log("err = ", err);
 			if (_error.about === AboutErr.USER && _error.type === TypeErr.REJECTED) {
-				console.log("patch _errorrrr = ", _error)
+				// console.log("patch _errorrrr = ", _error)
 				if (refreshSetter)
 					refreshSetter()
 			}
@@ -64,7 +59,7 @@ export const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>,
 			await click(chanUser, currentChannelId, channels, msg, refreshSetter, cancelRefresh);
 			msg.current = '';
 		} catch (err) {
-			console.log("err = ", err);
+			// console.log("err = ", err);
 		}
 		if (textAreaRef.current)
 		{

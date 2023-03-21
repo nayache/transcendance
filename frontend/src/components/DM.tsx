@@ -132,14 +132,14 @@ const DM = () => {
 			if (daDiscussion) {
 				daDiscussion.avatar = avatar
 				daDiscussion.unread = unread
-				console.log("discussions (avant le bail) = ", discussions.map(discussion => discussion))
+				// console.log("discussions (avant le bail) = ", discussions.map(discussion => discussion))
 				discussions.splice(position, 0, daDiscussion)
-				console.log("discussions (apres le bail) = ", discussions.map(discussion => discussion))
-				console.log("oldDisucssions (apres le bail) = ", oldDiscussions)
-				console.log("daDiscussionInd = ", daDiscussionInd)
-				console.log("position = ", position)
+				// console.log("discussions (apres le bail) = ", discussions.map(discussion => discussion))
+				// console.log("oldDisucssions (apres le bail) = ", oldDiscussions)
+				// console.log("daDiscussionInd = ", daDiscussionInd)
+				// console.log("position = ", position)
 				const daNewDiscussionInd: number = daDiscussionInd > position ? daDiscussionInd + 1 : daDiscussionInd
-				console.log("daNewDiscussionInd = ", daNewDiscussionInd)
+				// console.log("daNewDiscussionInd = ", daNewDiscussionInd)
 				discussions.splice(daNewDiscussionInd, 1)
 			}
 			return discussions
@@ -170,9 +170,9 @@ const DM = () => {
 			try {
 				if (pseudo) {
 					const data = await ClientApi.get(API_AVATAR_ROUTE)
-					console.log("data.avatar = ", data.avatar)
+					// console.log("data.avatar = ", data.avatar)
 					setAvatar(data.avatar)
-					console.log("avatar = ", avatar)
+					// console.log("avatar = ", avatar)
 				}
 			} catch (err) {
 				const _typeError: TypeError = err as TypeError;
@@ -186,8 +186,8 @@ const DM = () => {
 	useEffect(() => {
 		(async () => {
 			try {
-				console.log("user = ", user)
-				console.log("oldUser = ", oldUser)
+				// console.log("user = ", user)
+				// console.log("oldUser = ", oldUser)
 				if (user?.pseudo && oldUser.current?.pseudo !== user.pseudo) {
 					const { discussions: notrealDiscussions }: { discussions: Discussion[] } =
 						await ClientApi.get(API_CHAT_DISCUSSIONS_RELATION);
@@ -195,11 +195,11 @@ const DM = () => {
 					const realDiscussions = notrealDiscussions.filter(discussion => data.blockeds.every(blocked => discussion.pseudo !== blocked))
 					if (pseudoParam) {
 						try {
-							console.log("realDiscussions = ", realDiscussions)
+							// console.log("realDiscussions = ", realDiscussions)
 							const {avatar: avatarParam} = await ClientApi.get(API_AVATAR_ROUTE + '/' + pseudoParam)
 							const discussions: Discussion[] = realDiscussions.map(discussion => discussion).reverse()
-							console.log("--------- avatarParam ----------- = ", avatarParam)
-							console.log("discussions = ", discussions)
+							// console.log("--------- avatarParam ----------- = ", avatarParam)
+							// console.log("discussions = ", discussions)
 							if (discussions.findIndex(discussion => discussion.pseudo === pseudoParam) === -1) {
 								discussions.unshift({
 									pseudo: pseudoParam,
@@ -214,7 +214,7 @@ const DM = () => {
 									daDiscussion.unread = 0
 									discussions.splice(0, 0, daDiscussion)
 									const daNewDiscussionInd: number = daDiscussionInd > 0 ? daDiscussionInd + 1 : daDiscussionInd
-									console.log("daNewDiscussionInd = ", daNewDiscussionInd)
+									// console.log("daNewDiscussionInd = ", daNewDiscussionInd)
 									discussions.splice(daNewDiscussionInd, 1)
 								}
 							}
@@ -224,7 +224,7 @@ const DM = () => {
 								avatar: avatarParam,
 							})
 						} catch (err) {
-							console.log("realDiscussions = ", realDiscussions)
+							// console.log("realDiscussions = ", realDiscussions)
 							const discussions: Discussion[] = realDiscussions.map(realDiscussion => realDiscussion);
 							setDiscussions(discussions)
 							if (discussions.length >= 1)
@@ -235,7 +235,7 @@ const DM = () => {
 						}
 					}
 					else {
-						console.log("realDiscussions = ", realDiscussions)
+						// console.log("realDiscussions = ", realDiscussions)
 						const discussions: Discussion[] = realDiscussions.map(realDiscussion => realDiscussion);
 						setDiscussions(discussions)
 						if (discussions.length >= 1)
@@ -246,7 +246,7 @@ const DM = () => {
 					}
 				}
 			} catch (err) {
-				console.log("err = ", err)
+				// console.log("err = ", err)
 			}
 		})()
 	}, [user, pseudoParam])
@@ -266,17 +266,17 @@ const DM = () => {
 					}))
 					setChatItems(chatItems)
 				} catch (err) {
-					console.log("err = ", err);
+					// console.log("err = ", err);
 				}
 			}
 		})()
 	}, [receiver, user])
 
 	useEffect(() => {
-		console.log("(useEffect) receiver?.pseudo = ", receiver?.pseudo)
-		console.log("(useEffect) oldReceiver.current?.pseudo = ", oldReceiver.current?.pseudo)
+		// console.log("(useEffect) receiver?.pseudo = ", receiver?.pseudo)
+		// console.log("(useEffect) oldReceiver.current?.pseudo = ", oldReceiver.current?.pseudo)
 		if (receiver?.pseudo && receiver.pseudo !== oldReceiver.current?.pseudo) {
-			console.log("(useEffect) yo")
+			// console.log("(useEffect) yo")
 			ClientApi.patch(API_CHAT_MARK_READ + '/' + receiver.pseudo)
 			updateDiscussion(receiver.pseudo, 0, receiver.avatar)
 		}

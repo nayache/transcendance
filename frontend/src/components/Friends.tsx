@@ -50,7 +50,7 @@ const Friends = () => {
 	const inviteInfos = useRef<IGameInviteEv | null>(null)
 	useDMListener(socket, {pseudo, avatar}, undefined, undefined, undefined, (payload) => {
 		infos.current = payload
-		console.log("infos.current = ", infos.current)
+		// console.log("infos.current = ", infos.current)
 		setNotificationType(NotificationType.DM)
 	})
 	const inviteNotification = useInviteNotification(socket, pseudo)
@@ -80,7 +80,7 @@ const Friends = () => {
 							setFriends(newfriends)
 							setPendings(pendings => pendings.filter(daPending => daPending.pseudo !== friend.pseudo))
 						} catch (err) {
-							console.log("err = ", err)
+							// console.log("err = ", err)
 							setFriends(friends => friends.filter(frien => frien.pseudo !== friend.pseudo))
 						}
 					}} />
@@ -105,7 +105,7 @@ const Friends = () => {
 							setFriends(newfriends)
 							setPendings(pendings => pendings.filter(daPending => daPending.pseudo !== pending.pseudo))
 						} catch (err) {
-							console.log("err = ", err)
+							// console.log("err = ", err)
 							setPendings(pendings => pendings.filter(daPending => daPending.pseudo !== pending.pseudo))
 						}
 					}} >
@@ -117,7 +117,7 @@ const Friends = () => {
 							setFriends(newfriends)
 							setPendings(pendings => pendings.filter(daPending => daPending.pseudo !== pending.pseudo))
 						} catch (err) {
-							console.log("err = ", err)
+							// console.log("err = ", err)
 							setPendings(pendings => pendings.filter(daPending => daPending.pseudo !== pending.pseudo))
 						}
 					}} >
@@ -148,7 +148,7 @@ const Friends = () => {
 			try {
 				const data: { friends: Friend[], pendings: Pending[] } =
 					await ClientApi.get(API_USER_FRIENDS_LIST)
-				console.log("data = ", data)
+				// console.log("data = ", data)
 				const { blockeds }: { blockeds: string[] } = await ClientApi.get(API_USER_BLOCK); 
 				data.friends = data.friends.filter(friend => blockeds
 					.every(blocked => friend.pseudo !== blocked))
@@ -157,7 +157,7 @@ const Friends = () => {
 				setFriends(data.friends)
 				setPendings(data.pendings)
 			} catch (err) {
-				console.log("err = ", err)
+				// console.log("err = ", err)
 			}
 		})()
 	}, [])

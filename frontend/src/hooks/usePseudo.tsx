@@ -11,9 +11,9 @@ export const usePseudo = () => {
 		(async () => {
 			try {
 				const data = await ClientApi.get(API_PSEUDO_ROUTE)
-				console.log("data.pseudo = ", data.pseudo)
+				// console.log("data.pseudo = ", data.pseudo)
 				setPseudo(data.pseudo)
-				console.log("pseudo = ", pseudo)
+				// console.log("pseudo = ", pseudo)
 			} catch (err) {
 				const _typeError: TypeError = err as TypeError;
 				const _error: IError = err as IError;

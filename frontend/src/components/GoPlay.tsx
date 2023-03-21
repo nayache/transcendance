@@ -49,7 +49,7 @@ const GoPlay = ({gameMode, invited, onClick}: Props) => {
 							}
 						}
 						catch (err) {
-							console.log("err = ", err)
+							// console.log("err = ", err)
 						}
 						ClientApi.redirect = new URL(BASE_URL)
 					}}>Cancel</button>

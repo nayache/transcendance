@@ -50,7 +50,7 @@ const BlockedSettings = () => {
 				const data: { blockeds: string[] } = await ClientApi.get(API_USER_BLOCK)
 				setBlockeds(data.blockeds)
 			} catch (err) {
-				console.log("err = ", err)
+				// console.log("err = ", err)
 			}
 		})()
 	}, [])

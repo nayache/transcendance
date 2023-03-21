@@ -22,17 +22,17 @@ export const useInviteNotification = (
 			invited: data.invited,
 			difficulty: data.difficulty
 		})
-		console.log("inviteInfos = ", inviteInfos)
-		console.log("data = ", data)
+		// console.log("inviteInfos = ", inviteInfos)
+		// console.log("data = ", data)
 		setModalGameType(ModalGameType.INVITED)
 	})
 
 
 	
 	useEffect(() => () => {
-		console.log("less clean up that")
+		// console.log("less clean up that")
 		if (inviteInfos) {
-			console.log("inviteInfos = ", inviteInfos)
+			// console.log("inviteInfos = ", inviteInfos)
 			try {
 				if (inviteInfos.author) {
 					ClientApi.post(API_GAME_ACCEPT, JSON.stringify({
@@ -42,7 +42,7 @@ export const useInviteNotification = (
 				}
 			}
 			catch (err) {
-				console.log("err = ", err)
+				// console.log("err = ", err)
 			}
 			setModalGameType(null)
 		}
@@ -68,7 +68,7 @@ export const useInviteNotification = (
 						}
 					}
 					catch (err) {
-						console.log("err = ", err)
+						// console.log("err = ", err)
 					}
 					setModalGameType(null)
 				}}
@@ -82,7 +82,7 @@ export const useInviteNotification = (
 						}
 					}
 					catch (err) {
-						console.log("err = ", err)
+						// console.log("err = ", err)
 					}
 					setModalGameType(null)
 				}}

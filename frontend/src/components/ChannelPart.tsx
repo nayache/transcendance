@@ -26,7 +26,7 @@ interface Props {
 const ChannelPart = ({ socket, updateChannel, setCurrentChannel, removeChannel,
 	addChannel, chanUser, channels, currentChannelId  }: Props) => {
 
-	console.log("channels (channelPart) = ", channels)
+	// console.log("channels (channelPart) = ", channels)
 	const [doPrintChannelMenu, setDoPrintChannelMenu] = useState<boolean>(false);
 
 

@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import { API_CHAT_CHANNEL_KICK_ROUTE, API_CHAT_CHANNEL_LEAVE_ROUTE } from "../constants/RoutesApi"
 import { IChannel, IChannelUser } from "../interface/IChannel"
-import { RootState } from "../redux/store"
 import ClientApi from "./ClientApi.class"
 import '../styles/KickChannelMenu.css'
 
@@ -29,7 +28,7 @@ export const KickChannelMenu = ({ channelName, target, onKick, onKickFail }: Pro
 			if (onKick)
 				onKick()
 		} catch (err) {
-			console.log("err = ", err)
+			// console.log("err = ", err)
 			if (onKickFail)
 				onKickFail()
 		}

@@ -17,16 +17,16 @@ export const useNewFriendReqListener = (
 	useEffect(() => {
 		if (pseudo) {
 			socket?.on('newRequest', async (payload: IFriendEv) => {
-				console.log("(newRequest) pseudo = ", pseudo, " et payload = ", payload)
+				// console.log("(newRequest) pseudo = ", pseudo, " et payload = ", payload)
 				const data: { blockeds: string[] } = await ClientApi.get(API_USER_BLOCK);
 				const isBlocked: boolean = data.blockeds.some(blocked => 
 					blocked === payload.pseudo )
-				console.log("isBlocked = ", isBlocked)
+				// console.log("isBlocked = ", isBlocked)
 				if (!isBlocked)
 				{
 					if (ClientApi.redirect.pathname.indexOf("/me/friends") === 0) {
 						try {
-							console.log("new Req")
+							// console.log("new Req")
 							const data = await ClientApi.get(API_AVATAR_ROUTE + '/' + payload.pseudo)
 							if (addPending)
 								addPending({
@@ -34,7 +34,7 @@ export const useNewFriendReqListener = (
 									avatar: data.avatar ? data.avatar : DefaultImg
 								})
 						} catch (err) {
-							console.log("err = ", err)
+							// console.log("err = ", err)
 						}
 					}
 					else {

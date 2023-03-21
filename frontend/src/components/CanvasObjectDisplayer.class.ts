@@ -40,7 +40,7 @@ abstract class CanvasObjectDisplayer {
 		private _canvasHeight?: number,
 		private _canvasPosY?: number,
 	) {
-		console.log("CanvasObjectDisplayer creation")
+		// console.log("CanvasObjectDisplayer creation")
 	}
 
 	public get socket(): Socket {

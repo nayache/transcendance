@@ -11,9 +11,9 @@ class DrawerDisplayer {
 	constructor(
 		private _ref: RefereeDisplayer,
 	) {
-		console.log("avant print (dans constructor drawer)")
-		console.log("this._ref = ", this._ref)
-		console.log("apres print (dans constructor drawer)")
+		// console.log("avant print (dans constructor drawer)")
+		// console.log("this._ref = ", this._ref)
+		// console.log("apres print (dans constructor drawer)")
 	}
 	
 	public get player_left(): PlayerDisplayer {
@@ -130,9 +130,9 @@ class DrawerDisplayer {
 		canvasHeight: number,
 		canvas: HTMLCanvasElement
 	) {
-		console.log("avant print")
-		console.log("this = ", this);
-		console.log("apres print")
+		// console.log("avant print")
+		// console.log("this = ", this);
+		// console.log("apres print")
 		if (this.gamestate == GameState.WaitingForStart)
 		{
 			try {
@@ -145,7 +145,7 @@ class DrawerDisplayer {
 			this.ref.referee();
 		} catch (e) {}
 		this.reqAnim = requestAnimationFrame(() => this.gameLoop(context, canvasWidth, canvasHeight, canvas))
-		// console.log('reqAnim = ', reqAnim);
+		// // console.log('reqAnim = ', reqAnim);
 	}
 }
 

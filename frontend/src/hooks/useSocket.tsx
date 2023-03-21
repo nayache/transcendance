@@ -26,7 +26,7 @@ export const useSocket = () => {
 			// check before the socket changes (not the 1st render)
 			// and when the component will unmount, if the socket is opened and close it if it is
 			if (socket) {
-				console.log("socket about to close")
+				// console.log("socket about to close")
 				socket.close()
 			}
 		}

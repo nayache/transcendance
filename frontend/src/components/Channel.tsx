@@ -32,12 +32,12 @@ const Channel = ({ chanUser, channelName, currentChannelId, addChannel, removeCh
 			if (!(currentChannelId <= -1 || currentChannelId >= channels.length)
 			&& channels[currentChannelId].name !== channelName) {
 				const { channel }: { channel: IChannel } = await ClientApi.get(API_CHAT_CHANNEL_ROUTE + '/' + channelName)
-				console.log("channels[currentChannelId].name = ", channels[currentChannelId].name, "  channelName = ", channelName)
+				// console.log("channels[currentChannelId].name = ", channels[currentChannelId].name, "  channelName = ", channelName)
 				updateChannel(channel)
 			}
 			setCurrentChannel(channelName)
 		} catch (err) {
-			console.log("err = ", err);
+			// console.log("err = ", err);
 		}
 	}, [currentChannelId, updateChannel, setCurrentChannel,])
 
@@ -60,7 +60,7 @@ const Channel = ({ chanUser, channelName, currentChannelId, addChannel, removeCh
 			removeChannel={removeChannel} setCurrentChannel={setCurrentChannel}
 			updateChannel={updateChannel} pointedChannelName={channelName}
 			chanUser={chanUser}
-			callback={() => {console.log("wssshhhhhhhhhhhhhhh"); setDoPrintModal(false)}}
+			callback={() => {setDoPrintModal(false)}}
 			callbackFail={() => setDoPrintModal(false)} />
 		</div>
 	)

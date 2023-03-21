@@ -17,7 +17,7 @@ export const useNewFriendAccListener = (
 	useEffect(() => {
 		if (pseudo) {
 			socket?.on('acceptedRequest', async (payload: IFriendEv) => {
-				console.log("(acceptedRequest) pseudo = ", pseudo, " et payload = ", payload)
+				// console.log("(acceptedRequest) pseudo = ", pseudo, " et payload = ", payload)
 				const data: { blockeds: string[] } = await ClientApi.get(API_USER_BLOCK);
 				const isBlocked: boolean = data.blockeds.some(blocked => 
 					blocked === payload.pseudo )
@@ -29,7 +29,7 @@ export const useNewFriendAccListener = (
 							if (setFriends)
 								setFriends(data.friends)
 						} catch (err) {
-							console.log("err = ", err)
+							// console.log("err = ", err)
 						}
 					}
 					else {

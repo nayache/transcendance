@@ -21,8 +21,8 @@ export const useDMListener = (
 	useEffect(() => {
 		if (user?.pseudo) {
 			socket?.on('message', async (payload: IMessageEvRecv) => {
-				console.log("(message) user?.pseudo = ", user?.pseudo, " et payload = ", payload)
-				console.log("receiver?.pseudo = ", receiver?.pseudo);
+				// console.log("(message) user?.pseudo = ", user?.pseudo, " et payload = ", payload)
+				// console.log("receiver?.pseudo = ", receiver?.pseudo);
 				const data: { blockeds: string[] } = await ClientApi.get(API_USER_BLOCK);
 				const isBlocked: boolean = data.blockeds.some(blocked => 
 					blocked === receiver?.pseudo )
@@ -46,7 +46,7 @@ export const useDMListener = (
 									updateDiscussions(payload.author, 0, discussion.unread,
 										discussion.avatar)
 							} catch (err) {
-								console.log("err = ", err)
+								// console.log("err = ", err)
 							}
 						}
 					}

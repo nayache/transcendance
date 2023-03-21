@@ -70,7 +70,7 @@ import { UserService } from './user.service';
   		  for (let i = 0; i < len; i++)
   		    signatureArr[i] = (new Uint8Array(arrayBuffer))[i].toString(16)
   		  const signature = signatureArr.join('').toUpperCase()
-		  console.log(signature);
+		  // console.log(signature);
 
     		switch (signature) {
     		  case '89504E47':

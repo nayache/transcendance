@@ -34,7 +34,7 @@ const ViewerGamePage: React.FC = () => {
 				}
 			}
 			catch (err) {
-				console.log("err = ", err)
+				// console.log("err = ", err)
 			}
 		})()
 	}, [matchId])

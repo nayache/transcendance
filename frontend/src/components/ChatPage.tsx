@@ -202,12 +202,12 @@ const ChatPage = () => {
 
 
 	useEffect(() => {
-		console.log("currentChannelId = ", currentChannelId)
+		// console.log("currentChannelId = ", currentChannelId)
 		if (pseudo && (currentChannelId <= -1 || currentChannelId >= channels.length)) {
 			(async () => {
 				try {
 					const data: { channels: IChannel[] } = await ClientApi.get(API_CHAT_USER_CHANNELS_ROUTE)
-					console.log("data.channels = ", data.channels)
+					// console.log("data.channels = ", data.channels)
 					data.channels.sort((x, y) => {
 						if (x.name == 'General')
 							return -1
@@ -221,7 +221,7 @@ const ChatPage = () => {
 					resetAllChannels(data.channels)
 					setCurrentChannel("General")
 				} catch (err) {
-					console.log("err = ", err);
+					// console.log("err = ", err);
 				}
 			})()
 		}
@@ -280,7 +280,7 @@ const ChatPage = () => {
 
 	const getPage = () => {
 
-		console.log("channels (dans return chatPage) = ", channels)
+		// console.log("channels (dans return chatPage) = ", channels)
 		return (
 			<React.Fragment>
 				<Navbar />
@@ -302,7 +302,7 @@ const ChatPage = () => {
 					currentChannelId={currentChannelId}
 					setAlertModal={(alertModal: AlertType, author: IChannelUser,
 						channelName: string, target: string) => {
-							console.log("------- alertModal (dans setAlert) = ", alertModal, " ---------")
+							// console.log("------- alertModal (dans setAlert) = ", alertModal, " ---------")
 							setAlertModal(alertModal)
 							setAlertAuthor(author)
 							setAlertTarget(target)

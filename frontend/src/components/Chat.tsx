@@ -103,11 +103,11 @@ const Chat = ({ socket, channels, currentChannelId, removeChannel,
 										channel.prv = attribute
 									updateChannel(channel)
 								}
-								console.log("channelName = ", channelName)
-								console.log("attribute = ", attribute)
-								console.log("action = ", action)
+								// console.log("channelName = ", channelName)
+								// console.log("attribute = ", attribute)
+								// console.log("action = ", action)
 							}}
-							callbackFail={() => {console.log("onClose modal"); setDoPrintModal(false)}} />
+							callbackFail={() => { setDoPrintModal(false)}} />
 						}
 					</h3>
 				</div>

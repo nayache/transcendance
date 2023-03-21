@@ -16,8 +16,8 @@ export const useStatusUserUpdater = (
 	useEffect(() => {
 		if (chanUser?.pseudo) {
 			socket?.on('muteUser', async (payload: IChannelEvMute) => {
-				console.log("(status) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.target)
-				console.log("(status) currentChannelId = ", currentChannelId)
+				// console.log("(status) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.target)
+				// console.log("(status) currentChannelId = ", currentChannelId)
 				const daChannel: IChannel | undefined =
 				channels.find(channel => channel.name === payload.channel)
 				if (daChannel) { // impossible que daChannel soit undefined
@@ -26,7 +26,7 @@ export const useStatusUserUpdater = (
 						if (!(currentChannelId <= -1 || currentChannelId >= channels.length)
 						&& channels[currentChannelId].name === payload.channel) {
 							payload.expiration = new Date(payload.expiration)
-							console.log("test ici en status")
+							// console.log("test ici en status")
 							if (onStatusUserUpdate)
 								onStatusUserUpdate(payload)
 						}
@@ -34,7 +34,7 @@ export const useStatusUserUpdater = (
 					else if (chanUser.pseudo === payload.author.pseudo) {
 						if (!(currentChannelId <= -1 || currentChannelId >= channels.length)
 						&& channels[currentChannelId].name === payload.channel) {
-							console.log("test ici en status")
+							// console.log("test ici en status")
 							payload.expiration = new Date(payload.expiration)
 							if (onStatusUserUpdate)
 								onStatusUserUpdate(payload)

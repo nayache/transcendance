@@ -13,7 +13,7 @@ export const FTAPI_CODE_ROUTE_TO_REGISTER: string = `https://api.intra.42.fr/oau
 export const FTAPI_CODE_ROUTE_TO_TWOFA: string = `https://api.intra.42.fr/oauth/authorize?client_id=${REACT_APP_API_CLIENTID}&redirect_uri=${REACT_APP_FRONT_PROTOCOL}%3A%2F%2F${REACT_APP_FRONT_HOSTNAME}%3A${REACT_APP_FRONT_PORT}%2Ftwofa&response_type=code`
 
 
-console.log("REACT_APP_BACK_PROTOCOL = ", REACT_APP_BACK_PROTOCOL)
+// console.log("REACT_APP_BACK_PROTOCOL = ", REACT_APP_BACK_PROTOCOL)
 export const API_BASE_URL = `${REACT_APP_BACK_PROTOCOL}://${REACT_APP_BACK_HOSTNAME}:${REACT_APP_BACK_PORT}`
 
 

@@ -13,7 +13,7 @@ export class AppService {
   async sayHello(token: string) {
     try {
       const res = await fetch('https://api.intra.42.fr/v2/me', { headers: { 'Authorization': `Bearer ${token}` } });
-      console.log('->', res.status);
+      // console.log('->', res.status);
       const data = await res.json();
       this.printHello(data.login)
     } catch (err) {
@@ -22,7 +22,7 @@ export class AppService {
   }
 
   printHello(login: string) {
-    console.log("Welcome " + login);
+    // console.log("Welcome " + login);
   }
 
   async googleLogin(req) {

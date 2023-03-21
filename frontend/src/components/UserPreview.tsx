@@ -121,7 +121,7 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 
 		return (
 			newButtons.map(({content, action, role}: ButtonProps, index: number, array) => {
-				console.log("index + 1 < array.length = ", index + 1 < array.length);
+				// console.log("index + 1 < array.length = ", index + 1 < array.length);
 				if (index + 1 < array.length && role !== array[index + 1].role)
 					return (
 						<React.Fragment key={index}>
@@ -205,7 +205,7 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 									if (callback)
 										callback(playerName)
 								} catch (err) {
-									console.log("err = ", err)
+									// console.log("err = ", err)
 									if (callbackFail)
 										callbackFail(playerName)
 								}
@@ -223,7 +223,7 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 								if (callback)
 									callback(playerName)
 							} catch (err) {
-								console.log("err = ", err)
+								// console.log("err = ", err)
 								if (callbackFail)
 									callbackFail(playerName)
 							}
@@ -335,7 +335,7 @@ const UserPreview = ({ chanUser, player, channel, onClose, callback, callbackFai
 					},
 				])
 			} catch (err) {
-				console.log("err = ", err)
+				// console.log("err = ", err)
 			}
 		})()
 	}, [])

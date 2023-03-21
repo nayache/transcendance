@@ -52,7 +52,7 @@ constructor(private readonly authService: AuthService,
         const refresh : string = this.authService.generateJwtRefresh();
         const token : string = this.authService.generateJwt(this.authService.jwtDataToDto(user.id, tokenft, refresh));
         
-        console.log(`jwt generate ----> [ ${token} ]`);
+        // console.log(`jwt generate ----> [ ${token} ]`);
 
         return { token };
     }
@@ -65,7 +65,7 @@ constructor(private readonly authService: AuthService,
         const refresh : string = this.authService.generateJwtRefresh();
         const token : string = this.authService.generateJwt(this.authService.jwtDataToDto(user.id, null, refresh));
         
-        console.log(`jwt(fake) generate ----> [ ${token} ]`);
+        // console.log(`jwt(fake) generate ----> [ ${token} ]`);
         return {token} ;
     }
 
@@ -86,7 +86,7 @@ constructor(private readonly authService: AuthService,
         if (!newJwtToken)
             throw new InvalidTokenException(TypeErr.TIMEOUT);
         
-        console.log(`jwt refreshing ----> [ ${newJwtToken} ]`);
+        // console.log(`jwt refreshing ----> [ ${newJwtToken} ]`);
         
         return { token: newJwtToken };
     }

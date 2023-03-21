@@ -38,14 +38,14 @@ const AlertChannelModal = ({ active, type, author, channels, currentChannelId, p
 	}
 
 	useEffect(() => {
-		console.log("type (dans modal) = ", type)
-		console.log("active (dans modal) = ", active)
+		// console.log("type (dans modal) = ", type)
+		// console.log("active (dans modal) = ", active)
 		if (modalRef.current) {
 			modalRef.current.style.display = active ? "block" : "none";
 		}
 	}, [active])
 
-	console.log("modalRef.current = ", modalRef.current)
+	// console.log("modalRef.current = ", modalRef.current)
 	return (
 		<div id="myModal-channelMenu"
 		ref={modalRef} className="modalChannelMenu">

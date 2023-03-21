@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Socket } from "socket.io-client";
 import { IChannel, IChannelUser } from "../interface/IChannel";
-import { RootState } from "../redux/store";
 import '../styles/ChannelPlayers.css'
 import ChannelPlayer from "./ChannelPlayer";
 

@@ -20,9 +20,9 @@ class DrawerDisplayer {
 		private _maxGoals: number = 5
 		// private _ref: RefereeDisplayer,
 	) {
-		console.log("avant print (dans constructor drawer)")
-		// console.log("this._ref = ", this._ref)
-		console.log("apres print (dans constructor drawer)")
+		// console.log("avant print (dans constructor drawer)")
+		// // console.log("this._ref = ", this._ref)
+		// console.log("apres print (dans constructor drawer)")
 	}
 	
 	public get leftPlayer(): PlayerDisplayer {
