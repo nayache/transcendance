@@ -5,10 +5,11 @@ import { GameDto } from "../interface/IGame";
 
 
 interface Props {
+	content: string,
 	onEndGame?: () => void
 }
 
-export const ErrorSearchPlayerMenu = ({ onEndGame }: Props) => {
+export const ErrorSearchPlayerMenu = ({ content, onEndGame }: Props) => {
 	
 
 
@@ -17,7 +18,7 @@ export const ErrorSearchPlayerMenu = ({ onEndGame }: Props) => {
 			<div>
 				<br/>
 				<br/>
-				<p>Failed to fetch the ressource</p>
+				<p>{content}</p>
 			</div>
 		</React.Fragment>
 	)

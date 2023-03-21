@@ -16,6 +16,7 @@ export enum ModalGameType {
 interface Props {
 	active: boolean,
 	type: ModalGameType,
+	contentError?: string,
 	pseudo?: string,
 	author?: string,
 	difficulty?: Difficulty,
@@ -23,7 +24,7 @@ interface Props {
 	callbackFail?: (props?: any) => any,
 }
 
-const ModalGameMenu = ({ active, type, pseudo, author, difficulty, callback, callbackFail }: Props) => {
+const ModalGameMenu = ({ active, type, contentError, pseudo, author, difficulty, callback, callbackFail }: Props) => {
 
 	const modalRef = useRef<HTMLDivElement>(null);
 
@@ -67,8 +68,8 @@ const ModalGameMenu = ({ active, type, pseudo, author, difficulty, callback, cal
 				}}
 				className="close-GameMenu">&times;</span>
 				{
-					type === ModalGameType.ERRORSEARCHPLAYER
-					&& <ErrorSearchPlayerMenu /> ||
+					type === ModalGameType.ERRORSEARCHPLAYER && contentError
+					&& <ErrorSearchPlayerMenu content={contentError}/> ||
 
 					type === ModalGameType.INVITED && pseudo && author && difficulty
 					&& <InvitedMenu pseudo={pseudo} author={author} difficulty={difficulty}

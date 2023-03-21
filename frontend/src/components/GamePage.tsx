@@ -26,6 +26,7 @@ const GamePage: React.FC = () => {
 	const [leftPlayer, setleftPlayer] = useState<PlayerDisplayer>()
 	const [rightPlayer, setrightPlayer] = useState<PlayerDisplayer>()
 	const [infos, setInfos] = useState<GameDto>()
+	const [contentError, setContentError] = useState<string>("Failed to fetch the ressource")
 	const [activeError, setActiveError] = useState<ModalGameType>()
 	const invited = useParams().invited
 	const author = useParams().author
@@ -35,21 +36,6 @@ const GamePage: React.FC = () => {
 
 	useEffect(() => {
 		if (clicked || invited || author) {
-			// setTimeout(async () => {
-			// 	socket?.removeAllListeners('matchEvent')
-			// 	try {
-			// 		if (gameMode && invited) {
-			// 			await ClientApi.delete(API_GAME_INVITE, JSON.stringify({
-			// 				target: invited,
-			// 				difficulty: gameMode as string
-			// 			}))
-			// 		}
-			// 	}
-			// 	catch (err) {
-			// 		console.log("err = ", err)
-			// 	}
-			// 	setActiveError(ModalGameType.ERRORSEARCHPLAYER)
-			// }, 20 * 1000)
 			socket?.on('matchEvent', ({game: gameInfos, me}: {game: GameDto, me: PlayerDto}) => {
 				console.log("(matchEvent) gameInfos = ", gameInfos)
 				console.log("(matchEvent) me = ", me)
@@ -91,6 +77,16 @@ const GamePage: React.FC = () => {
 	}, [gameMode, clicked, invited, author])
 
 	useEffect(() => {
+		socket?.on('opponentDisconnect', ({game: gameInfos, me}: {game: GameDto, me: PlayerDto}) => {
+			setContentError("The opponent disconnected")
+			setActiveError(ModalGameType.ERRORSEARCHPLAYER)
+		})
+		return () => {
+			socket?.removeAllListeners('opponentDisconnect')
+		}
+	}, [])
+
+	useEffect(() => {
 		(async () => {
 			try {
 				if (author) {
@@ -102,6 +98,7 @@ const GamePage: React.FC = () => {
 			}
 			catch (err) {
 				console.log("err = ", err);
+				setContentError("You cannot accept the invitation...")
 				setActiveError(ModalGameType.ERRORSEARCHPLAYER)
 			}
 		})()
@@ -193,6 +190,7 @@ const GamePage: React.FC = () => {
 			) }
 			{ activeError !== undefined &&
 				<ModalGameMenu active={activeError !== undefined ? true : false}
+				contentError={contentError}
 				type={activeError}
 				callback={() => {
 					ClientApi.redirect = new URL(BASE_URL)
