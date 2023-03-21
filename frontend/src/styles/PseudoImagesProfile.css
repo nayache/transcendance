@@ -1,6 +1,7 @@
 .avatar-back-container {
 	position: relative;
 	margin-bottom: 12rem;
+	min-width: 500px;
 }
 
 .avatarprofil {

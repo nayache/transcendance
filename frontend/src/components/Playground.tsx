@@ -126,7 +126,7 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 						<FontAwesomeIcon className="heartgreen" icon={faHeartBroken} />
 						<FontAwesomeIcon className="heartgreen" icon={faHeartBroken} /> */}
 
-						{/* <p className="game-time">00:00</p> */}
+						<p className="game-time">Score max: 3</p>
 
 						{/* <FontAwesomeIcon className="heartred" icon={faHeartBroken} />
 						<FontAwesomeIcon className="heartred" icon={faHeartBroken} />
