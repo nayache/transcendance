@@ -293,9 +293,10 @@ const Profile = () => {
 	return (
 		<React.Fragment>
 			<Navbar />
+			{ notification }
+			{ inviteNotification }
 			{
-				error === undefined && notification &&
-				inviteNotification && (
+				error === undefined && (
 					profile !== undefined && getPage() ||
 					profile === undefined && <ServerDownPage />
 				) ||
