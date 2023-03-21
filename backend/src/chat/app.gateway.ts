@@ -53,7 +53,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       // console.log('BUILD GENERAL')
       await this.chatService.createChannel('General', false);
     }
-    this.logger.log('success initialized');
+    //  this.logger.log('success initialized');
   }
 
   async authentication(socket: Socket) : Promise<userDto> {
@@ -67,7 +67,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   async handleConnection(socket: Socket) {
-    this.logger.warn(`try to connect: '${socket.id}'`, "Gateway");
+    //  this.logger.warn(`try to connect: '${socket.id}'`, "Gateway");
     const user: userDto = await this.authentication(socket);
     if (!user)
       return this.disconnect(socket);
@@ -83,7 +83,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       this.users.set(user.id, new Set<Socket>().add(user.socket));
     }
     await this.joinSocketToRooms(user.id, user.socket);
-    this.logger.log(`CONNECTED: ${socket.id} (${user.pseudo})`, "Gateway");
+    //  this.logger.log(`CONNECTED: ${socket.id} (${user.pseudo})`, "Gateway");
     // console.log('sockets: ',this.server.of('/').adapter.sids.size);
     // console.log('socketsgame numbers: ', this.inGamePage.size)
     // console.log('socketsgame ->: ')
@@ -220,9 +220,9 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   async alertOpponent(userId: string) {
-	this.logger.warn('IN ALERRT OPPONENT')
+	//  this.logger.warn('IN ALERRT OPPONENT')
     const opponentId: string = await this.gameService.getOpponent(userId);
-	this.logger.warn(opponentId)
+	//  this.logger.warn(opponentId)
     if (opponentId && this.inGamePage.has(opponentId)) {
 		// console.log('IN ALERT OPPONENT SENDINNNNNN')
       const socket: Socket = this.inGamePage.get(opponentId);
@@ -264,7 +264,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     this.users.get(payload.player2Id).forEach((socket) => {
       this.server.to(socket.id).emit('matchEvent', {game, me: game.player2});
     });
-    this.logger.log(`Match! beetwen (${game.player1} vs ${game.player2}) in [${game.difficulty}] mode`, 'GAME')
+    //  this.logger.log(`Match! beetwen (${game.player1} vs ${game.player2}) in [${game.difficulty}] mode`, 'GAME')
   }
 
   @SubscribeMessage('setReady')
@@ -316,7 +316,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   async paddleMoveEvent(@MessageBody() data: {gameId: string, clientY: number, canvasPosY: number, canvasHeight: number}, @ConnectedSocket() socket: Socket) {
     const author: string = this.getIdBySocket(socket);
     if (!author) {
-      this.logger.error('Not recognize socket emitter');
+      //  this.logger.error('Not recognize socket emitter');
       return;
     }
     await this.gameService.paddleMove(author, data.gameId, data.clientY, data.canvasPosY, data.canvasHeight);
@@ -326,9 +326,9 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     const user: userDto = await this.authentication(socket);
     if (user) {
       if (this.users.get(user.id).has(user.socket)) {
-		this.logger.warn('IN HANDLE DISCO')
+		//  this.logger.warn('IN HANDLE DISCO')
         if (this.inGamePage.has(user.id)) {		
-			this.logger.warn('IN HANDLE DISCO & GAMEPAGE TRUE')	
+			//  this.logger.warn('IN HANDLE DISCO & GAMEPAGE TRUE')	
 		  await this.alertOpponent(user.id);
           await this.cleanGame(user.id);
           this.gameService.deleteChallenges(user.id);
@@ -338,14 +338,14 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       }
     }
     // console.log(this.server.of('/').adapter.rooms);
-    this.logger.log(`DISCONNECTED: ${socket.id}`, "Gateway");
+    //  this.logger.log(`DISCONNECTED: ${socket.id}`, "Gateway");
     this.server.emit('DISCONNECTED', socket.id);
   }
 
   //??????
   disconnect(socket: Socket, error: Error = null) {
     socket.emit('error', new Error(AboutErr.TOKEN, TypeErr.REJECTED, 'Reject connection chat socket'));
-    this.logger.error(`reject connection: ${socket.id}`);
+    //  this.logger.error(`reject connection: ${socket.id}`);
     socket.disconnect();
   }
 }

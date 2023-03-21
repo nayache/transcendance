@@ -727,7 +727,7 @@ export class GameService {
     async updateGame(game: Game, width: number, height: number, y: number/*, gameInfos: GameDto*/) {
         if (game && game.referee.gamestate == GameState.WaitingForStart)
         {
-            this.logger.log(`WAITING FOR START`)
+            //  this.logger.log(`WAITING FOR START`)
             try {
                 game.setUpGame()
             } catch (e) {
@@ -749,7 +749,7 @@ export class GameService {
             const newScore: [number, number] = [game.player1.nbGoals, game.player2.nbGoals];
             if (oldScore[0] != newScore[0] || oldScore[1] != newScore[1]) {
                 const user: PlayerDto = (oldScore[0] != newScore[0]) ? game.user1 : game.user2;
-                this.logger.log(`SCORE !! by (${user.pseudo})  score now: ${newScore}`)
+                //  this.logger.log(`SCORE !! by (${user.pseudo})  score now: ${newScore}`)
                 this.appGateway.updateScore(game.id, newScore);
                 await this.scoreGoal(game.id, user.id);
             }
@@ -757,7 +757,7 @@ export class GameService {
             // console.log('ERROR: ', e);
         }
         if (game && game.referee.gamestate === GameState.PermanentStop) {
-            this.logger.log(`PERMANENT STOP`)
+            //  this.logger.log(`PERMANENT STOP`)
             this.endGame(game.id);
         }
         return (game) ? game.referee.gamestate : null
@@ -801,7 +801,7 @@ export class GameService {
     async paddleMove(author: string, gameId: string, clientY: number, canvasPosY: number, canvasHeight: number) {
         const game: Game = this.games.get(gameId);
         if (!game)
-            return this.logger.error('game not found')
+            return //  this.logger.error('game not found')
         const emitter: Player = (game.user1.id === author) ? game.player1 : game.player2;
         emitter.paddle.onMouseMove(clientY, canvasPosY, canvasHeight);
     }
@@ -844,7 +844,7 @@ export class GameService {
         const gameData: GameEntity = await this.updateEndingGame(gameId, forfeit);
 		if (gameData.started === true)
 		{
-			this.logger.log('JE RENTRE DANS IF STARTED TRUE')
+			//  this.logger.log('JE RENTRE DANS IF STARTED TRUE')
         	const gameInfo: GameDto = await this.gameToDto(gameData);
         	await this.games.delete(gameId); // DELETE objet game du service
         	//await this.removeMatch(gameInfo.player1.id);
@@ -911,8 +911,8 @@ export class GameService {
             difficulty = Difficulty.HARD
         const pseudo: string = await this.userService.getPseudoById(userId);
         //////
-        if (difficulty)
-            this.logger.warn(`Player is removed to matchmaking in [${difficulty}] mode (${pseudo})`)
+       // if (difficulty)
+            //  this.logger.warn(`Player is removed to matchmaking in [${difficulty}] mode (${pseudo})`)
     }
 
     async removeMatch(userId: string) {
@@ -923,7 +923,7 @@ export class GameService {
                 const p2: string = await this.userService.getPseudoById(players[1])
                 this.matchs.delete(players);
                 // console.log('matchs after delete:', this.matchs);
-                this.logger.log(`match has been ending beetwen (${p1} vs ${p2})`);
+                //  this.logger.log(`match has been ending beetwen (${p1} vs ${p2})`);
                 return
             }
         }
@@ -974,7 +974,7 @@ export class GameService {
         ////for LOGGGG
         const pseudo: string = await this.userService.getPseudoById(userId);
         //////
-        this.logger.log(`Player is added to matchmaking in [${difficulty}] mode (${pseudo})`)
+        //  this.logger.log(`Player is added to matchmaking in [${difficulty}] mode (${pseudo})`)
     }
 
     getOpponent(userId: string): string {
