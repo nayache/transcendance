@@ -322,7 +322,8 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     const user: userDto = await this.authentication(socket);
     if (user) {
       if (this.users.get(user.id).has(user.socket)) {
-        if (this.inGamePage.has(user.id)) {
+        if (this.inGamePage.has(user.id)) {			
+		  this.alertOpponent(user.id);
           await this.cleanGame(user.id);
           this.gameService.deleteChallenges(user.id);
           this.inGamePage.delete(user.id); // supprimer le socket (gamePage)

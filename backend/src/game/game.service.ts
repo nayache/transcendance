@@ -598,7 +598,7 @@ export class Game {
         this.player1 = new Player(PlayerSide.Left, new Paddle(undefined, 280, 'DarkTurquoise'), user1.id);
         this.player2 = new Player(PlayerSide.Right, new Paddle(undefined, 280, 'OrangeRed'), user2.id);
         this.ball = new Ball(15, 'MidnightBlue');
-        this.referee = new Referee([this.player1, this.player2], this.ball, 7);
+        this.referee = new Referee([this.player1, this.player2], this.ball, 3);
         this.score = [0, 0];
         this.w = width;
         this.h = height;
