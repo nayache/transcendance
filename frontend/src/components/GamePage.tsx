@@ -74,7 +74,7 @@ const GamePage: React.FC = () => {
 		return () => {
 			socket?.removeAllListeners('matchEvent')
 		}
-	}, [gameMode, clicked, invited, author])
+	}, [socket, gameMode, clicked, invited, author])
 
 	useEffect(() => {
 		socket?.on('opponentDisconnect', () => {
@@ -85,7 +85,7 @@ const GamePage: React.FC = () => {
 		return () => {
 			socket?.removeAllListeners('opponentDisconnect')
 		}
-	}, [])
+	}, [socket])
 
 	useEffect(() => {
 		(async () => {
