@@ -180,7 +180,7 @@ const MyProfile = () => {
 						</div>
 					</div>
 					<div className="match-mode">
-						<p className="mode">{match.difficulty}</p>
+						<p className="mode">{match.ranked ? "Ranked " : ""}{match.difficulty}</p>
 					</div>
 				</div>
 			)

@@ -47,6 +47,7 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 	const timer = useRef<NodeJS.Timeout>()
 	const [activeError, setActiveError] = useState<ModalGameType>()
 	const gameFrameRef = useRef<HTMLDivElement>(null)
+	const borderColor = useRef<string>();
 
 	const ball: BallDisplayer = new BallDisplayer(
 		socket,
@@ -133,7 +134,7 @@ const Playground = ({ socket, gameMode, pseudo, infos, leftPlayer, rightPlayer }
 						<FontAwesomeIcon className="heartred" icon={faHeartBroken} /> */}
 						<p className="scorered">SCORE: {score[1]}</p>
 					</div>
-					<div ref={gameFrameRef} className="game-frame">
+					<div ref={gameFrameRef} style={{'--color': borderColor.current } as React.CSSProperties} className="game-frame">
 						<Container>
 							{/* {isCanvasReady([playgroundWidth, playgroundHeight]) &&
 							<Canvas display={gameLoop} id="playground"
