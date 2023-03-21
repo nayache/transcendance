@@ -177,7 +177,11 @@ abstract class CanvasObject {
 
 export class Ball extends CanvasObject {
 
+    private _rstarting_speedX: [number, number];
+    private _rstarting_speedY: [number, number];
+
 	constructor(
+        private _difficulty: Difficulty,
 		radius: number = 10,
 		color: string = 'grey',
 	) {
@@ -186,7 +190,16 @@ export class Ball extends CanvasObject {
 			undefined,
 			color,
 		);
-
+        this._rstarting_speedX = [6, 11];
+        this._rstarting_speedY = [6, 11];
+        if (this._difficulty === Difficulty.HARD) {
+            this._rstarting_speedX = [18, 23];
+            this._rstarting_speedY = [18, 23];
+        }
+        else if (this._difficulty === Difficulty.MEDIUM) {
+            this._rstarting_speedX = [12, 17];
+            this._rstarting_speedY = [12, 17];
+        }
 	}
 
 	public get radius(): number {
@@ -213,14 +226,29 @@ export class Ball extends CanvasObject {
 		return (false);
 	}
 
-	public setUp(startingSpeed?: Vector2D): void {
+	public setUp(): void {
 		super.setUp();
-		if (startingSpeed)
-			this.startingSpeed = startingSpeed;
-		else
 			this.startingSpeed = {
-				x: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5]),
-				y: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5])
+				x: CanvasObject.randomIntFrom2Intervals(
+                    [
+                        -this._rstarting_speedX[1],
+                        -this._rstarting_speedX[0]
+                    ],
+                    [
+                        this._rstarting_speedX[0],
+                        this._rstarting_speedX[1]
+                    ]
+                ),
+				y: CanvasObject.randomIntFrom2Intervals(
+                    [
+                        -this._rstarting_speedY[1],
+                        -this._rstarting_speedY[0]
+                    ],
+                    [
+                        this._rstarting_speedY[0],
+                        this._rstarting_speedY[1]
+                    ]
+                ),
 			}
 		this.pos = { x: this.canvasWidth / 2, y: this.canvasHeight / 2 }
 		//set une vitesse ou un bail comme ca
@@ -240,7 +268,20 @@ export class Ball extends CanvasObject {
 //				console.log("solidObject.pos.x = ", solidObject.pos.x);
 				if (this.isInsideX(solidObject))
 				{
-					startingSpeed = { ...this.startingSpeed, x: -this.startingSpeed.x }
+					startingSpeed = { x: CanvasObject.randomIntFromInterval(
+                        this.startingSpeed.x > 0 ? -this._rstarting_speedX[0] : this._rstarting_speedX[0],
+                        this.startingSpeed.x > 0 ? -this._rstarting_speedX[1] : this._rstarting_speedX[1],
+                    ), 
+                        y: CanvasObject.randomIntFrom2Intervals(
+                            [
+                                -this._rstarting_speedY[1],
+                                -this._rstarting_speedY[0]
+                            ],
+                            [
+                                this._rstarting_speedY[0],
+                                this._rstarting_speedY[1]
+                            ]
+                        ) }
 					if (this.startingSpeed.x < 0)
 						this.pos.x = solidObject.pos.x + solidObject.dimensions.width + this.radius * 2;
 					else if (this.startingSpeed.x > 0)
@@ -360,7 +401,8 @@ const PADDLE_XSPACE: number = 10;
 
 export class Paddle extends CanvasObject {
 
-    constructor(    
+    constructor(
+        difficulty: Difficulty,
         private _player?: Player,
         height: number = 100,
         color: string = 'black',
@@ -576,6 +618,7 @@ export class Referee {
 
 export class Game {
     id: string;
+	difficulty: Difficulty;
     finished: boolean = false;
     w: number;
     h: number;
@@ -589,25 +632,26 @@ export class Game {
     score: [number, number];
     reqAnim: number;
 
-    constructor(id: string, user1: PlayerDto, user2: PlayerDto, ss: Vector2D, width: number, height: number, y: number) {
+    constructor(id: string, difficulty: Difficulty, user1: PlayerDto, user2: PlayerDto, width: number, height: number, y: number) {
         this.id = id
+		this.difficulty = difficulty;
         this.user1 = user1;
         this.user2 = user2;
-        this.player1 = new Player(PlayerSide.Left, new Paddle(undefined, 280, 'DarkTurquoise'), user1.id);
-        this.player2 = new Player(PlayerSide.Right, new Paddle(undefined, 280, 'OrangeRed'), user2.id);
-        this.ball = new Ball(15, 'MidnightBlue');
-        this.referee = new Referee([this.player1, this.player2], this.ball, 7);
+        this.player1 = new Player(PlayerSide.Left, new Paddle(this.difficulty, undefined, 280, 'DarkTurquoise'), user1.id);
+        this.player2 = new Player(PlayerSide.Right, new Paddle(this.difficulty, undefined, 280, 'OrangeRed'), user2.id);
+        this.ball = new Ball(this.difficulty, 15, 'MidnightBlue');
+        this.referee = new Referee([this.player1, this.player2], this.ball, 3);
         this.score = [0, 0];
         this.w = width;
         this.h = height;
         this.y = y;
-        this.setUpGame(ss);
+        this.setUpGame();
     }
 
-    setUpGame(startingSpeed: Vector2D) {
+    setUpGame() {
 		this.player1.paddle.setUp();
 		this.player2.paddle.setUp();
-		this.ball.setUp(startingSpeed);
+		this.ball.setUp();
 		//on va set 2 boutons qui vont permettre de mettre respectivement les 2 joueurs prets a jouer,
 		// quand les 2 joueurs sont prets, ca demarre
 		// if (player1.isReadyToPlay && player2.isReadyToPlay || true)
@@ -672,16 +716,9 @@ export class GameService {
     private matchs: Set<[string, string]>;
     private logger: Logger = new Logger("GAME");
 
-    generateStartingSpeed(): Vector2D {
-            const startingSpeed = {
-                x: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5]),
-                y: CanvasObject.randomIntFrom2Intervals([-5, -3], [3, 5])
-            }
-        return startingSpeed;
-    }
 
     async buildGame(payload: GameDto, width: number, height: number, y: number): Promise<Game> {
-        const game: Game = new Game(payload.id, payload.player1, payload.player2, this.generateStartingSpeed(), width, height, y);
+        const game: Game = new Game(payload.id, payload.difficulty, payload.player1, payload.player2, width, height, y);
         if (!this.games.has(payload.id))
             this.games.set(payload.id, game);
         return game;
@@ -692,7 +729,7 @@ export class GameService {
         {
             this.logger.log(`WAITING FOR START`)
             try {
-                game.setUpGame(this.generateStartingSpeed())
+                game.setUpGame()
             } catch (e) {
                 console.log('ERROR: setupgame :', e);
             }
@@ -803,6 +840,7 @@ export class GameService {
         const gameData: GameEntity = await this.updateEndingGame(gameId, forfeit);
 		if (gameData.started === true)
 		{
+			this.logger.log('JE RENTRE DANS IF STARTED TRUE')
         	const gameInfo: GameDto = await this.gameToDto(gameData);
         	await this.games.delete(gameId); // DELETE objet game du service
         	await this.removeMatch(gameInfo.player1.id);
