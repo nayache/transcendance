@@ -1,5 +1,10 @@
 **ft_transcendence 42 project (ONLINE WEB-SITE PONG GAME)**
 
+stack used:<br/>
+  + **ReactJs**
+  + **NestJs**
+  + **PostgresSQL**
+
 running: ```docker-compose up --build```
 
 * register/login with 42 OAuth2 system
