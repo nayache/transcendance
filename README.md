@@ -2,18 +2,17 @@
 
 running: ```docker-compose up --build```
 
-register/login with 42 OAuth2 system<br />
--2fa security(google auth for example) available in settings<br />
--choose pseudo/avatar<br />
--chat with channels public/private<br />
--chat with private messages<br />
--friends list available<br />
--play a pong game from matchmaking or invitation (3 difficultys)<br />
--gain experience and level up by playing games<br />
--can view games in progress from spectator<br />
+* register/login with 42 OAuth2 system
+* 2fa security(google auth for example) available in settings<br />
+* choose pseudo/avatar<br />
+* chat with channels public/private<br />
+* chat with private messages<br />
+* friends list available<br />
+* play a pong game from matchmaking or invitation (3 difficultys)<br />
+* gain experience and level up by playing games<br />
+* can view games in progress from spectator<br />
 
-
-**SCREENSHOTS**
+**SCREENSHOTS:**
 ![register](https://user-images.githubusercontent.com/58054839/227402620-00a57dad-319d-4c1b-a7eb-a8146ad9979a.png)
 ![qrcode](https://user-images.githubusercontent.com/58054839/227404510-dde07d49-b126-48ee-bc1d-cf5cb6a1f882.png)
 ![2fa](https://user-images.githubusercontent.com/58054839/227404520-f4134eab-fb68-472d-abe9-a8b265359c93.png)
