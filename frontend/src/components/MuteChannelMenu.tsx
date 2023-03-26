@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import { API_CHAT_CHANNEL_KICK_ROUTE, API_CHAT_CHANNEL_LEAVE_ROUTE, API_CHAT_CHANNEL_MUTE_ROUTE } from "../constants/RoutesApi"
 import { IChannel, IChannelUser } from "../interface/IChannel"
-import { RootState } from "../redux/store"
 import ClientApi from "./ClientApi.class"
 import '../styles/MuteChannelMenu.css'
 
@@ -26,12 +25,12 @@ export const MuteChannelMenu = ({ channelName, target, onMute, onMuteFail }: Pro
 	// 	|| event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'Control'))
 	// 		event.preventDefault();
 	// 	timeWritten.current = event.currentTarget.textContent
-	// 	console.log("event.currentTarget.textContent (dans onKeyDown) = ", event.currentTarget.textContent)
+	// 	// console.log("event.currentTarget.textContent (dans onKeyDown) = ", event.currentTarget.textContent)
 	// }
 
 	// const handleChangeTime = (e: React.ChangeEvent<HTMLSpanElement>) => {
 	// 	timeWritten.current = e.currentTarget.textContent
-	// 	console.log("e.target.textContent (dans onChange) = ", e.target.textContent)
+	// 	// console.log("e.target.textContent (dans onChange) = ", e.target.textContent)
 	// }
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -42,13 +41,13 @@ export const MuteChannelMenu = ({ channelName, target, onMute, onMuteFail }: Pro
 
 			// // iterate through entries...
 			// Array.from(formData.entries()).forEach(pair => {
-			// 	console.log(pair[0] + ": " + pair[1]);
+			// 	// console.log(pair[0] + ": " + pair[1]);
 				
 			// });
 
 			if (spanInuptRef.current)
 				timeWritten.current = spanInuptRef.current.textContent
-			console.log("timeWritten.current = ", timeWritten.current)
+			// console.log("timeWritten.current = ", timeWritten.current)
 			if (timeWritten.current) {
 				/* PATCH /chat/channel/kick {channel: string, target: string} */
 				const { muted: mutedPseudo } = await ClientApi.patch(API_CHAT_CHANNEL_MUTE_ROUTE,
@@ -62,7 +61,7 @@ export const MuteChannelMenu = ({ channelName, target, onMute, onMuteFail }: Pro
 					onMute()
 			}
 		} catch (err) {
-			console.log("err = ", err)
+			// console.log("err = ", err)
 			if (onMuteFail)
 				onMuteFail()
 		}
@@ -75,9 +74,14 @@ export const MuteChannelMenu = ({ channelName, target, onMute, onMuteFail }: Pro
 	return (
 		<React.Fragment>
 			<form onSubmit={handleSubmit}>
-				<p className="leave-text">Are you sure you wanna mute {target.pseudo} in the {channelName} channel ?</p>
+				<p className="leave-text">Are you sure you wanna mute {target.pseudo} in the <b>{channelName}</b> channel ?</p>
 				<div className="muteChannel-input-container">
-					<p className="">Yes, I wanna mute {target.pseudo} for <span contentEditable={true} role="textbox" ref={spanInuptRef}
+					<p className="">Yes, I wanna mute {target.pseudo} for <span contentEditable={true} onKeyDown={(e) => {
+						if (!(e.key >= '0' && e.key <= '9'
+						|| e.key === 'Backspace' || e.key === 'ArrowLeft' || e.key === 'ArrowRight'
+						|| e.key === 'ArrowUp' || e.key === 'ArrowDown'))
+							e.preventDefault()
+					}} role="textbox" ref={spanInuptRef}
 					/> sec</p>
 				</div>
 				<button type="submit"

@@ -10,9 +10,17 @@ import DMContent from "./DMContent";
 import DMList from "./DMList";
 import UserProfileChat from "./DMUserProfile";
 import Navbar from "./Navbar";
-import { API_CHAT_DISCUSSIONS_RELATION, API_CHAT_DM, API_CHAT_MARK_READ } from "../constants/RoutesApi";
+import { API_AVATAR_ROUTE, API_CHAT_DISCUSSIONS_RELATION, API_CHAT_DM, API_CHAT_MARK_READ, API_GAME_ACCEPT, API_USER_BLOCK, GAMEPAGE_ROUTE, MESSAGES_ROUTE } from "../constants/RoutesApi";
 import { useSocket } from "../hooks/useSocket";
 import { useDMListener } from "../hooks/useDMListener";
+import { useParams } from "react-router-dom";
+import { AboutErr, IError } from "../constants/EError";
+import { IGameInviteEv } from "../interface/IGame";
+import { useInviteGame } from "../hooks/useInviteGame";
+import ModalGameMenu, { ModalGameType } from "./ModalGameMenu";
+import { useNotification } from "../hooks/useNotification";
+import { useInviteNotification } from "../hooks/useInviteNotification";
+
 
 
 export enum MessageStatus {
@@ -34,14 +42,18 @@ export interface ChatItem
 const DM = () => {
 
 	const pseudo = usePseudo();
-	const avatar = useAvatar();
 	const [user, setUser] = useState<IUser | undefined>(undefined);
 	const oldUser = useRef<IUser>()
 	const socket = useSocket()
 	const [chatItems, setChatItems] = useState<ChatItem[]>([])
+	const pseudoParam = useParams().pseudo;
 	const [receiver, setReceiver] = useState<IUser | undefined>(undefined);
 	const oldReceiver = useRef<IUser>()
 	const [discussions, setDiscussions] = useState<Discussion[]>([])
+	const [avatar, setAvatar] = useState<string | undefined>(undefined)
+	const [modalGameType, setModalGameType] = useState<ModalGameType | null>(null)
+	const inviteInfos = useRef<IGameInviteEv | null>(null)
+	
 
 
 
@@ -120,14 +132,14 @@ const DM = () => {
 			if (daDiscussion) {
 				daDiscussion.avatar = avatar
 				daDiscussion.unread = unread
-				console.log("discussions (avant le bail) = ", discussions.map(discussion => discussion))
+				// console.log("discussions (avant le bail) = ", discussions.map(discussion => discussion))
 				discussions.splice(position, 0, daDiscussion)
-				console.log("discussions (apres le bail) = ", discussions.map(discussion => discussion))
-				console.log("oldDisucssions (apres le bail) = ", oldDiscussions)
-				console.log("daDiscussionInd = ", daDiscussionInd)
-				console.log("position = ", position)
+				// console.log("discussions (apres le bail) = ", discussions.map(discussion => discussion))
+				// console.log("oldDisucssions (apres le bail) = ", oldDiscussions)
+				// console.log("daDiscussionInd = ", daDiscussionInd)
+				// console.log("position = ", position)
 				const daNewDiscussionInd: number = daDiscussionInd > position ? daDiscussionInd + 1 : daDiscussionInd
-				console.log("daNewDiscussionInd = ", daNewDiscussionInd)
+				// console.log("daNewDiscussionInd = ", daNewDiscussionInd)
 				discussions.splice(daNewDiscussionInd, 1)
 			}
 			return discussions
@@ -156,25 +168,88 @@ const DM = () => {
 	useEffect(() => {
 		(async () => {
 			try {
-				console.log("user = ", user)
-				console.log("oldUser = ", oldUser)
-				if (user?.pseudo && oldUser.current?.pseudo !== user.pseudo) {
-					const { discussions: realDiscussions }: { discussions: Discussion[] } = await ClientApi.get(API_CHAT_DISCUSSIONS_RELATION)
-					console.log("realDiscussions = ", realDiscussions)
-					const discussions: Discussion[] = realDiscussions.map(realDiscussion => realDiscussion);
-					setDiscussions(discussions)
-					if (discussions.length >= 1)
-						updateReceiver({
-							pseudo: discussions[0].pseudo,
-							avatar: discussions[0].avatar,
-						})
+				if (pseudo) {
+					const data = await ClientApi.get(API_AVATAR_ROUTE)
+					// console.log("data.avatar = ", data.avatar)
+					setAvatar(data.avatar)
+					// console.log("avatar = ", avatar)
 				}
 			} catch (err) {
-				console.log("err = ", err)
+				const _typeError: TypeError = err as TypeError;
+				const _error: IError = err as IError;
+				if (_typeError.name == "TypeError")
+					setAvatar(undefined)
 			}
 		})()
-	}, [user])
-
+    }, [avatar, pseudo])
+	
+	useEffect(() => {
+		(async () => {
+			try {
+				// console.log("user = ", user)
+				// console.log("oldUser = ", oldUser)
+				if (user?.pseudo && oldUser.current?.pseudo !== user.pseudo) {
+					const { discussions: notrealDiscussions }: { discussions: Discussion[] } =
+						await ClientApi.get(API_CHAT_DISCUSSIONS_RELATION);
+					const data: { blockeds: string[] } = await ClientApi.get(API_USER_BLOCK); 
+					const realDiscussions = notrealDiscussions.filter(discussion => data.blockeds.every(blocked => discussion.pseudo !== blocked))
+					if (pseudoParam) {
+						try {
+							// console.log("realDiscussions = ", realDiscussions)
+							const {avatar: avatarParam} = await ClientApi.get(API_AVATAR_ROUTE + '/' + pseudoParam)
+							const discussions: Discussion[] = realDiscussions.map(discussion => discussion).reverse()
+							// console.log("--------- avatarParam ----------- = ", avatarParam)
+							// console.log("discussions = ", discussions)
+							if (discussions.findIndex(discussion => discussion.pseudo === pseudoParam) === -1) {
+								discussions.unshift({
+									pseudo: pseudoParam,
+									avatar: avatarParam,
+									unread: 0
+								})
+							} else {
+								const daDiscussion: Discussion | undefined = discussions.find(discussion => discussion.pseudo === pseudoParam)
+								const daDiscussionInd: number = discussions.findIndex(discussion => discussion.pseudo === pseudoParam)
+								if (daDiscussion) {
+									daDiscussion.avatar = avatarParam
+									daDiscussion.unread = 0
+									discussions.splice(0, 0, daDiscussion)
+									const daNewDiscussionInd: number = daDiscussionInd > 0 ? daDiscussionInd + 1 : daDiscussionInd
+									// console.log("daNewDiscussionInd = ", daNewDiscussionInd)
+									discussions.splice(daNewDiscussionInd, 1)
+								}
+							}
+							setDiscussions(discussions)
+							updateReceiver({
+								pseudo: pseudoParam,
+								avatar: avatarParam,
+							})
+						} catch (err) {
+							// console.log("realDiscussions = ", realDiscussions)
+							const discussions: Discussion[] = realDiscussions.map(realDiscussion => realDiscussion);
+							setDiscussions(discussions)
+							if (discussions.length >= 1)
+								updateReceiver({
+									pseudo: discussions[0].pseudo,
+									avatar: discussions[0].avatar,
+								})
+						}
+					}
+					else {
+						// console.log("realDiscussions = ", realDiscussions)
+						const discussions: Discussion[] = realDiscussions.map(realDiscussion => realDiscussion);
+						setDiscussions(discussions)
+						if (discussions.length >= 1)
+							updateReceiver({
+								pseudo: discussions[0].pseudo,
+								avatar: discussions[0].avatar,
+							})
+					}
+				}
+			} catch (err) {
+				// console.log("err = ", err)
+			}
+		})()
+	}, [user, pseudoParam])
 	
 	useEffect(() => {
 		(async () => {
@@ -191,24 +266,24 @@ const DM = () => {
 					}))
 					setChatItems(chatItems)
 				} catch (err) {
-					console.log("err = ", err);
+					// console.log("err = ", err);
 				}
 			}
 		})()
 	}, [receiver, user])
 
 	useEffect(() => {
-		console.log("(useEffect) receiver?.pseudo = ", receiver?.pseudo)
-		console.log("(useEffect) oldReceiver.current?.pseudo = ", oldReceiver.current?.pseudo)
+		// console.log("(useEffect) receiver?.pseudo = ", receiver?.pseudo)
+		// console.log("(useEffect) oldReceiver.current?.pseudo = ", oldReceiver.current?.pseudo)
 		if (receiver?.pseudo && receiver.pseudo !== oldReceiver.current?.pseudo) {
-			console.log("(useEffect) yo")
+			// console.log("(useEffect) yo")
 			ClientApi.patch(API_CHAT_MARK_READ + '/' + receiver.pseudo)
 			updateDiscussion(receiver.pseudo, 0, receiver.avatar)
 		}
 	}, [receiver])
 
 	useDMListener(socket, user, receiver, updateDiscussions, addChatItem)
-
+	const inviteNotification = useInviteNotification(socket, pseudo)
 
 
 
@@ -216,12 +291,14 @@ const DM = () => {
 	return (
 		<React.Fragment>
 			<Navbar />
+			{ inviteNotification }
 			<div className="DM-container">
 				<div className="DM-container-bg" />
 				<DMList user={user} updateReceiver={updateReceiver} updateDiscussions={updateDiscussions}
 				discussions={discussions} />
 				<DMContent socket={socket} user={user} chatItems={chatItems}
-				receiver={receiver} addChatItem={addChatItem} updateChatItem={updateChatItem}/>
+				receiver={receiver} addChatItem={addChatItem} updateChatItem={updateChatItem}
+				updateDiscussions={updateDiscussions}/>
 			</div>
 		</React.Fragment>
 	)

@@ -43,6 +43,9 @@ export class GameEntity {
     @Column({type: 'bool' , default: false})
     forfeit: boolean = false;
 
+    @Column({type: 'bool' , default: false})
+    started: boolean = false;
+
     @CreateDateColumn()
     created_at: Date;
     

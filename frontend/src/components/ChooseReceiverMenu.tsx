@@ -64,22 +64,22 @@ const ChooseReceiverMenu = ({ user, onChooseReceiver, onChooseReceiverFail }: Pr
 
 
 	useEffect(() => {
-		console.log("did mount");
+		// console.log("did mount");
 		(async () => {
 			try {
 				if (user?.pseudo) {
-					console.log("avant le fetch")
+					// console.log("avant le fetch")
 					const { users: usersRes }: {users: IUser[]} = await ClientApi.get(API_USER_ALL)
 					if (!usersRes)
 						throw new Error("salut cv ?")
 					const users = usersRes.filter((userRes: IUser) => userRes.pseudo !== user.pseudo)
-					console.log("apres le fetch")
-					console.log("users = ", users)
+					// console.log("apres le fetch")
+					// console.log("users = ", users)
 					setUsers(users);
 					setVisibleUsers(users);
 				}
 			} catch (err) {
-				console.log("err = ", err);
+				// console.log("err = ", err);
 				setUsers([{
 					pseudo: "bonsoir"
 				},

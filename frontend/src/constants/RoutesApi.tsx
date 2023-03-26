@@ -5,22 +5,22 @@ const {
 	REACT_APP_BACK_PROTOCOL,
 	REACT_APP_BACK_HOSTNAME,
 	REACT_APP_BACK_PORT,
+	REACT_APP_API_CLIENTID,
 } = process.env
 
 
-
-export const FTAPI_CODE_ROUTE_TO_REGISTER: string = `https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-dc852d2afb56aff8aa2574e48b6bbcb54cd473a02b1d6cfb62bb6c8b65a22701&redirect_uri=${REACT_APP_FRONT_PROTOCOL}%3A%2F%2F${REACT_APP_FRONT_HOSTNAME}%3A${REACT_APP_FRONT_PORT}%2Fregister&response_type=code`
-export const FTAPI_CODE_ROUTE_TO_TWOFA: string = `https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-dc852d2afb56aff8aa2574e48b6bbcb54cd473a02b1d6cfb62bb6c8b65a22701&redirect_uri=${REACT_APP_FRONT_PROTOCOL}%3A%2F%2F${REACT_APP_FRONT_HOSTNAME}%3A${REACT_APP_FRONT_PORT}%2Ftwofa&response_type=code`
-
+export const FTAPI_CODE_ROUTE_TO_REGISTER: string = `https://api.intra.42.fr/oauth/authorize?client_id=${REACT_APP_API_CLIENTID}&redirect_uri=${REACT_APP_FRONT_PROTOCOL}%3A%2F%2F${REACT_APP_FRONT_HOSTNAME}%3A${REACT_APP_FRONT_PORT}%2Fregister&response_type=code`
+export const FTAPI_CODE_ROUTE_TO_TWOFA: string = `https://api.intra.42.fr/oauth/authorize?client_id=${REACT_APP_API_CLIENTID}&redirect_uri=${REACT_APP_FRONT_PROTOCOL}%3A%2F%2F${REACT_APP_FRONT_HOSTNAME}%3A${REACT_APP_FRONT_PORT}%2Ftwofa&response_type=code`
 
 
-console.log("REACT_APP_BACK_PROTOCOL = ", REACT_APP_BACK_PROTOCOL)
+// console.log("REACT_APP_BACK_PROTOCOL = ", REACT_APP_BACK_PROTOCOL)
 export const API_BASE_URL = `${REACT_APP_BACK_PROTOCOL}://${REACT_APP_BACK_HOSTNAME}:${REACT_APP_BACK_PORT}`
 
 
 export const API_BASE_AUTH = API_BASE_URL + '/auth'
 export const API_BASE_USER = API_BASE_URL + '/users'
 export const API_BASE_CHAT = API_BASE_URL + '/chat'
+export const API_BASE_GAME = API_BASE_URL + '/game'
 
 
 export const API_TWOFA_ROUTE = API_BASE_AUTH + '/2fa'
@@ -28,14 +28,20 @@ export const API_TOKEN_ROUTE = API_BASE_AUTH + '/token'
 export const API_VERIFY_TOKEN_ROUTE = API_BASE_AUTH + '/verify'
 
 export const API_PSEUDO_ROUTE = API_BASE_USER + '/pseudo'
+export const API_PROFILE_ROUTE = API_BASE_USER + '/profile' /* + /:pseudo */
 export const API_AVATAR_ROUTE = API_BASE_USER + '/avatar'
 
+export const API_USER_BLOCK = API_BASE_USER + '/block' /* + /:pseudo */
+export const API_USER_FRIENDS_LIST = API_BASE_USER + '/friends/list' /* + /:pseudo */
+export const API_USER_ADD_FRIEND = API_BASE_USER + '/friends/add' /* + /:pseudo */
+export const API_USER_DEL_FRIEND = API_BASE_USER + '/friends/del' /* + /:pseudo */
 export const API_USER_FRIEND_RELATION = API_BASE_USER + '/friends/relation' /* + /:pseudo */
 export const API_USER_ALL_NAMES = API_BASE_USER + '/all/names'
 export const API_USER_ALL = API_BASE_USER + '/all'
 
 export const API_CHAT_DISCUSSIONS_RELATION = API_BASE_CHAT + '/discussions'
 export const API_CHAT_DM = API_BASE_CHAT + '/message' /* + '/:pseudo' */
+export const API_CHAT_STATUS = API_BASE_CHAT + '/status' /* + '/:pseudo' */
 export const API_CHAT_MARK_READ = API_BASE_CHAT + '/message/read' /* + /:pseudo */
 export const API_CHAT_MESSAGES_CHANNEL_ROUTE = API_BASE_CHAT + '/channel/message'
 export const API_CHAT_USER_CHANNELS_ROUTE = API_BASE_CHAT + '/channels'
@@ -52,9 +58,14 @@ export const API_CHAT_CHANNEL_BAN_ROUTE = API_BASE_CHAT + '/channel/ban'
 export const API_CHAT_CHANNEL_MUTE_ROUTE = API_BASE_CHAT + '/channel/mute'
 export const API_CHAT_CHANNEL_SETADMIN_ROUTE = API_BASE_CHAT + '/channel/setAdmin'
 
+export const API_GAME_SEARCH = API_BASE_GAME + '/search' /* + /:difficulty */
+export const API_GAME_INVITE = API_BASE_GAME + '/invite'
+export const API_GAME_ACCEPT = API_BASE_GAME + '/accept' /* + /:pseudo */
+export const API_GAME_VIEW = API_BASE_GAME + '/view' /* + /:pseudo */
+export const API_GAME_INFOS = API_BASE_GAME + '/infos' /* + /:pseudo */
 
 
-export const API_SOCKET_URL = 'ws://localhost:3042'
+export const API_SOCKET_URL = `ws://${REACT_APP_BACK_HOSTNAME}:${REACT_APP_BACK_PORT}`
 
 
 
@@ -65,11 +76,17 @@ export const BASE_URL = `${REACT_APP_FRONT_PROTOCOL}://${REACT_APP_FRONT_HOSTNAM
 export const HOME_EP = '/'
 export const HOME_ROUTE = BASE_URL + HOME_EP
 
+export const GOPLAY_EP = '/go-play'
+export const GOPLAY_ROUTE = BASE_URL + GOPLAY_EP
+
 export const REGISTER_EP = '/register';
 export const REGISTER_ROUTE = BASE_URL + REGISTER_EP
 
 export const GAMEPAGE_EP = '/gamepage';
 export const GAMEPAGE_ROUTE = BASE_URL + GAMEPAGE_EP
+
+export const VIEWERGAMEPAGE_EP = '/view-gamepage';
+export const VIEWERGAMEPAGE_ROUTE = BASE_URL + VIEWERGAMEPAGE_EP
 
 export const TWOFA_EP = '/twofa'
 export const TWOFA_ROUTE = BASE_URL + TWOFA_EP

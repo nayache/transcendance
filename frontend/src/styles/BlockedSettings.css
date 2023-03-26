@@ -1,0 +1,32 @@
+
+.blocked-account-settings {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin: 3px;
+}
+
+.blocked-account-settings p {
+	color: red;
+	cursor: pointer;
+	width: fit-content;
+	text-shadow:
+		0.4px 0.4px black,
+		-0.4px 0.4px black,
+		0.4px -0.4px black,
+		-0.4px -0.4px black
+	;
+}
+
+.unblock-btn-settings {
+	box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+	width: 20%;
+	background-color: wheat;
+	padding: 4px 0;
+	height: fit-content;
+	min-width: fit-content;
+}
+
+.unblock-btn-settings:active {
+	box-shadow: none;
+}

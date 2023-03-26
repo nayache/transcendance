@@ -32,7 +32,7 @@ const TwoFA = () => {
 		const { value } = event.target;
 		const newOTP: string[] = [...otp]
 
-		console.log("value = ", value)
+		// console.log("value = ", value)
 		newOTP[index] = value.substring(value.length - 1);
 		if (value)
 			setActiveOTPIndex(index + 1)
@@ -52,7 +52,7 @@ const TwoFA = () => {
 	}
 
 	const handleOnMouseDown = (index: number) => {
-		console.log("index (dans mousedown) = ", index)
+		// console.log("index (dans mousedown) = ", index)
 		setActiveOTPIndex(index);
 	}
 
@@ -117,10 +117,10 @@ const TwoFA = () => {
 		
 			if (allFilled)
 			{
-				console.log("that's good");
+				// console.log("that's good");
 				await tryToRegister(otp.join(''))
 			}
-			console.log("otp = ", otp);
+			// console.log("otp = ", otp);
 		})()
 	}, [otp])
 

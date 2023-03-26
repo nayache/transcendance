@@ -34,7 +34,7 @@ const EnableTwoFASettings = () => {
 
 
 	const handleMouseClick = useCallback(() => {
-		console.log("mouse click")
+		// console.log("mouse click")
 		if (unrolled && !unrolled[0])
 			setUnrolled(unrolled => [!unrolled![0], true])
 	}, [unrolled])
@@ -48,15 +48,15 @@ const EnableTwoFASettings = () => {
 	}, [])
 
 	const rollOrUnroll = useCallback((unrolled: boolean, regenerate: boolean = true) => {
-		console.log("differenceHeight = ", differenceHeight)
-		console.log("regenerate = ", regenerate)
+		// console.log("differenceHeight = ", differenceHeight)
+		// console.log("regenerate = ", regenerate)
 		if (unrolled) {
-			console.log("unrolled = true dans truc")
+			// console.log("unrolled = true dans truc")
 			setRolledStyled({
 				marginTop: 0
 			})
 			setRolledClassName("unrolled")
-			console.log("re roll or unroll...")
+			// console.log("re roll or unroll...")
 			if (regenerate)
 				ClientApi.post(API_TWOFA_ROUTE, JSON.stringify({
 					toggle: true
@@ -67,7 +67,7 @@ const EnableTwoFASettings = () => {
 					.then(data => setImgData(data.qrcode))
 		}
 		else {
-			console.log("unrolled = false dans truc")
+			// console.log("unrolled = false dans truc")
 			setRolledStyled({
 				marginTop: -differenceHeight
 			})
@@ -92,7 +92,7 @@ const EnableTwoFASettings = () => {
 		// }
 		ClientApi.get(API_TWOFA_ROUTE)
 			.then(data => {
-				console.log("data.enabled = ", data.enabled)
+				// console.log("data.enabled = ", data.enabled)
 				setUnrolled([data.enabled, false]);
 			})
 	}, [])

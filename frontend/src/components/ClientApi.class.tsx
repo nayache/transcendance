@@ -1,5 +1,4 @@
 import FileResizer from 'react-image-file-resizer'
-import { io, Socket } from 'socket.io-client';
 import { AboutErr, IError, TypeErr } from "../constants/EError";
 import { BASE_URL, API_BASE_AUTH, REGISTER_ROUTE, SIGNIN_ROUTE, API_VERIFY_TOKEN_ROUTE, API_TOKEN_ROUTE, API_SOCKET_URL } from "../constants/RoutesApi";
 
@@ -82,14 +81,14 @@ class ClientApi {
 	}
 
 	private static async fetchEndpoint(url: string, init?: RequestInit | undefined): Promise<any> {
-		console.log("------- Bienvenue dans fetchEndPoint -------");
+		// console.log("------- Bienvenue dans fetchEndPoint -------");
 		const res = await fetch(url, init);
 		const data: any = await res.json();
-		console.log("data = ", data);
+		// console.log("data = ", data);
 		if (!res.ok)
 		{
 			const err = data.error
-			console.log("data.error = ", data.error)
+			// console.log("data.error = ", data.error)
 			if (this.doRedirectToRegister(data.error))
 			{
 				ClientApi.redirect = new URL(ClientApi.registerRoute)
@@ -109,7 +108,7 @@ class ClientApi {
 						}
 					})
 					const data: any = await res.json();
-					console.log("data dans expired = ", data);
+					// console.log("data dans expired = ", data);
 					if (data.error)
 					{
 						if (this.doRedirectToRegister(data.error))
@@ -131,11 +130,11 @@ class ClientApi {
 					});
 					return data2ndChance;
 				} catch (err) {
-					console.log("avant de throw ici")
+					// console.log("avant de throw ici")
 					throw err;
 				}
 			}
-			console.log("avant de throw")
+			// console.log("avant de throw")
 			throw data.error;
 		}
 		return data
@@ -220,6 +219,22 @@ class ClientApi {
 	public static async post(url: string, body?: BodyInit | null, contentType?: string): Promise<any> {
 		
 		const method: string = 'POST'
+		let headers: HeadersInit = {};
+		
+		if (ClientApi.token)
+			headers['Authorization'] = `Bearer ${ClientApi.token}`
+		if (contentType)
+			headers["Content-Type"] = contentType
+		let init: RequestInit | undefined = {
+			method, headers, body
+		};
+		const data: any = await ClientApi.fetchEndpoint(url, init)
+		return (data);
+	}
+	
+	public static async delete(url: string, body?: BodyInit | null, contentType?: string): Promise<any> {
+		
+		const method: string = 'DELETE'
 		let headers: HeadersInit = {};
 		
 		if (ClientApi.token)

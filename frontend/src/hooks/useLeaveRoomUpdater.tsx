@@ -15,8 +15,8 @@ export const useLeaveRoomUpdater = (
 		if (chanUser?.pseudo) {
 			socket?.on('leaveRoom', (payload: IChannelEvLeave) => {
 
-				console.log("(leave) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.pseudo)
-				console.log("(leave) currentChannelId = ", currentChannelId)
+				// console.log("(leave) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.pseudo)
+				// console.log("(leave) currentChannelId = ", currentChannelId)
 				if (payload.pseudo !== chanUser.pseudo
 				&& !(currentChannelId <= -1 || currentChannelId >= channels.length)
 				&& channels[currentChannelId].name === payload.channel) {
@@ -30,7 +30,7 @@ export const useLeaveRoomUpdater = (
 						messages: channels[currentChannelId].messages,
 					}
 					updateChannel(channel)
-					console.log("test ici en leave")
+					// console.log("test ici en leave")
 					if (onLeaveRoomUpdate)
 						onLeaveRoomUpdate(payload)
 				}

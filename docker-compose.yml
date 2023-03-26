@@ -38,7 +38,7 @@ services:
     container_name: postgres
     image: postgres:latest
     env_file:
-      - ./docker/postgres.env
+      - ./backend/.env
     environment:
       TZ: "Europe/Paris"
     restart: unless-stopped

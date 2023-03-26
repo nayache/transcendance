@@ -11,7 +11,7 @@ export class isOwner implements CanActivate {
   constructor(private chatService: ChatService, private userService: UserService) {}
     
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    console.log('IN OWNER GUARD')
+    // console.log('IN OWNER GUARD')
     const request: Request = context.switchToHttp().getRequest<Request>();
     const args: string[] = Object.values(request.body);
     const keys: string[] = Object.keys(request.body);

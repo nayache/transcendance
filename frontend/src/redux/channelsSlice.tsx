@@ -32,9 +32,9 @@ const channelsSlice = createSlice({
 			state.channels = action.payload
 		},
 		removeChannel: (state, action) => {
-			console.log("removeChannel: state.channels (avant) = ", state.channels);
+			// console.log("removeChannel: state.channels (avant) = ", state.channels);
 			state.channels = state.channels.filter((channel) => channel.name != action.payload)
-			console.log("removeChannel: state.channels (apres) = ", state.channels);
+			// console.log("removeChannel: state.channels (apres) = ", state.channels);
 		},
 		setCurrentChannel: (state, action) => {
 			state.currentChannelId = state.channels

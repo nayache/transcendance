@@ -55,35 +55,15 @@ export class UserController {
 		return {users};
 	}
 
-	// A SUPP???? 
-	/*
-	@Get()
-	async getUser(@User() userId: string) {
-		const user: UserEntity = await this.userService.findById(userId);
-		if (!user)
-			throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found');
-		const data: userDto = await this.userService.getUser(user);
-		return { user: data }
-	}
-	
-	@Get('lalalal/:pseudo') // route a modifier
-	async getAnUser(@Param('pseudo') pseudo: string) {
-		const user: UserEntity = await this.userService.findByPseudo(pseudo);
-		if (!user)
-			throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found');
-		const data: userDto = await this.userService.getUser(user);
-		return { user: data }
-	}*/
-
 	@Get('friends/relation/:pseudo')
 	async getRelation(@User() userId: string, @Param('pseudo') pseudo: string) {
 		if (!pseudo)
-			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.EMPTY, 'empty pseudo argument.');
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'empty pseudo argument.');
 		const target: UserEntity = await this.userService.findByPseudo(pseudo);
 		if (!target) 
-			throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'target user not found.');
+			throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target user not found.');
 		if (userId === target.id)
-			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.INVALID, 'invalid target(himself)');
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'invalid target(himself)');
 		const relation: Relation = await this.userService.getRelation(userId, target.id);
 		const blocked: boolean = await this.userService.blockandauthorExist(userId, target.id);
 		return {relation, blocked};
@@ -99,30 +79,12 @@ export class UserController {
 	async getProfile(@User() userId: string, @Param('pseudo') pseudo: string) {
 		const target: UserEntity = await this.userService.findByPseudo(pseudo);
 		if (!target)
-			throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'target not found');
+			throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND, 'target not found');
 		if (userId === target.id)
-			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.USER, TypeErr.INVALID, 'invalid target(himself)');
+			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.INVALID, 'invalid target(himself)');
 		const profile: ProfileDto = await this.userService.getProfile(target.id, userId);
 		return { profile };
 	}
-
-    //for test
-/*    @Get('all')
-    async getAll() : Promise<UserEntity[]> {
-        return this.userService.getUsers();
-    }*/
-
-    //for test
-    @Post('add')
-    async addUser(@Query('login') login: string) {
-        return this.userService.saveUser(login)
-    }
-
-    //for test
-    @Delete('rm')
-    async removeUser(@Query('login') login: string) {
-        return this.userService.removeUser(login);
-    }
 
 	//avatar
 	@Get('avatar')
@@ -139,7 +101,7 @@ export class UserController {
 	async getProfileAvatar(
 		@Param('pseudo') pseudo: string,
 	): Promise <{avatar: string}> {
-		console.log(pseudo)
+		// console.log(pseudo)
 		if (!pseudo)
 			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'Empty pseudo');
 		const user = await this.userService.findByPseudo(pseudo);
@@ -181,7 +143,7 @@ async postpseudoAvatar(
 			'image/jpeg',
 			'image/png'
 		];
-		console.log(file.buffer);
+		// console.log(file.buffer);
 		if (file.buffer.length == 0)
 			throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID, 'File is not an image');
 		const mime = await this.avatarService.getMimeTypeFromArrayBuffer(file.buffer);
@@ -200,7 +162,7 @@ async postpseudoAvatar(
 
 	@Patch('avatar')
       @UseInterceptors(FileInterceptor('file', {fileFilter: (req: any, file: any, cb: any) => {
-        //console.log(file.mimetype.split('/')[1])
+        //// console.log(file.mimetype.split('/')[1])
 		if (file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
             // Allow storage of file
 			//if (file.mimetype.split('/')[1] != extname(file.originalname))
@@ -226,7 +188,7 @@ async postpseudoAvatar(
 					'image/jpg',
 					'image/png'
 				];
-				console.log(file.mimetype);
+				// console.log(file.mimetype);
 				if (file.buffer.length == 0)
 					throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.AVATAR, TypeErr.INVALID, 'File is not an image');
 				const mime = await this.avatarService.getMimeTypeFromArrayBuffer(file.buffer);

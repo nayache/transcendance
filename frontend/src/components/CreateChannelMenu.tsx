@@ -31,22 +31,10 @@ const CreateChannelMenu = ({ onCreate, addChannel, setCurrentChannel, chanUser }
 
 	const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		channelWritten.current = e.target.value;
-		console.log("channelWritten.current = ", channelWritten.current)
-		if (inputRef.current &&
-			inputRef.current.value.length >= MAX_CARAC_CHANNEL_NAME)
-			console.log("max length reached")
-		else
-			console.log("okay good")
 	}
 
 	const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		passwordWritten.current = e.target.value;
-		console.log("passwordWritten.current = ", passwordWritten.current)
-		if (inputRef.current &&
-			inputRef.current.value.length >= MAX_CARAC_CHANNEL_NAME)
-			console.log("max length reached")
-		else
-			console.log("okay good")
 	}
 
 	const handleValidate = (e: React.FormEvent<HTMLFormElement>) => {

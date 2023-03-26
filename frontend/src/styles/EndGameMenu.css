@@ -1,0 +1,30 @@
+
+.endGame-container {
+	display: flex;
+	margin: 10px;
+	justify-content: space-around;
+	min-height: 200px;
+	color: white;
+	text-shadow: 1px 1px black;
+	box-sizing: border-box;
+}
+
+.endGame-child {
+
+}
+
+.endGame-win-title {
+	font-size: 2em;
+	color: green;
+}
+
+.endGame-lose-title {
+	font-size: 2em;
+	color: red;
+}
+
+.endGame-player-title {
+	font-size: large;
+	font-weight: 600;
+	margin-bottom: 10px;
+}

@@ -13,19 +13,32 @@ import { IUser } from "../interface/IUser"
 import Crown from '../img/crown.png'
 import ClientApi from "./ClientApi.class"
 import { AboutErr, IError, TypeErr } from "../constants/EError"
-import { API_BASE_USER } from "../constants/RoutesApi"
+import { API_BASE_USER, API_USER_ADD_FRIEND, API_USER_DEL_FRIEND, GAMEPAGE_ROUTE, MESSAGES_ROUTE } from "../constants/RoutesApi"
 import { useParams, useSearchParams } from "react-router-dom"
+import { useProfile } from "../hooks/useProfile"
+import { ChannelRole, Status } from "../constants/EMessage"
+import { GameDto } from "../interface/IGame"
+import ServerDownPage from "./ServerDownPage"
+import { useNotification } from "../hooks/useNotification"
+import { useInviteNotification } from "../hooks/useInviteNotification"
+import { useSocket } from "../hooks/useSocket"
+import { useAvatar } from "../hooks/useAvatar"
+import { usePseudo } from "../hooks/usePseudo"
+import { DisplayAchievements, IDisplayAchievement } from "../constants/Achievements"
+import FirstBanner from "../img/first_banner.png"
+import MiddleBanner from "../img/middle_banner.png"
+import LastBanner from "../img/last_banner.png"
+import { AiOutlinePlusSquare } from "react-icons/ai"
+import { Relation } from "../interface/IUser"
+import { AiOutlineMinusSquare } from "react-icons/ai"
+import { FiMessageSquare } from "react-icons/fi"
+import { FaGamepad } from "react-icons/fa"
+import ModalChannelMenu, { ModalChannelType } from "./ModalChannelMenu"
 
 enum Stat {
 	WINS,
 	LOSES,
 	RANK,
-}
-
-enum GameMode {
-	CLASSIC,
-	MEDIUM,
-	HARD,
 }
 
 interface StatMatch {
@@ -34,123 +47,97 @@ interface StatMatch {
 	score: number,
 }
 
-interface Match {
-	userStat: StatMatch,
-	opponentStat: StatMatch,
-	gameMode: GameMode,
-}
-
 
 const Profile = () => {
-	const [isOkay, setIsOkay] = useState<boolean | undefined>()
-	const [user, setUser] = useState<IUser>()
-	const [pseudo, setPseudo] = useState(useParams().pseudo)
-	const [nbFriends, setNbFriends] = useState<number>(3);
-	const [nbWins, setNbWins] = useState<number>(3);
-	const [nbLoses, setLoses] = useState<number>(2);
-	const [rank, setRank] = useState<number>(12);
-	const [level, setLevel] = useState<number>(6);
-	const [status, setStatus] = useState<string>("En ligne");
-	const matches: Match[] = [ // certains trucs comme match history doivent etre visible seulement si on est log
-		{
-			userStat: {
-				user: { pseudo },
-				win: true,
-				score: 20,
-			},
-			opponentStat: {
-				user: { pseudo: "Guillaumedu77" },
-				win: false,
-				score: 0,
-			},
-			gameMode: GameMode.MEDIUM,
-		},
-		{
-			userStat: {
-				user: { pseudo },
-				win: true,
-				score: 2,
-			},
-			opponentStat: {
-				user: { pseudo: "Leodu69" },
-				win: false, // il a deco
-				score: 7,
-			},
-			gameMode: GameMode.HARD,
-		},
-		{
-			userStat: {
-				user: { pseudo },
-				win: false,
-				score: 10,
-			},
-			opponentStat: {
-				user: { pseudo: "Manondu62" },
-				win: true,
-				score: 20,
-			},
-			gameMode: GameMode.CLASSIC,
-		},
-		{
-			userStat: {
-				user: { pseudo },
-				win: false,
-				score: 15,
-			},
-			opponentStat: {
-				user: { pseudo: "AlanTiaCaptéesrgvsregvvbdfvbdfgbsretgrsgbsrgbsfgbfgsbsfbgb" },
-				win: true,
-				score: 0,
-			},
-			gameMode: GameMode.MEDIUM,
-		},
-	]
+
+	const pseudoParam = useParams().pseudo
+	const socket = useSocket()
+	const pseudo = usePseudo()
+	const avatar = useAvatar()
+	const [profile, error] = useProfile(pseudoParam !== pseudo ? pseudoParam : undefined)
+	const notification = useNotification(socket, {pseudo, avatar})
+	const inviteNotification = useInviteNotification(socket, pseudo)
+	const [btnFriends, setBtnFriends] = useState<Relation | undefined>(profile?.relation)
+	const [actionModal, setActionModal] = useState<ModalChannelType | null>(null)
+
 
 
 	useEffect(() => {
-		(async () => {
-			try {
-				console.log("ytrfygjvhbk")
-				console.log("pseudo = ", pseudo);
-				const url: string = API_BASE_USER + "/" + pseudo
-				const data = await ClientApi.get(url)
-				
-				setUser(data.user)
-				// if (!user)
-				// 	throw {
-				// 		about: AboutErr.USER,
-				// 		type: TypeErr.EMPTY,
-				// 	} as IError
-				setIsOkay(true)
-			} catch (err) {
-				setIsOkay(false)
-				console.log("err = ", err)
-			}
-		})()
-	}, [])
+		setBtnFriends(profile?.relation)
+	}, [profile])
 
+	const getProfilImagesAndPseudo = () => {
+		let srcImg: string | undefined;
 
-	const getProfilImagesAndPseudo = () => (
-		<div className="avatar-back-container">
-			<img className="backprofil" src={Paysage}/>
-			<div className="pseudo-avatar-container">
-				<img className="avatarprofil" src={Avatar} alt="avatar"/>
-				{ getPseudoAndCo() }
+		if (profile && profile?.level < 3)
+			srcImg = FirstBanner
+		else if (profile && profile?.level < 7)
+			srcImg = MiddleBanner
+		else if (profile && profile?.level < 10)
+			srcImg = LastBanner
+		return (
+			<div className="avatar-back-container">
+				<img className="backprofil" src={srcImg}/>
+				<div className="pseudo-avatar-container">
+					<img className="avatarprofil" src={profile?.avatar} alt="avatar"/>
+					{ getPseudoAndCo() }
+					{
+						profile?.relation !== undefined &&
+						<div className="interaction-container">
+							<div className="sendMsg-profile"
+							onClick={() => {
+								ClientApi.redirect = new URL(MESSAGES_ROUTE + '/' + profile.pseudo)
+							}}>
+								<p>Send message</p>
+								<FiMessageSquare className="profile-sendMessage-svg" />
+							</div>
+							<div className="sendMsg-profile"
+							onClick={() => {
+								setActionModal(ModalChannelType.INVITEUSER)
+							}}>
+								<p>Invite</p>
+								<FaGamepad className="profile-sendMessage-svg" />
+							</div>
+						</div>
+					}
+				</div>
 			</div>
-		</div>
-	)
+		)
+	}
 
 	const getPseudoAndCo = () => {
-		const mapStatus = new Map<string, string>()
-
-		mapStatus.set("En ligne", "online");
-		mapStatus.set("Hors ligne", "offline");
-		mapStatus.set("En pleine partie", "ingame");
-
 		return (
 			<div className="pseudo-container">
-				<div className={"circle " + mapStatus.get(status) } />
-				<p className="pseudo">{pseudo}</p>
+				<p className="pseudo">{profile?.pseudo}</p>
+				{
+					profile?.relation !== undefined && (
+						
+						btnFriends === Relation.UNKNOWN &&
+						<div className="addToFriends-container">
+							<AiOutlinePlusSquare className="addToFriends-svg"
+							onClick={async () => {
+								await ClientApi.post(API_USER_ADD_FRIEND + '/' + profile.pseudo)
+								setBtnFriends(Relation.PENDING)
+							}}/>
+						</div>
+						||
+
+						btnFriends === Relation.PENDING &&
+						<div className="addToFriends-container">
+							<p>Pending...</p>
+						</div>
+						||
+
+						btnFriends === Relation.FRIEND &&
+						<div className="addToFriends-container">
+							<AiOutlineMinusSquare className="addToFriends-svg" 
+							onClick={async () => {
+								await ClientApi.delete(API_USER_DEL_FRIEND + '/' + profile.pseudo)
+								setBtnFriends(Relation.UNKNOWN)
+							}}/>
+						</div>
+					)
+				}
 			</div>
 		)
 	}
@@ -159,8 +146,8 @@ const Profile = () => {
 
 		return (
 			<div className="level-container">
-				<p className="level">Level {level}</p>
-				<ProgressBar bgcolor="blue" completed={40} />
+				<p className="level">Level {profile?.level}</p>
+				<ProgressBar bgcolor="blue" completed={profile?.percentageXp} />
 			</div>
 		)
 	}
@@ -168,27 +155,24 @@ const Profile = () => {
 	const getFriends = () => (
 		<div className="friends-container">
 			<p className="friends-title">Friends</p>
-			<p className="friends-number">{nbFriends}</p>
+			<p className="friends-number">{profile?.friends}</p>
 		</div>
 	)
 
 	const getFriendsAndLevel = () => (
 		<div className="level_friends-container">
 			{ getLevel() }
-			{ getFriends() }
 		</div>
 	)
 
 	const getSomeStat = (stat: Stat) => {
 		const mapStatTitle = new Map<Stat, string>();
-		const mapStatNb = new Map<Stat, number>();
+		const mapStatNb = new Map<Stat, number | undefined>();
 
 		mapStatTitle.set(Stat.WINS, "Wins")
 		mapStatTitle.set(Stat.LOSES, "Loses")
-		mapStatTitle.set(Stat.RANK, "Rank")
-		mapStatNb.set(Stat.WINS, nbWins)
-		mapStatNb.set(Stat.LOSES, nbLoses)
-		mapStatNb.set(Stat.RANK, rank)
+		mapStatNb.set(Stat.WINS, profile?.wins)
+		mapStatNb.set(Stat.LOSES, profile?.looses)
 		const baseClassName = "stat-item"
 		return (
 			<div className={baseClassName + "-container"}>
@@ -198,53 +182,83 @@ const Profile = () => {
 		)
 	}
 
+	const getSomeAchievement = (key: number, achievement?: IDisplayAchievement) => {
+		return (
+			<React.Fragment key={key}>
+				{
+					achievement &&
+					<div className="achievement-container">
+						<img className="achievement-img" src={achievement.img} />
+						<p className="achievement-name">{achievement.name}</p>
+					</div>
+				}
+			</React.Fragment>
+		)
+	}
+
 	const getStat = () => {
 
 		return (
 			<div className="stats-title-container">
-				<h3 className="stats-title">Stats</h3>
-				<div className="stats-container">
-					{ getSomeStat(Stat.WINS) }
-					{ getSomeStat(Stat.LOSES) }
-					{ getSomeStat(Stat.RANK) }
+				<div>
+					<h3 className="stats-title">Stats</h3>
+					<div className="stats-container">
+						{ getSomeStat(Stat.WINS) }
+						{ getSomeStat(Stat.LOSES) }
+					</div>
+				</div>
+				<div>
+					<h3 className="stats-title">Achievements</h3>
+					<div className="achievements-container">
+						{
+							profile?.achievements && profile.achievements.map((achievement, key) => (
+								<React.Fragment>
+									{ getSomeAchievement(key, DisplayAchievements
+										.find(displayAchievement => displayAchievement.name === achievement)) }
+								</React.Fragment>
+							))
+						}
+					</div>
 				</div>
 			</div>
 		)
 	}
 
 	const getMatches = () => {
-		const mode = new Map<GameMode, string>()
-
-		mode.set(GameMode.CLASSIC, "Classic");
-		mode.set(GameMode.MEDIUM, "Medium");
-		mode.set(GameMode.HARD, "Hard");
-		const matchesJSX =  matches.map((match: Match, index: number) => {
+		const matchesJSX =  profile?.history.map((match: GameDto, index: number) => {
 			return (
 				<div key={index} className="match-mode-container">
 					<div className="match-container">
 						<div className="match-item match-user">
-							{match.userStat.win && <img className="crown" src={Crown} />}
-							<p className="match-username match-username1">{match.userStat.user.pseudo}</p>
+							{match.score1 > match.score2 && <img className="crown" src={Crown} />}
+							<p className="match-username match-username1">{match.player1.pseudo}</p>
 						</div>
-						<p className="match-item match-score match-score1">{match.userStat.score}</p>
+						<p className="match-item match-score match-score1">{match.score1}</p>
 						<p className="match-item hyphen">-</p>
-						<p className="match-item match-score match-score1">{match.opponentStat.score}</p>				
+						<p className="match-item match-score match-score1">{match.score2}</p>				
 						<div className="match-item match-user">
-							<p className="match-username match-username2">{match.opponentStat.user.pseudo}</p>
-							{match.opponentStat.win && <img className="crown" src={Crown} />}
+							<p className="match-username match-username2">{match.player2.pseudo}</p>
+							{match.score2 > match.score1 && <img className="crown" src={Crown} />}
 						</div>
 					</div>
 					<div className="match-mode">
-						<p className="mode">{mode.get(match.gameMode)}</p>
+						<p className="mode">{match.difficulty}</p>
 					</div>
 				</div>
 			)
-		})
+		});
+
+
+
 
 		return (
 			<React.Fragment>
-				{matchesJSX.length == 0 && <p>You haven't faced anyone yet...</p>}
-				{matchesJSX.length > 0 && matchesJSX}
+				{
+					profile?.history && (
+						profile.history.length == 0 && <p>This user haven't faced anyone yet...</p> ||
+						profile.history.length > 0 && matchesJSX
+					)
+				}
 			</React.Fragment>
 		)
 	}
@@ -261,21 +275,54 @@ const Profile = () => {
 		)
 	}
 
+
+
+
 	const getPage = () => (
-		<div>
-			<Navbar/>
-			<div className="container">
-				{ getProfilImagesAndPseudo() }
-				{ getFriendsAndLevel() }
-				{ getStat() }
-				{ getMatchHistory() }
-			</div>
+		<div className="container">
+			{ getProfilImagesAndPseudo() }
+			{ getFriendsAndLevel() }
+			{ getStat() }
+			{ getMatchHistory() }
 		</div>
 	)
 
+
+
+
 	return (
 		<React.Fragment>
-			{isOkay && getPage()}
+			<Navbar />
+			{ notification }
+			{ inviteNotification }
+			{
+				error === undefined && (
+					profile !== undefined && getPage() ||
+					profile === undefined && <ServerDownPage />
+				) ||
+
+				error !== undefined && error !== null &&
+				<div>
+					Sorry, the player doesn't exist
+				</div>
+				
+			}
+			{ actionModal && profile?.pseudo &&
+				<ModalChannelMenu active={actionModal ? true : false} type={actionModal}
+				target={{
+					pseudo: profile.pseudo,
+					role: ChannelRole.USER,
+					status: Status.ONLINE,
+					color: 'black',
+				}} callback={(props) => {
+					if (actionModal === ModalChannelType.INVITEUSER)
+						ClientApi.redirect = new URL(GAMEPAGE_ROUTE + '/' + props.difficulty + '/fromInvite/' + profile.pseudo)
+					setActionModal(null)
+				}}
+				callbackFail={() => {
+					setActionModal(null)
+				}} />
+			}
 		</React.Fragment>
 	);
 }

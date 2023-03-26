@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Socket } from "socket.io-client";
 import { IChannel, IChannelUser } from "../interface/IChannel";
-import { RootState } from "../redux/store";
 import '../styles/ChannelPlayers.css'
 import ChannelPlayer from "./ChannelPlayer";
 
@@ -64,10 +63,11 @@ const ChannelPlayers = ({ chanUser, currentChannelId, channels, socket }: Props)
 			<h3 className="chat-title">Players</h3>
 			<div className="channelPlayers-container">
 				<div className="channelPlayers-child">
-					{!(currentChannelId <= -1 || currentChannelId >= channels.length) &&
+					{ !(currentChannelId <= -1 || currentChannelId >= channels.length) &&
 						visiblePlayers && visiblePlayers.map((player, index) => (
 							<ChannelPlayer key={index} doDisplayPreview={doDisplayPreviews[index]}
-							channel={channels[currentChannelId]}
+							channel={channels[currentChannelId]} callbackPreview={() => onClosePreview(index)}
+							callbackFailPreview={() => onClosePreview(index)}
 							onClick={(e) => onClick(index, e)} onClosePreview={() => onClosePreview(index)}
 							chanUser={chanUser} player={player}/>
 						))

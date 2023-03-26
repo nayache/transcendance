@@ -6,7 +6,6 @@ class Ball extends CanvasObject {
 	constructor(
 		radius: number = 10,
 		color: string = 'grey',
-		context?: CanvasRenderingContext2D,
 		canvasWidth?: number,
 		canvasHeight?: number,
 		canvasPosY?: number,
@@ -15,7 +14,6 @@ class Ball extends CanvasObject {
 			{ width: radius, height: radius },
 			undefined,
 			color,
-			context,
 			canvasWidth,
 			canvasHeight,
 			canvasPosY,
@@ -48,13 +46,12 @@ class Ball extends CanvasObject {
 	}
 
 	public setUp(
-		ctx: CanvasRenderingContext2D,
 		canvasWidth: number,
 		canvasHeight: number,
 		canvasPosY?: number,
 		startingSpeed?: Vector2D
 	): void {
-		super.setUp(ctx, canvasWidth, canvasHeight, canvasPosY);
+		super.setUp(canvasWidth, canvasHeight, canvasPosY);
 		if (startingSpeed)
 			this.startingSpeed = startingSpeed;
 		else
@@ -75,9 +72,9 @@ class Ball extends CanvasObject {
 		{
 			for (let i = 0; i < solidObjects.length; i++) {
 				const solidObject = solidObjects[i];
-				console.log("this.startingSpeed.x dans if = ", this.startingSpeed.x);
-				// console.log("this.pos.x - this.radius = ", this.pos.x - this.radius)
-				console.log("solidObject.pos.x = ", solidObject.pos.x);
+				// console.log("this.startingSpeed.x dans if = ", this.startingSpeed.x);
+				// // console.log("this.pos.x - this.radius = ", this.pos.x - this.radius)
+				// console.log("solidObject.pos.x = ", solidObject.pos.x);
 				if (this.isInsideX(solidObject))
 				{
 					startingSpeed = { ...this.startingSpeed, x: -this.startingSpeed.x }
@@ -85,9 +82,9 @@ class Ball extends CanvasObject {
 						this.pos.x = solidObject.pos.x + solidObject.dimensions.width + this.radius;
 					else if (this.startingSpeed.x > 0)
 					{
-						console.log("this.pos.x dans le iffffffffffffffffffffffff tu connais = ", this.pos.x)
+						// console.log("this.pos.x dans le iffffffffffffffffffffffff tu connais = ", this.pos.x)
 						this.pos.x = solidObject.pos.x - this.radius;
-						console.log("this.pos.x dans le iffffffffffffffffffffffff tu connais apres = ", this.pos.x)
+						// console.log("this.pos.x dans le iffffffffffffffffffffffff tu connais apres = ", this.pos.x)
 					}
 				}
 				/*
@@ -100,7 +97,7 @@ class Ball extends CanvasObject {
 						[Side.Bottom, "bottom"],
 						[Side.Left, "left"],
 					]);
-					console.log("sideTouched = ", a.get(sideTouched))
+					// console.log("sideTouched = ", a.get(sideTouched))
 					if (sideTouched == Side.Top)
 					{
 						if (this.startingSpeed.y > 0)
@@ -122,27 +119,15 @@ class Ball extends CanvasObject {
 			}
 			this.startingSpeed = startingSpeed;
 		}
-		console.log("this.startingSpeed.x a l'exterieur du if = ", this.startingSpeed.x, " et this.pos = ", this.pos);
+		// console.log("this.startingSpeed.x a l'exterieur du if = ", this.startingSpeed.x, " et this.pos = ", this.pos);
 		if (this.pos.y - this.radius < 0 || this.pos.y + this.radius > this.canvasHeight)
 			this.startingSpeed.y = -this.startingSpeed.y;
 		else
-			console.log("nope y, this.pos = ", this.pos, " et this.canvasHeight = ", this.canvasHeight);
+			// console.log("nope y, this.pos = ", this.pos, " et this.canvasHeight = ", this.canvasHeight);
 		this.pos = {
 			x: this.pos.x + this.startingSpeed.x,
 			y: this.pos.y + this.startingSpeed.y,
 		}
-	}
-
-	display(): void {
-		super.display();
-		this.context.arc(
-			this.pos.x,
-			this.pos.y,
-			this.radius,
-			0,
-			2 * Math.PI
-		)
-		this.context.fill();
 	}
 }
 

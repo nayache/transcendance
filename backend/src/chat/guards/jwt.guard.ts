@@ -10,9 +10,9 @@ export class JwtGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const id: string = await this.authService.jwtVerif(request.handshake.auth.token, true);
     const pseudo: string = await this.userService.getPseudoById(id);
-    //console.log(request.client.sockets.values().next().value);
+    //// console.log(request.client.sockets.values().next().value);
     //const socket: Socket = request.client.sockets.values().next().value;
-    //console.log(socket)
+    //// console.log(socket)
     request.user = { id, pseudo };
     return true;
   }

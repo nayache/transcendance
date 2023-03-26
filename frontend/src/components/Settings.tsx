@@ -5,6 +5,11 @@ import { useState } from "react";
 import "../styles/Settings.css";
 import { BASE_URL, SETTINGS_BLOCKED_EP, SETTINGS_HELP_EP, SETTINGS_MYPROFILE_EP, SETTINGS_TWOFA_EP } from "../constants/RoutesApi";
 import ClientApi from "./ClientApi.class";
+import { usePseudo } from "../hooks/usePseudo";
+import { useNotification } from "../hooks/useNotification";
+import { useInviteNotification } from "../hooks/useInviteNotification";
+import { useSocket } from "../hooks/useSocket";
+import { useAvatar } from "../hooks/useAvatar";
 
 interface IOptionValue {
 	name: string;
@@ -67,7 +72,7 @@ const Settings = () => {
 			},
 			values: [
 				{
-					name: "Blocked account",
+					name: "Blocked accounts",
 					description: 
 						"Accounts you have blocked",
 					tags: [],
@@ -77,6 +82,15 @@ const Settings = () => {
 		}
 	]
 	const [visibleOptions, setVisibleOptions] = useState(options);
+	const pseudo = usePseudo()
+	const avatar = useAvatar()
+	const socket = useSocket()
+	const notification = useNotification(socket, {pseudo, avatar})
+	const inviteNotification = useInviteNotification(socket, pseudo)
+
+
+
+
 
 
 	const handleonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,9 +119,14 @@ const Settings = () => {
 	}
 
 
+
+
+
 	return (
 		<div>
 			<Navbar/>
+			{ notification }
+			{ inviteNotification }
 			<div className="settings-container">
 				<h2>
 					<span className="name-settings">

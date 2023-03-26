@@ -2,10 +2,11 @@
 
 
 .play-container { 
-	margin: auto;
 	position: relative;
 	text-align: center;
-	padding: 200px;
+  width: 80%;
+  max-width: 500px;
+  margin: 200px auto 200px;
 }
 
 .goplay {
@@ -24,8 +25,8 @@
   outline-offset: .6em;
   font-size: 20px;
   border: 0;
-	width: 300px;
-	height: 150px;
+	width: 70%;
+	height: auto;
 	margin: auto;
 	text-align: center;
 	align-items: center;
@@ -48,3 +49,49 @@
   color: #fff;
 }
 
+.loaderPong-img {
+  position: relative;
+  top: 0;
+  left: 0;
+  margin: auto;
+  width: 60%;
+  height: auto;
+}
+
+/* CSS */
+.button-24 {
+  background: #FF4742;
+  border: 1px solid #FF4742;
+  margin-top: 40px;
+  border-radius: 6px;
+  box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-family: nunito,roboto,proxima-nova,"proxima nova",sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 16px;
+  min-height: 40px;
+  outline: 0;
+  padding: 12px 14px;
+  text-align: center;
+  text-rendering: geometricprecision;
+  text-transform: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: middle;
+}
+
+.button-24:hover,
+.button-24:active {
+  background-color: initial;
+  background-position: 0 0;
+  color: #FF4742;
+}
+
+.button-24:active {
+  opacity: .5;
+}

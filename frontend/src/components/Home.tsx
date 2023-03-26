@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react"
-import { API_PSEUDO_ROUTE, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
+import React, { useEffect, useRef, useState } from "react"
+import { API_GAME_ACCEPT, API_PSEUDO_ROUTE, GAMEPAGE_EP, GAMEPAGE_ROUTE, GOPLAY_EP, MESSAGES_ROUTE, MYFRIENDS_EP, REGISTER_ROUTE, SIGNIN_ROUTE } from "../constants/RoutesApi";
 import ClientApi from "./ClientApi.class";
 import '../styles/Home.css'
 import Navbar from "./Navbar";
@@ -7,13 +7,31 @@ import ServerDownPage from "./ServerDownPage";
 import { AboutErr, IError, TypeErr } from "../constants/EError";
 import { Socket } from "socket.io-client";
 import { usePseudo } from "../hooks/usePseudo";
+import GoPlay from "./GoPlay";
+import Notification, { NotificationType } from "./Notification";
+import { useDMListener } from "../hooks/useDMListener";
+import { useSocket } from "../hooks/useSocket";
+import { useAvatar } from "../hooks/useAvatar";
+import { IMessageEvRecv } from "../interface/IMessage";
+import { IFriendEv } from "../interface/IFriend";
+import { useNewFriendReqListener } from "../hooks/useNewFriendReqListener";
+import { useNewFriendAccListener } from "../hooks/useFriendAccUpdater";
+import { useInviteGame } from "../hooks/useInviteGame";
+import ModalGameMenu, { ModalGameType } from "./ModalGameMenu";
+import { IGameInviteEv } from "../interface/IGame";
+import { useNotification } from "../hooks/useNotification";
+import { useInviteNotification } from "../hooks/useInviteNotification";
 
 
 const Home = () => {
 
-	const [isOkay, setIsOkay] = useState<boolean | undefined>();
 	const pseudo = usePseudo();
-
+	const avatar = useAvatar();
+	const socket = useSocket();
+	const notification = useNotification(socket, {pseudo, avatar})
+	const inviteNotification = useInviteNotification(socket, pseudo)
+	const [isOkay, setIsOkay] = useState<boolean | undefined>();
+	
 
 
 
@@ -27,6 +45,8 @@ const Home = () => {
 		return (
 			<div>
 				<Navbar/>
+				{ notification }
+				{ inviteNotification }
 				<div className="home-container">
 					<div>
 						<div className="title-container">
@@ -40,21 +60,27 @@ const Home = () => {
 					</div>
 					<div>
 						<div className="button-container">
-							<button className="classic-game">
-								classic
-							</button>
-							<button className="medium-game">
+							<a href={GAMEPAGE_ROUTE + '/easy'} className="easy-game">
+								easy
+							</a>
+							<a href={GAMEPAGE_ROUTE + '/medium'} className="medium-game">
 								medium
-							</button>
-							<button className="hard-game">
+							</a>
+							<a href={GAMEPAGE_ROUTE + '/hard'} className="hard-game">
 								hard
-							</button>
+							</a>
 						</div>
+					</div>
+					<div>
+
 					</div>
 				</div>
 			</div>
 		)
 	}
+
+
+
 
 	return (
 		<React.Fragment>

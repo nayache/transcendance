@@ -17,14 +17,14 @@ export const usePunishUserUpdater = (
 	useEffect(() => {
 		if (chanUser?.pseudo) {
 			socket?.on('punishUser', async (payload: IChannelEvPunish) => {
-				console.log("(punish) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.target)
-				console.log("(punish) currentChannelId = ", currentChannelId)
-				console.log("(punish) payload = ", payload)
+				// console.log("(punish) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.target)
+				// console.log("(punish) currentChannelId = ", currentChannelId)
+				// console.log("(punish) payload = ", payload)
 				const daChannel: IChannel | undefined =
 				channels.find(channel => channel.name === payload.channel)
-				console.log("(punish) channels.map(channel => channel.name) = ", channels.map(channel => channel.name))
+				// console.log("(punish) channels.map(channel => channel.name) = ", channels.map(channel => channel.name))
 				if (daChannel) { // impossible que daChannel soit undefined
-					console.log("daChannel = ", daChannel)
+					// console.log("daChannel = ", daChannel)
 					const users: IChannelUser[] = daChannel.users
 						.filter(user => user.pseudo !== payload.target)
 					const channel: IChannel = {
@@ -43,12 +43,12 @@ export const usePunishUserUpdater = (
 								const data: { channel: IChannel } =
 								await ClientApi.get(API_CHAT_CHANNEL_ROUTE + '/General')
 								genUpdated = data.channel
-								console.log("genUpdated (a peine apres) = ", genUpdated);
+								// console.log("genUpdated (a peine apres) = ", genUpdated);
 							} catch (err) {
-								console.log("err = ", err);
+								// console.log("err = ", err);
 							}
 						}
-						console.log("genUpdated (apres) = ", genUpdated);
+						// console.log("genUpdated (apres) = ", genUpdated);
 						removeChannel(payload.channel, genUpdated)
 						if (onPunishUserUpdate)
 							onPunishUserUpdate(payload)
@@ -57,7 +57,7 @@ export const usePunishUserUpdater = (
 						updateChannel(channel)
 						if (!(currentChannelId <= -1 || currentChannelId >= channels.length)
 						&& channels[currentChannelId].name === payload.channel) {
-							console.log("test ici en punish")
+							// console.log("test ici en punish")
 							if (onPunishUserUpdate)
 								onPunishUserUpdate(payload)
 						}
@@ -73,12 +73,12 @@ export const usePunishUserUpdater = (
 								const data: { channel: IChannel } =
 								await ClientApi.get(API_CHAT_CHANNEL_ROUTE + '/General')
 								genUpdated = data.channel
-								console.log("genUpdated (a peine apres) = ", genUpdated);
+								// console.log("genUpdated (a peine apres) = ", genUpdated);
 							} catch (err) {
-								console.log("err = ", err);
+								// console.log("err = ", err);
 							}
 						}
-						console.log("genUpdated (apres) = ", genUpdated);
+						// console.log("genUpdated (apres) = ", genUpdated);
 						removeChannel(payload.channel, genUpdated)
 						if (onPunishUserUpdate)
 							onPunishUserUpdate(payload)

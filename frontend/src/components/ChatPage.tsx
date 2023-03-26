@@ -4,7 +4,7 @@ import Navbar from "./Navbar";
 import styled from "styled-components";
 import ChannelPart from "./ChannelPart";
 import ClientApi from "./ClientApi.class";
-import { API_CHAT_USER_CHANNELS_ROUTE } from "../constants/RoutesApi";
+import { API_CHAT_USER_CHANNELS_ROUTE, API_GAME_ACCEPT, GAMEPAGE_ROUTE, MESSAGES_ROUTE, MYFRIENDS_EP } from "../constants/RoutesApi";
 import { useSocket } from "../hooks/useSocket";
 import ChannelPlayers from "./ChannelPlayers";
 import { IChannel, IChannelUser } from "../interface/IChannel";
@@ -14,6 +14,18 @@ import ServerDownPage from "./ServerDownPage";
 import { useChanUser } from "../hooks/useChanUser";
 import Modal from "./Modal";
 import AlertChannelModal from "./AlertChannelModal";
+import Notification, { NotificationType } from "./Notification";
+import { IMessageEvRecv } from "../interface/IMessage";
+import { IFriendEv } from "../interface/IFriend";
+import { useDMListener } from "../hooks/useDMListener";
+import { useNewFriendReqListener } from "../hooks/useNewFriendReqListener";
+import { useNewFriendAccListener } from "../hooks/useFriendAccUpdater";
+import { useAvatar } from "../hooks/useAvatar";
+import { useInviteGame } from "../hooks/useInviteGame";
+import { IGameInviteEv } from "../interface/IGame";
+import ModalGameMenu, { ModalGameType } from "./ModalGameMenu";
+import { useNotification } from "../hooks/useNotification";
+import { useInviteNotification } from "../hooks/useInviteNotification";
 
 
 const ChatContainer = styled.div`
@@ -31,6 +43,7 @@ export type AlertType = "kick" | "ban" | "mute" | null;
 const ChatPage = () => {
 
 	const pseudo = usePseudo();
+	const avatar = useAvatar()
 	const [channels, setChannels] = useState<IChannel[]>([]);
 	const [currentChannelId, setCurrentChannelId] = useState<number>(0);
 	const chanUser = useChanUser(pseudo, channels, currentChannelId)
@@ -40,6 +53,9 @@ const ChatPage = () => {
 	const [alertChannelName, setAlertChannelName] = useState<string | null>(null);
 	const [isOkay, setIsOkay] = useState<boolean>();
 	const socket = useSocket()
+	const notification = useNotification(socket, {pseudo, avatar})
+	const inviteNotification = useInviteNotification(socket, pseudo)
+
 
 
 
@@ -186,12 +202,12 @@ const ChatPage = () => {
 
 
 	useEffect(() => {
-		console.log("currentChannelId = ", currentChannelId)
+		// console.log("currentChannelId = ", currentChannelId)
 		if (pseudo && (currentChannelId <= -1 || currentChannelId >= channels.length)) {
 			(async () => {
 				try {
 					const data: { channels: IChannel[] } = await ClientApi.get(API_CHAT_USER_CHANNELS_ROUTE)
-					console.log("data.channels = ", data.channels)
+					// console.log("data.channels = ", data.channels)
 					data.channels.sort((x, y) => {
 						if (x.name == 'General')
 							return -1
@@ -205,7 +221,7 @@ const ChatPage = () => {
 					resetAllChannels(data.channels)
 					setCurrentChannel("General")
 				} catch (err) {
-					console.log("err = ", err);
+					// console.log("err = ", err);
 				}
 			})()
 		}
@@ -264,10 +280,12 @@ const ChatPage = () => {
 
 	const getPage = () => {
 
-		console.log("channels (dans return chatPage) = ", channels)
+		// console.log("channels (dans return chatPage) = ", channels)
 		return (
 			<React.Fragment>
 				<Navbar />
+				{ notification }
+				{ inviteNotification }
 				<ChatContainer>
 					<ChannelPart socket={socket}
 					updateChannel={updateChannel}
@@ -284,7 +302,7 @@ const ChatPage = () => {
 					currentChannelId={currentChannelId}
 					setAlertModal={(alertModal: AlertType, author: IChannelUser,
 						channelName: string, target: string) => {
-							console.log("------- alertModal (dans setAlert) = ", alertModal, " ---------")
+							// console.log("------- alertModal (dans setAlert) = ", alertModal, " ---------")
 							setAlertModal(alertModal)
 							setAlertAuthor(author)
 							setAlertTarget(target)

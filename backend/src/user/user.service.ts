@@ -33,7 +33,7 @@ export class UserService {
 	private readonly avatarService: AvatarService) {}
     
     private requiredXp: number[] = [420, 1050, 2625, 6587, 16468, 41000, 102927, 257300, 500000, 999999];
-    private achievements: string[] = ["FirstWin", "CleanSheet", "PONG-MASTER"];
+    private achievements: string[] = ["First Win", "Clean Sheet", "PONG MASTER"];
     
     async saveUser(login: string) {
         try {
@@ -75,7 +75,7 @@ export class UserService {
     }
 
     isValidPseudo(pseudo: string) : boolean {
-        console.log('in validpseudo()',pseudo)
+        // console.log('in validpseudo()',pseudo)
         if (pseudo.search(/\s/) != -1)
             return false
         return (pseudo.length > 3 && pseudo.length < 21);
@@ -160,7 +160,7 @@ export class UserService {
     async getUsers() : Promise<UserEntity[]> {
 
         const users = await this.userRepository.find();
-        console.log(users[0].data)
+        // console.log(users[0].data)
         return users
     }
     
@@ -189,8 +189,8 @@ export class UserService {
         const user2 : UserEntity = (user1.id == userId) ? await this.findById(userId2) : await this.findById(userId);
         if (!user1 || !user2)
             throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND, 'user not found')
-        console.log(userId, userId2);
-        console.log(user1.id, user2.id);
+        // console.log(userId, userId2);
+        // console.log(user1.id, user2.id);
         try {
             return await this.friendRepository.save(new FriendEntity(author, user1, user2));
         } catch(e) {
@@ -204,7 +204,7 @@ export class UserService {
                 {user1Id: userId, user2Id: userId2},
                 {user1Id: userId2, user2Id: userId}
             ]})
-            console.log("friendship find: ", friendship);
+            // console.log("friendship find: ", friendship);
             return await this.friendRepository.remove(friendship[0]);
         }
         catch(err) {
@@ -231,7 +231,7 @@ export class UserService {
     }
 
     async friendshipExist(userId: string, userId2: string) : Promise<boolean> {
-        console.log(userId, userId2)
+        // console.log(userId, userId2)
         return this.friendRepository.exist({where: [
             {user1Id: userId2, user2Id: userId, accepted: true},
             {user1Id: userId, user2Id: userId2, accepted: true},
@@ -338,7 +338,7 @@ export class UserService {
         const target: UserEntity = await this.findById(targetId);
         if (!target)
             throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.TARGET, TypeErr.NOT_FOUND);
-        const avatarObject: Avatar = await this.getAvatar(userId);
+        const avatarObject: Avatar = await this.getAvatar(targetId);
         const avatar: string = (avatarObject) ? this.avatarService.toStreamableFile(avatarObject) : null// Sami rectifie ca stp
         const pseudo: string = target.pseudo;
         const level: number = target.data.level;
@@ -497,7 +497,7 @@ export class UserService {
             return null;
         if (winning && !collection.find((achievement) => achievement === this.achievements[0]))
             return this.achievements[0];
-        else if (cleansheet && !collection.find((achievement) => achievement === this.achievements[1]))
+        else if (winning && cleansheet && !collection.find((achievement) => achievement === this.achievements[1]))
             return this.achievements[1];
         else if (lvl === 10)
             return this.achievements[2];
@@ -511,6 +511,7 @@ export class UserService {
         try {
             const unlockedAchievement: string = this.deserveOneAchievement(dataUser.achievements, dataUser.level, winning, cleansheet);
             if (unlockedAchievement) {
+                // console.log('==================> ACHIEVEMENT UNLOCKED <==========================')
                 await this.dataUserRepository.update(dataUser.id, {achievements: [...dataUser.achievements, ...[unlockedAchievement]]});
             }
         } catch(e) {

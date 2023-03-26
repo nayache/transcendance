@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Logger } from '@nestjs/common';
-import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, WebSocketGateway, WebSocketServer} from '@nestjs/websockets';
+import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { Error } from 'src/exceptions/error.interface';
@@ -10,17 +10,22 @@ import { Status } from '../enums/status.enum';
 import { eventMessageDto, joinRoomDto, kickBanDto, leaveRoomDto, muteDto, userDto } from './dto/chat-gateway.dto';
 import { AboutErr, TypeErr } from 'src/enums/error_constants';
 import { ChannelUserDto } from './chat.controller';
-import { GameService } from 'src/game/game.service';
+import { GameService, MoveObject } from 'src/game/game.service';
 import { Difficulty } from 'src/game/game.controller';
 import { GameEntity } from 'src/game/game.entity';
 
+
+export class PlayerDto {
+  id: string;
+  pseudo: string;
+}
 
 export class GameDto {
   id: string;
   ranked: boolean;
   difficulty: Difficulty;
-  player1: string;
-  player2: string;
+  player1: PlayerDto
+  player2: PlayerDto;
   score1: number;
   score2: number;
   forfeit: boolean;
@@ -41,13 +46,14 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   private readonly logger = new Logger();
   private readonly users = new Map<string, Set<Socket>>();
   private readonly inGamePage = new Map<string, Socket>();
+  private readonly ready = new Set<string>();
   
   async afterInit() {
     if (!await this.chatService.channelExistt('General')) {
-      console.log('BUILD GENERAL')
+      // console.log('BUILD GENERAL')
       await this.chatService.createChannel('General', false);
     }
-    this.logger.log('success initialized');
+    //  this.logger.log('success initialized');
   }
 
   async authentication(socket: Socket) : Promise<userDto> {
@@ -61,7 +67,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   async handleConnection(socket: Socket) {
-    this.logger.warn(`try to connect: '${socket.id}'`, "Gateway");
+    //  this.logger.warn(`try to connect: '${socket.id}'`, "Gateway");
     const user: userDto = await this.authentication(socket);
     if (!user)
       return this.disconnect(socket);
@@ -77,22 +83,33 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       this.users.set(user.id, new Set<Socket>().add(user.socket));
     }
     await this.joinSocketToRooms(user.id, user.socket);
-    this.logger.log(`CONNECTED: ${socket.id} (${user.pseudo})`, "Gateway");
-    console.log(this.server.of('/').adapter.sids);
-    console.log(this.server.of('/').adapter.rooms);
+    //  this.logger.log(`CONNECTED: ${socket.id} (${user.pseudo})`, "Gateway");
+    // console.log('sockets: ',this.server.of('/').adapter.sids.size);
+    // console.log('socketsgame numbers: ', this.inGamePage.size)
+    // console.log('socketsgame ->: ')
+    //for (let e of this.inGamePage.values())
+      // console.log(e.id);
+    //// console.log(this.server.of('/').adapter.rooms);
+  }
+
+  getIdBySocket(socket: Socket): string {
+    for (let sock of this.users.entries()) {
+      if (sock[1].has(socket))
+        return sock[0];
+    }
+    return null;
   }
 
   alreadyInGame(socket: Socket) {
     socket.emit('alreadyInGame');
-    console.log('--> ALREADY in Game')
+    // console.log('--> ALREADY in Game')
     return this.disconnect(socket);
   }
 
   getStatus(userId: string): Status {
-    if (!this.users.get(userId))
+    if (!this.users.get(userId) || !this.users.get(userId).size)
       return Status.OFFLINE;
     return (this.inGamePage.get(userId) && this.gameService.isInGame(userId)) ? Status.INGAME : Status.ONLINE;
-    //return (this.users.get(userId).size) ? Status.ONLINE : Status.OFFLINE;
   }
 
   async joinSocketToRooms(userId: string, socket: Socket) {
@@ -102,7 +119,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       joinedGeneral = true;
     }
     let channels: string[] = await this.chatService.getChannelNamesByUserId(userId);
-    console.log('=> channels rejoined', channels)
+    // console.log('=> channels rejoined', channels)
     socket.join(channels);
     if (joinedGeneral)
       await this.joinRoom(userId, 'General');
@@ -122,10 +139,6 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     this.server.to(channel).emit('leaveRoom', payload);
     if (this.users.get(userId))
       this.users.get(userId).forEach((socket) => socket.leave(channel));
-  }
-
-  event() {
-    this.server.emit('updateRooms');
   }
 
   channelEvent(channelName: string, info: string) {
@@ -162,7 +175,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       return // a gerer mieux
 
     this.users.get(targetId).forEach((socket) => {
-      this.server.to(socket.id).emit(eventName, pseudo);
+      this.server.to(socket.id).emit(eventName, { pseudo });
     });
   }
 
@@ -207,11 +220,19 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   async alertOpponent(userId: string) {
+	//  this.logger.warn('IN ALERRT OPPONENT')
     const opponentId: string = await this.gameService.getOpponent(userId);
+	//  this.logger.warn(opponentId)
     if (opponentId && this.inGamePage.has(opponentId)) {
+		// console.log('IN ALERT OPPONENT SENDINNNNNN')
       const socket: Socket = this.inGamePage.get(opponentId);
       this.server.to(socket.id).emit('opponentDisconnect');
     }
+  }
+
+  @SubscribeMessage('viewer')
+  addViewer(@MessageBody() gameId: string, @ConnectedSocket() Socket: Socket) {
+    Socket.join(gameId);
   }
 
   async inviteGame(authorId: string, invitedId: string, invited: string, difficulty: Difficulty) {
@@ -223,57 +244,92 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     });
   }
 
+  async declineGame(userId: string) {
+    if (!this.users.get(userId))
+      return
+    this.users.get(userId).forEach((socket) => {
+      this.server.to(socket.id).emit('declineGame');
+    });
+  }
+
   async matchEvent(payload: GameEntity) {
-      console.log(payload.created_at.toLocaleString('fr-FR'))
+      // console.log(payload.created_at.toLocaleString('fr-FR'))
     if (!this.users.get(payload.player1Id) || !this.users.get(payload.player2Id)) {
       return;
     }
-    const game: GameDto = this.gameService.gameToDto(payload);
+    const game: GameDto = await this.gameService.gameToDto(payload);
     this.users.get(payload.player1Id).forEach((socket) => {
-      this.server.to(socket.id).emit('matchEvent', game);
+      this.server.to(socket.id).emit('matchEvent', {game, me: game.player1});
     });
     this.users.get(payload.player2Id).forEach((socket) => {
-      this.server.to(socket.id).emit('matchEvent', game);
+      this.server.to(socket.id).emit('matchEvent', {game, me: game.player2});
     });
-    this.logger.log(`Match! beetwen (${game.player1} vs ${game.player2}) in [${game.difficulty}] mode`, 'GAME')
+    //  this.logger.log(`Match! beetwen (${game.player1} vs ${game.player2}) in [${game.difficulty}] mode`, 'GAME')
+  }
+
+  @SubscribeMessage('setReady')
+  async buildGame(@MessageBody() payload: {game: GameDto, w: number, h: number, y: number}, @ConnectedSocket() socket: Socket) {
+    const userId: string = this.getIdBySocket(socket);
+    // console.log('===========================================================setReady caller: ', userId)
+    const author: string = (payload.game.player1.id === userId) ? userId : payload.game.player2.id;
+    await this.gameService.setReadyGame(payload.game, author, payload.w, payload.h, payload.y);
+    socket.join(payload.game.id);
+  }
+
+  preStartGameEvent(userId1: string, userId2: string, left: MoveObject, right: MoveObject, ball: MoveObject) {
+    const socket1: Socket = this.inGamePage.get(userId1);
+    const socket2: Socket = this.inGamePage.get(userId2);
+    //setTimeout(() => {
+    this.server.to([socket1.id, socket2.id]).emit('preStartGame', {leftPaddle: left, rightPaddle: right, ball});
+    //}, 3000);
+    this.ready.delete(userId1);
+    this.ready.delete(userId2);
+  }
+  
+  updateScore(gameId: string, score: [number, number]) {
+      this.server.to(gameId).emit('updateScore', score);
+  }
+
+  updateGame(gameId: string, left: MoveObject, right: MoveObject, ball: MoveObject) {
+      this.server.to(gameId).emit('updateGame', {leftPaddle: left, rightPaddle: right, ball});
   }
 
   async cleanGame(userId: string) {
-    //console.log('delete ingame socket !!!!!!!!!')
     if (!this.gameService.isInGame(userId)) // si pas en partie supprimer de la liste d'attente
       await this.gameService.removePlayerFromMatchmaking(userId);
     else { // sinon informer l'adversaire de la deconnection et supprimer la partie du service
-      this.alertOpponent(userId);
+	  this.gameService.removeMatch(userId);
       const game: GameEntity = await this.gameService.getLastGame(userId);
-      if (game) {
-        this.gameService.removeMatch(userId);
-        await this.gameService.setForfeit(game);
-        await this.gameService.updateForfeitScore(game, userId);
-        await this.gameService.updateResults(game.id, userId);
-        await this.endOfGame(game.id);
-      }
+      if (game)
+        await this.gameService.endGame(game.id, userId);
     }
   }
 
-  async endOfGame(gameId: string) {
-    const payload: GameEntity = await this.gameService.findGameById(gameId);
-    if (!payload) /////// a mieux gerer
+  endGameEvent(gameInfo: GameDto) {
+    // console.log(gameInfo)
+    this.server.to(gameInfo.id).emit('endGame', gameInfo);
+    // console.log(gameInfo.id)
+    // console.log(this.server.of('/').adapter.rooms)
+  }
+
+  @SubscribeMessage('paddleMove')  
+  async paddleMoveEvent(@MessageBody() data: {gameId: string, clientY: number, canvasPosY: number, canvasHeight: number}, @ConnectedSocket() socket: Socket) {
+    const author: string = this.getIdBySocket(socket);
+    if (!author) {
+      //  this.logger.error('Not recognize socket emitter');
       return;
-    const socket1: Socket = this.inGamePage.get(payload.player1.id);
-    const socket2: Socket = this.inGamePage.get(payload.player2.id);
-    const game: GameDto = this.gameService.gameToDto(payload);
-    if (socket1)
-      this.server.to(socket1.id).emit('endOfGame', game);
-    if (socket2)
-      this.server.to(socket2.id).emit('endOfGame', game);
+    }
+    await this.gameService.paddleMove(author, data.gameId, data.clientY, data.canvasPosY, data.canvasHeight);
   }
 
   async handleDisconnect(socket: Socket) {
     const user: userDto = await this.authentication(socket);
-    //CAS DERREUR POSSIBLE ????
     if (user) {
       if (this.users.get(user.id).has(user.socket)) {
-        if (this.inGamePage.has(user.id)) {
+		//  this.logger.warn('IN HANDLE DISCO')
+        if (this.inGamePage.has(user.id)) {		
+			//  this.logger.warn('IN HANDLE DISCO & GAMEPAGE TRUE')	
+		  await this.alertOpponent(user.id);
           await this.cleanGame(user.id);
           this.gameService.deleteChallenges(user.id);
           this.inGamePage.delete(user.id); // supprimer le socket (gamePage)
@@ -281,14 +337,15 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
         this.users.get(user.id).delete(user.socket); // supprimer le socket associer
       }
     }
-    this.logger.log(`DISCONNECTED: ${socket.id}`, "Gateway");
+    // console.log(this.server.of('/').adapter.rooms);
+    //  this.logger.log(`DISCONNECTED: ${socket.id}`, "Gateway");
     this.server.emit('DISCONNECTED', socket.id);
   }
 
   //??????
   disconnect(socket: Socket, error: Error = null) {
     socket.emit('error', new Error(AboutErr.TOKEN, TypeErr.REJECTED, 'Reject connection chat socket'));
-    this.logger.error(`reject connection: ${socket.id}`);
+    //  this.logger.error(`reject connection: ${socket.id}`);
     socket.disconnect();
   }
 }

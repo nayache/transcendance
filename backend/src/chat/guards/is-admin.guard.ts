@@ -11,7 +11,7 @@ export class isAdmin implements CanActivate {
   constructor(private chatService: ChatService, private userService: UserService) {}
     
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    console.log('IN ADMIN GUARD')
+    // console.log('IN ADMIN GUARD')
     const request: Request = context.switchToHttp().getRequest<Request>();
     const args: string[] = Object.values(request.body);
     const authorId: string = request.user as string;

@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import { API_CHAT_CHANNEL_LEAVE_ROUTE } from "../constants/RoutesApi"
 import { IChannel, IChannelUser } from "../interface/IChannel"
-import { RootState } from "../redux/store"
 import ClientApi from "./ClientApi.class"
 import '../styles/LeaveChannelMenu.css'
 import { BtnStatus, printButton } from "./Button"
@@ -44,7 +43,7 @@ setCurrentChannel, channels, removeChannel, updateChannel, onLeaveFail }: Props)
 						onLeave();
 				})
 				.catch(err => {
-					console.log("err = ", err);
+					// console.log("err = ", err);
 					setBtnStatus("fail")
 					setTimeout(() => setBtnStatus("idle"), 2000)
 					if (onLeaveFail)
@@ -59,7 +58,7 @@ setCurrentChannel, channels, removeChannel, updateChannel, onLeaveFail }: Props)
 	
 	// useEffect(() => {
 
-	// 	console.log("chanToRedirectTo.current.name = ", chanToRedirectTo.current?.name)
+	// 	// console.log("chanToRedirectTo.current.name = ", chanToRedirectTo.current?.name)
 	// 	if (chanToRedirectTo.current) {
 	// 		if (channels.length < previousLength.current) {
 	// 			setCurrentChannel(chanToRedirectTo.current.name)
@@ -70,9 +69,9 @@ setCurrentChannel, channels, removeChannel, updateChannel, onLeaveFail }: Props)
 	// }, [channels])
 
 	// useEffect(() => {
-	// 	console.log("(dans useEffect) previousChannelsLength.current = ", previousChannelsLength.current)
-	// 	console.log("(dans useEffect) previousCurrentChannelName.current = ", previousCurrentChannelName.current)
-	// 	console.log("(dans useEffect) previousCurrentChannelId.current = ", previousCurrentChannelId.current)
+	// 	// console.log("(dans useEffect) previousChannelsLength.current = ", previousChannelsLength.current)
+	// 	// console.log("(dans useEffect) previousCurrentChannelName.current = ", previousCurrentChannelName.current)
+	// 	// console.log("(dans useEffect) previousCurrentChannelId.current = ", previousCurrentChannelId.current)
 	// 	if (previousChannelsLength.current !== undefined
 	// 	&& previousCurrentChannelName.current !== undefined) {
 	// 		if (previousChannelsLength.current < channels.length) {

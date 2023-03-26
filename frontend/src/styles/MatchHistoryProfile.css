@@ -14,14 +14,24 @@
 
 .match-history {
 	position: relative;
-	/* height: 200px; */
-	/* overflow-y: scroll; */
+	max-height: 600px;
+	overflow-y: auto;
 	display: flex;
 	flex-direction: column;
 	padding: 10px;
 	margin: auto;
 	width: 80%;
 	border: 10px solid #222222;
+	scrollbar-width: thin;
+}
+
+.match-history::-webkit-scrollbar {
+	width: var(--scrollbar-width);
+}
+
+div::-webkit-scrollbar-thumb {
+	border-radius: 5px; 
+	background: #c5c5c5;
 }
 
 

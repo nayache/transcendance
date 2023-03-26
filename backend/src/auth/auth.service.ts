@@ -20,7 +20,7 @@ export class AuthService {
         }
         const uri: string = "https://api.intra.42.fr/oauth/token";
         const redirect_uri: string = 'http://localhost:3000/' + path; 
-        console.log('before fetch code:', code);
+        // console.log('before fetch code:', code);
         const response = await fetch(uri, {
             method: 'POST', headers: {
             'Content-Type': 'application/json'}, body: JSON.stringify({
@@ -29,7 +29,7 @@ export class AuthService {
             client_secret: process.env.CLIENT_SECRET,
             code: code, redirect_uri: redirect_uri
             })})
-        console.log('generate 42token response: ', response.status, response.statusText);
+        // console.log('generate 42token response: ', response.status, response.statusText);
         if (response.status != 200)
             return null
         
@@ -39,7 +39,7 @@ export class AuthService {
     async updateToken(refreshToken: string): Promise<TokenFtEntity> | null{
         const uri = "https://api.intra.42.fr/oauth/token";
           
-        console.log('before fetch')
+        // console.log('before fetch')
         const response = await fetch(uri, {
             method: 'POST', headers: {
             'Content-Type': 'application/json'}, body: JSON.stringify({
@@ -48,7 +48,7 @@ export class AuthService {
             client_id: process.env.CLIENT_ID, 
             client_secret: process.env.CLIENT_SECRET
         })})
-        console.log('updateToken() response: ', response.status, response.statusText);
+        // console.log('updateToken() response: ', response.status, response.statusText);
         
         return (response.status != 200) ? null : response.json()
     } 
@@ -79,10 +79,10 @@ export class AuthService {
     }
 
     jwtDataToDto(userId: string, payload: TokenFtEntity, refreshJwt: string) : JwtDataDto {
-       // const expire = this.getExpire(payload.expires_in);
-        const expire = Date.now() + 1000;
-        return {JwtRefresh: refreshJwt, userId: userId, accessToken: null, refreshToken: null, expire: expire};
-        //return {JwtRefresh: refreshJwt, userId: userId, accessToken: payload.access_token, refreshToken: payload.refresh_token, expire: expire};
+        const expire = this.getExpire(payload.expires_in);
+        //const expire = Date.now() + 1000;
+        //return {JwtRefresh: refreshJwt, userId: userId, accessToken: null, refreshToken: null, expire: expire};
+        return {JwtRefresh: refreshJwt, userId: userId, accessToken: payload.access_token, refreshToken: payload.refresh_token, expire: expire};
     }
 
     decodedToDto(decoded: JwtDecodedDto): JwtDataDto {
@@ -99,7 +99,7 @@ export class AuthService {
     }
 
     refreshJwt(payload: JwtDecodedDto, refresh: string) : string {
-        if (!this.decodeJwt(refresh, true))
+        if (!this.decodeJwt(refresh))
             return null;
         else 
             return this.generateJwt(this.decodedToDto(payload));
@@ -111,7 +111,7 @@ export class AuthService {
             return decoded;
         } catch (err) {
             if (err.message == 'jwt expired')
-                console.log('decodeJwt(): expired');
+                console.log(''/*'decodeJwt(): expired'*/);
             else 
                 throw new ErrorException(HttpStatus.UNAUTHORIZED, AboutErr.TOKEN, TypeErr.INVALID, 'invalid token provides');
             return null
@@ -143,10 +143,10 @@ export class AuthService {
         if (!decoded) {
             throw new InvalidTokenException(TypeErr.EXPIRED);
         }
-     /*   if (this.tokenFtIsExpire(decoded.expire)) {
-            console.log('token ft is expire')
+        if (this.tokenFtIsExpire(decoded.expire)) {
+            // console.log('token ft is expire')
             throw new InvalidTokenException(TypeErr.EXPIRED);
-        }*/
+        }
         const user = await this.userService.findById(decoded.userId);
         if (!user)
             throw new ErrorException(HttpStatus.FORBIDDEN, AboutErr.USER, TypeErr.NOT_FOUND, 'token not associated with an user');
@@ -157,7 +157,7 @@ export class AuthService {
     
     
     /*async generateSecret(userId: string) {
-        console.log('APP_NAME =', process.env.APP_NAME);
+        // console.log('APP_NAME =', process.env.APP_NAME);
         const pseudo = await this.userService.getPseudoById(userId);
         const secret = authenticator.generateSecret();
         const otpAuthUrl = authenticator.keyuri(
@@ -174,7 +174,7 @@ export class AuthService {
     }*/
     
     async generateOtpUrl(userId: string, secret: string): Promise<string> {
-        console.log('APP_NAME =', process.env.APP_NAME);
+        // console.log('APP_NAME =', process.env.APP_NAME);
         const pseudo = await this.userService.getPseudoById(userId);
         const otpAuthUrl = authenticator.keyuri(
             pseudo,

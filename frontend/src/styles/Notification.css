@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Mukta&display=swap');
+
+
+.notification {
+	position: fixed;
+	display: flex;
+	z-index: 10;
+	flex-direction: column;
+	float: right;
+	width: 300px;
+	left: 99%;
+	transform-origin: right;
+	transform: translateX(0%);
+	animation-name: slide;
+	animation-duration: 7s;
+	animation-delay: 0.5s;
+	animation-timing-function: cubic-bezier(0.88, 0.19, 0.37, 1.11);
+	box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+	background-color: rgb(235, 251, 255);
+	border-radius: 5px;
+	padding: 10px;
+	cursor: pointer;
+	transition: all 0.1s;
+	overflow: hidden;
+	user-select: none;
+}
+
+.notification:active {
+	box-shadow: none;
+	background-color: whitesmoke;
+}
+
+@keyframes slide {
+	0% {
+		transform: translateX(0%);
+	}
+
+	10% {
+		transform: translateX(-100%);
+	}
+
+	90% {
+		transform: translateX(-100%);
+	}
+
+	100% {
+		transform: translateX(0%);
+	}
+}
+
+.notif-container {
+	display: flex;
+	flex-direction: column;
+}
+
+.notif-title {
+	display: block;
+	font-weight: bold;
+	margin: 0;
+}
+
+.notif-msg {
+	margin: 0 2px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+	font-size: 1em;
+}
+
+.text {
+	display: flex;
+	text-overflow: ellipsis;
+	width: 90%;
+	font-family: 'Mukta', sans-serif;
+}
+
+.choice-container {
+	display: flex;
+	flex-direction: row;
+	margin-top: 10px;
+	justify-content: space-evenly;
+}
+
+.check-button {
+	border: 1px solid green;
+	display: flex;
+	width: 30%;
+	background-color: green;
+	color: white;
+}
+
+.delete-button {
+	display: flex;
+	border: 1px solid rgb(252, 78, 78);
+	width: 30%;
+	background-color: rgb(255, 78, 78);
+	color: white;
+}
+
+.check-svg {
+	text-align: center;
+	margin: auto;
+}
+
+.delete-svg {
+	text-align: center;
+	margin: auto;
+}

@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import { API_CHAT_CHANNEL_KICK_ROUTE, API_CHAT_CHANNEL_LEAVE_ROUTE, API_CHAT_CHANNEL_SETADMIN_ROUTE } from "../constants/RoutesApi"
 import { IChannel, IChannelUser } from "../interface/IChannel"
-import { RootState } from "../redux/store"
 import ClientApi from "./ClientApi.class"
 import '../styles/SetAdminChannelMenu.css'
 
@@ -29,7 +28,7 @@ export const SetAdminChannelMenu = ({ channelName, target, onSetAdmin, onSetAdmi
 			if (onSetAdmin)
 				onSetAdmin()
 		} catch (err) {
-			console.log("err = ", err)
+			// console.log("err = ", err)
 			if (onSetAdminFail)
 				onSetAdminFail()
 		}

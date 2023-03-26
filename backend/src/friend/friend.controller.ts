@@ -73,40 +73,4 @@ export class FriendController {
         if (!pseudo)
             throw new ErrorException(HttpStatus.BAD_REQUEST, AboutErr.TARGET, TypeErr.EMPTY, 'empty arg');
     }
-/*
-    @Get('/:pseudo/:value')
-    async getUserFriendList(@Param('value') value: boolean, @Param('pseudo') pseudo: string) {
-        if (value != true && value != false)
-            throw new HttpException('invalid param set ` true or false `', HttpStatus.BAD_REQUEST);
-        const user: UserEntity = await this.userService.findByPseudo(pseudo);
-        if (!user)
-            throw new ErrorException(HttpStatus.NOT_FOUND, AboutErr.USER, TypeErr.NOT_FOUND);
-        const friends = await this.userService.getFriends(user.id, value);
-        const friendList : string[] = await this.userService.makeFriendList(user.id, friends);
-        return { friends: friendList }
-    } */
-   
-    //FOR TESTTTTTT
-    @Patch('add')
-    async addFriend(@Query('src') src: string, @Query('dst') dst: string) {
-        console.log('src: ', src, ' dst: ', dst)
-        if (await this.userService.friendshipExist(src, dst)) {
-            throw new HttpException('already friend(or in waiting)', HttpStatus.BAD_REQUEST);
-        }
-        // si j'ai deja une requete d'ami se sa part en attente
-        else if (await this.userService.frienshipWaiting(src, dst))
-            return this.userService.acceptFriendship(src, dst)
-        else
-            return this.userService.createFriendship(src, dst);
-    }
-
-    //FOR TESTTTTTT
-    @Delete('rm')
-    async rmFriend(@Query('src') src: string, @Query('dst') dst: string) {
-        console.log('src: ', src, ' dst: ', dst)
-        if (!await this.userService.friendshipExist(src, dst) || !await this.userService.friendshipPendingFromOther(src, dst))
-            throw new HttpException('friendship not exist', HttpStatus.BAD_REQUEST);
-        else
-            return this.userService.removeFriendship(src, dst);
-    }
 }

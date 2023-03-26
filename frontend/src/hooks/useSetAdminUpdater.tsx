@@ -13,8 +13,8 @@ export const useSetAdminUpdater = (
 	useEffect(() => {
 		if (chanUser?.pseudo) {
 			socket?.on('setAdmin', (payload: IChannelEvSetAdmin) => {
-				console.log("(punish) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.target)
-				console.log("(punish) currentChannelId = ", currentChannelId)
+				// console.log("(punish) pseudo = ", chanUser.pseudo, " et paypseudo = ", payload.target)
+				// console.log("(punish) currentChannelId = ", currentChannelId)
 				const daChannel: IChannel | undefined =
 				channels.find(channel => channel.name === payload.channel)
 				if (daChannel) { // impossible que daChannel soit undefined
@@ -34,7 +34,7 @@ export const useSetAdminUpdater = (
 					updateChannel(channel)
 					if (!(currentChannelId <= -1 || currentChannelId >= channels.length)
 					&& channels[currentChannelId].name === payload.channel) {
-						console.log("test ici en punish")
+						// console.log("test ici en punish")
 						if (onSetAdminUpdate)
 							onSetAdminUpdate(payload)
 					}

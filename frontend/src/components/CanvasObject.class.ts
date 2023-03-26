@@ -29,24 +29,13 @@ abstract class CanvasObject {
 		private _dimensions?: Dimensions,
 		private _pos?: Point,
 		private _color?: string,
-		private _context?: CanvasRenderingContext2D,
 		private _canvasWidth?: number,
 		private _canvasHeight?: number,
 		private _canvasPosY?: number,
 	) {
-		console.log("CanvasObject creation")
+		// console.log("CanvasObject creation")
 	}
 
-
-	protected get context() {
-		if (!this._context)
-			throw new Error('The context have not been set up')
-		return this._context;
-	}
-
-	protected set context(ctx: CanvasRenderingContext2D) {
-		this._context = ctx;
-	}
 
 	protected get canvasWidth() {
 		if (!this._canvasWidth)
@@ -98,7 +87,7 @@ abstract class CanvasObject {
 		this._dimensions = dimensions;
 	}
 	
-	protected get color() {
+	public get color() {
 		if (!this._color)
 			throw new Error('The dimen_color have not been set up')
 		return this._color;
@@ -118,8 +107,7 @@ abstract class CanvasObject {
 		this._startingSpeed = startingSpeed;
 	}
 
-	protected setUp(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, canvasPosY?: number): void {
-		this.context = ctx;
+	protected setUp(canvasWidth: number, canvasHeight: number, canvasPosY?: number): void {
 		this.canvasWidth = canvasWidth;
 		this.canvasHeight = canvasHeight;
 		if (canvasPosY)
@@ -179,11 +167,6 @@ abstract class CanvasObject {
 		return (Side.NoSide);
 	}
 	*/
-
-	display(): void {
-		this.context.beginPath();
-		this.context.fillStyle = this.color;
-	}
 
 	//collision, etc..
 	//base class of paddle, ball, etc.. 
